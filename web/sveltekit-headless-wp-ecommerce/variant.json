@@ -1,0 +1,40 @@
+{
+  "name": "sveltekit-headless-wp-ecommerce",
+  "displayName": "SvelteKit Headless WordPress - E-commerce Only",
+  "description": "SvelteKit frontend template for e-commerce-only headless WordPress sites. Includes product catalog, cart, checkout, and order management. No blog/CMS features.",
+  "platform": "web",
+  "framework": "sveltekit",
+  "dependencies": {
+    "requires": ["cms"],
+    "requiresVariant": "ecommerce-only",
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Product catalog (/products)",
+      "Shopping cart",
+      "Checkout process",
+      "WooCommerce GraphQL integration",
+      "Product categories",
+      "Product reviews",
+      "Responsive design",
+      "Dark mode support"
+    ],
+    "excluded": [
+      "Blog routes",
+      "Article management",
+      "Post categories",
+      "Content management features"
+    ]
+  },
+  "homepageType": "products",
+  "routes": {
+    "ecommerce": [
+      "/products",
+      "/products/[slug]",
+      "/category/[slug]",
+      "/cart",
+      "/checkout"
+    ]
+  }
+}

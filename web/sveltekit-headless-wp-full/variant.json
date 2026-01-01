@@ -1,0 +1,39 @@
+{
+  "name": "sveltekit-headless-wp-full",
+  "displayName": "SvelteKit Headless WordPress - Full",
+  "description": "Complete SvelteKit frontend template for headless WordPress sites. Includes both blog/CMS features and WooCommerce e-commerce functionality.",
+  "platform": "web",
+  "framework": "sveltekit",
+  "dependencies": {
+    "requires": ["cms"],
+    "requiresVariant": "cms-ecommerce",
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Blog routes (/blog, /blog/[slug])",
+      "Product catalog (/products)",
+      "Shopping cart",
+      "Checkout process",
+      "Post categories and tags",
+      "Product categories",
+      "WooCommerce GraphQL integration",
+      "Responsive design",
+      "Dark mode support"
+    ]
+  },
+  "homepageType": "hybrid",
+  "routes": {
+    "cms": [
+      "/blog",
+      "/blog/[slug]",
+      "/tag/[slug]"
+    ],
+    "ecommerce": [
+      "/products",
+      "/products/[slug]",
+      "/category/[slug]",
+      "/cart"
+    ]
+  }
+}

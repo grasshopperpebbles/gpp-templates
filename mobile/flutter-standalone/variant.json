@@ -1,0 +1,31 @@
+{
+  "name": "flutter-standalone",
+  "displayName": "Flutter Standalone",
+  "description": "Flutter mobile app template that works independently without an API backend. Includes local database (SQLite), state management (Riverpod), and offline-first architecture.",
+  "platform": "mobile",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "State management with Riverpod",
+      "Local database with SQLite (sqflite)",
+      "Offline-first architecture",
+      "Local data persistence",
+      "JSON serialization",
+      "Platform folders (Android, iOS, Web, macOS, Linux, Windows)"
+    ],
+    "excluded": [
+      "HTTP client setup",
+      "API service layer",
+      "Firebase integration",
+      "Remote data synchronization"
+    ]
+  },
+  "homepageType": "app",
+  "routes": {
+    "shared": []
+  }
+}

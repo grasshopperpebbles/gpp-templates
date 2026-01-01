@@ -1,0 +1,33 @@
+{
+  "name": "tauri",
+  "displayName": "Tauri Desktop App",
+  "description": "Tauri 2.0 desktop application template with React, TypeScript, Vite, and Rust backend. Secure by default with sandboxing and context isolation.",
+  "platform": "desktop",
+  "runtime": "tauri",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Tauri 2.0 with React + TypeScript",
+      "Vite for fast development and building",
+      "Rust backend with IPC commands",
+      "File system operations",
+      "Shell command execution",
+      "Secure credential storage (keychain)",
+      "Security best practices (sandbox, permissions)",
+      "Tailwind CSS styling"
+    ],
+    "excluded": [
+      "Monaco Editor (can be added separately)",
+      "AI integrations (can be added separately)",
+      "Terminal/PTY integration (can be added separately)"
+    ]
+  },
+  "homepageType": "app",
+  "routes": {
+    "shared": []
+  }
+}

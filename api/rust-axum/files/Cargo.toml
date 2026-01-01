@@ -1,0 +1,51 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2021"
+authors = ["GPP Project"]
+description = "REST API built with Axum"
+
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["macros"] }
+tokio = { version = "1", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace", "timeout"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Configuration
+dotenvy = "0.15"
+
+# Logging & Tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Error handling
+thiserror = "1"
+anyhow = "1"
+
+# Async utilities
+futures = "0.3"
+
+# HTTP client (for external API calls)
+reqwest = { version = "0.11", features = ["json"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID generation
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[dev-dependencies]
+# Testing
+tokio-test = "0.4"
+axum-test = "14"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

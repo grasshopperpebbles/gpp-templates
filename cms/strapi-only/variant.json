@@ -1,0 +1,27 @@
+{
+  "name": "strapi-only",
+  "displayName": "Strapi CMS Only",
+  "description": "Strapi headless CMS. Includes content management features with GraphQL and REST API support.",
+  "platform": "cms",
+  "includes": [
+    "Strapi core",
+    "GraphQL plugin",
+    "REST API",
+    "Admin panel",
+    "Content type builder",
+    "Media library",
+    "User management",
+    "Role-based access control",
+    "MySQL database",
+    "phpMyAdmin"
+  ],
+  "excludes": [
+    "E-commerce features",
+    "Payment processing",
+    "Order management"
+  ],
+  "homepageType": "blog",
+  "dependencies": [],
+  "requires": []
+}
+

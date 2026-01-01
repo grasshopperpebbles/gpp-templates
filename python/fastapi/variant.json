@@ -1,0 +1,17 @@
+{
+  "name": "fastapi",
+  "displayName": "FastAPI",
+  "description": "Python FastAPI REST API with authentication, database migrations, and Docker support",
+  "platform": "api",
+  "runtime": "python",
+  "includes": ["FastAPI", "SQLAlchemy", "Alembic", "JWT Auth", "Docker"],
+  "dependencies": [],
+  "features": [
+    "REST API endpoints",
+    "JWT authentication",
+    "Database migrations with Alembic",
+    "SQLAlchemy ORM",
+    "Docker containerization",
+    "Admin seed script"
+  ]
+}

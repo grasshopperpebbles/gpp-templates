@@ -1,0 +1,36 @@
+{
+  "name": "rust-axum",
+  "displayName": "Rust Axum API",
+  "description": "Rust REST API template using Axum web framework with Tokio async runtime. Production-ready with error handling, middleware, and Docker support.",
+  "platform": "api",
+  "runtime": "rust",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": ["database/postgres", "database/mysql"]
+  },
+  "features": {
+    "included": [
+      "Axum 0.7 web framework",
+      "Tokio async runtime",
+      "Serde JSON serialization",
+      "Tower middleware stack",
+      "Structured error handling",
+      "Environment configuration",
+      "Health check endpoint",
+      "CORS support",
+      "Request logging/tracing",
+      "Docker + docker-compose",
+      "Multi-stage Dockerfile"
+    ],
+    "excluded": [
+      "Database ORM (add SQLx or Diesel separately)",
+      "Authentication (add separately)",
+      "OpenAPI/Swagger docs (add utoipa separately)"
+    ]
+  },
+  "homepageType": "api",
+  "routes": {
+    "shared": []
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "sveltekit-admin-dashboard",
+  "displayName": "SvelteKit Admin Dashboard",
+  "description": "SvelteKit frontend template for platform-level admin dashboards. Designed for admin-only management interfaces with user management, analytics, system configuration, and data tables. Built with Svelte 5 runes and modern patterns.",
+  "platform": "web",
+  "dependencies": {
+    "requires": ["api"],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Admin-only authentication",
+      "User management",
+      "System configuration",
+      "Analytics dashboard",
+      "Data tables with pagination",
+      "API integration",
+      "Protected admin routes",
+      "Responsive sidebar layout",
+      "Dark mode support",
+      "Toast notifications"
+    ],
+    "excluded": [
+      "Customer-facing features",
+      "CMS integration",
+      "E-commerce functionality",
+      "Public pages",
+      "User registration (admin-only access)"
+    ]
+  },
+  "homepageType": "admin",
+  "routes": {
+    "api": ["/api/health"],
+    "shared": [
+      "/admin",
+      "/admin/users",
+      "/admin/settings",
+      "/admin/analytics",
+      "/login"
+    ]
+  }
+}

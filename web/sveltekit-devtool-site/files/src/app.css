@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --tw-prose-pre-bg: theme('colors.gray.100');
+  }
+
+  .dark {
+    --tw-prose-pre-bg: theme('colors.gray.800');
+  }
+}
+
+/* Pagefind search styling */
+.pagefind-ui {
+  --pagefind-ui-scale: 0.9;
+  --pagefind-ui-primary: theme('colors.brand.500');
+  --pagefind-ui-text: theme('colors.gray.900');
+  --pagefind-ui-background: theme('colors.white');
+  --pagefind-ui-border: theme('colors.gray.200');
+  --pagefind-ui-tag: theme('colors.gray.100');
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: 0.5rem;
+  --pagefind-ui-font: inherit;
+}
+
+.dark .pagefind-ui {
+  --pagefind-ui-text: theme('colors.gray.100');
+  --pagefind-ui-background: theme('colors.gray.900');
+  --pagefind-ui-border: theme('colors.gray.700');
+  --pagefind-ui-tag: theme('colors.gray.800');
+}
+
+/* Code highlighting adjustments */
+pre {
+  @apply rounded-lg p-4 overflow-x-auto text-sm;
+}
+
+code {
+  @apply font-mono;
+}
+
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Active sidebar link */
+.sidebar-link-active {
+  @apply bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300 border-l-2 border-brand-500;
+}

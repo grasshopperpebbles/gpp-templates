@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # ===== OPTIONAL: Redis for caching and rate limiting =====
+  # Uncomment to enable Redis. Then set REDIS_URL in .env:
+  #   REDIS_URL=redis://redis:6379/0
+  #
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 3s
+  #     timeout: 3s
+  #     retries: 30
+
+  api:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      # Uncomment if using Redis:
+      # redis:
+      #   condition: service_healthy
+    ports:
+      - "8000:8000"
+    # ===== OPTIONAL: Development volume mounts =====
+    # Uncomment for hot-reload during development.
+    # IMPORTANT: Volume changes require container recreation:
+    #   docker compose down && docker compose up -d
+    #
+    # volumes:
+    #   - ./app:/app/app:ro        # Mount app code for hot reload
+    #   - .:/workspace:ro          # Mount project root (for scripts, docs, etc.)
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health').read()\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  db_data:
+  # Uncomment if using Redis:
+  # redis_data:

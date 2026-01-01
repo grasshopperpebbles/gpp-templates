@@ -1,0 +1,20 @@
+{
+  "name": "gpp-strapi-site-builder",
+  "version": "0.1.0",
+  "description": "Strapi plugin that generates complete frontends from schemas",
+  "strapi": {
+    "name": "gpp-strapi-site-builder",
+    "displayName": "GPP Strapi Site Builder Plugin",
+    "description": "Generate complete frontends from Strapi schemas",
+    "kind": "plugin"
+  },
+  "dependencies": {
+    "@strapi/strapi": "^5.0.0"
+  },
+  "devDependencies": {},
+  "author": {
+    "name": "GPP"
+  },
+  "license": "MIT"
+}
+

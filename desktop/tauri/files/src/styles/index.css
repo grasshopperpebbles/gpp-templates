@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent text selection in the app (desktop app behavior) */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in specific elements */
+pre,
+code,
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}

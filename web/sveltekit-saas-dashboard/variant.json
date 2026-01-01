@@ -1,0 +1,45 @@
+{
+  "name": "sveltekit-saas-dashboard",
+  "displayName": "SvelteKit SaaS Dashboard",
+  "description": "SvelteKit frontend template for customer-facing SaaS application dashboards. Includes authentication, data visualization, user profile/settings, and team management. Built with Svelte 5 runes.",
+  "platform": "web",
+  "dependencies": {
+    "requires": ["api"],
+    "requiresVariant": null,
+    "optional": ["worker"]
+  },
+  "features": {
+    "included": [
+      "Customer-facing dashboard",
+      "Authentication with registration",
+      "Protected routes",
+      "Data visualization (charts, metrics)",
+      "API integration",
+      "User profile and settings",
+      "Team management",
+      "Billing page",
+      "Responsive design",
+      "Dark mode support"
+    ],
+    "excluded": [
+      "CMS integration",
+      "WordPress backend",
+      "E-commerce functionality",
+      "Content management",
+      "Blog/articles"
+    ]
+  },
+  "homepageType": "dashboard",
+  "routes": {
+    "api": ["/api/health"],
+    "shared": [
+      "/dashboard",
+      "/settings",
+      "/profile",
+      "/login",
+      "/register",
+      "/admin/team",
+      "/admin/billing"
+    ]
+  }
+}

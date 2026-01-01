@@ -1,0 +1,17 @@
+{
+  "name": "auth-flows",
+  "displayName": "Authentication Flows",
+  "description": "Complete authentication flows including registration, email verification, password reset",
+  "type": "addon",
+  "platforms": ["web", "api-express", "api-fastapi", "desktop-tauri"],
+  "features": [
+    "User registration with email verification",
+    "Password reset flow",
+    "Email templates (Resend, SendGrid, SES)",
+    "API routes and frontend pages",
+    "Secure credential storage for desktop apps (keychain)",
+    "Tauri IPC commands for auth"
+  ],
+  "usage": "gpp add auth-flows",
+  "note": "Add-ons are installed via 'gpp add' command, not 'gpp template install'. They add files to existing platform directories."
+}

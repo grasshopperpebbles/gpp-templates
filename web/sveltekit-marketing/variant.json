@@ -1,0 +1,46 @@
+{
+  "name": "sveltekit-marketing",
+  "displayName": "SvelteKit Marketing Site",
+  "description": "Multi-page marketing site template with standard pages (about, privacy, terms, contact). Built with SvelteKit for company websites, portfolios, and content-focused sites.",
+  "platform": "web",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": ["api", "cms"]
+  },
+  "features": {
+    "included": [
+      "SvelteKit 2 with Svelte 5",
+      "Home page",
+      "About page",
+      "Privacy policy page",
+      "Terms of service page",
+      "Contact page",
+      "Site header with navigation",
+      "Site footer with links",
+      "Pagefind static search",
+      "Optional API client",
+      "TypeScript support",
+      "Tailwind CSS",
+      "Responsive design",
+      "Static adapter for deployment"
+    ],
+    "excluded": [
+      "Authentication (optional)",
+      "CMS integration (optional)",
+      "E-commerce functionality",
+      "Dashboard features",
+      "Admin features"
+    ]
+  },
+  "homepageType": "generic",
+  "routes": {
+    "shared": [
+      "/",
+      "/about",
+      "/contact",
+      "/privacy",
+      "/terms"
+    ]
+  }
+}

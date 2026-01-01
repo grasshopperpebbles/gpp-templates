@@ -1,0 +1,61 @@
+services:
+  # Redis broker
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # Celery worker
+  worker:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: celery -A app.celery_app worker --loglevel=info
+    # ===== OPTIONAL: Development volume mounts =====
+    # Uncomment for hot-reload during development.
+    # IMPORTANT: Volume changes require container recreation:
+    #   docker compose down && docker compose up -d
+    #
+    # volumes:
+    #   - ./app:/app/app:ro
+    restart: unless-stopped
+
+  # Celery Beat scheduler (for periodic tasks)
+  # Uncomment if you need scheduled tasks
+  # beat:
+  #   build: .
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #   command: celery -A app.celery_app beat --loglevel=info
+  #   restart: unless-stopped
+
+  # Flower monitoring (optional)
+  # Uncomment to enable web-based task monitoring at http://localhost:5555
+  # flower:
+  #   build: .
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #   command: celery -A app.celery_app flower --port=5555
+  #   ports:
+  #     - "5555:5555"
+  #   restart: unless-stopped
+
+volumes:
+  redis_data:

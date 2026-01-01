@@ -1,0 +1,34 @@
+{
+  "name": "cms-only",
+  "displayName": "CMS Only",
+  "description": "WordPress headless CMS without WooCommerce. Includes blog/content features only.",
+  "platform": "cms",
+  "includes": [
+    "WordPress core",
+    "WPGraphQL",
+    "WPGraphQL ACF",
+    "WPGraphQL Smart Cache",
+    "Advanced Custom Fields",
+    "JWT Authentication",
+    "Rank Math SEO",
+    "WPGraphQL Rank Math",
+    "Wordfence Security",
+    "Akismet Anti-Spam",
+    "UpdraftPlus Backup",
+    "WP Mail SMTP",
+    "Redis Object Cache",
+    "Blog2Social",
+    "WP Offload Media Lite",
+    "Custom plugins: gp-featured-items, gp-most-popular, gp-social-poster, gp-headless-config"
+  ],
+  "excludes": [
+    "WooCommerce",
+    "WPGraphQL WooCommerce",
+    "WooCommerce payment gateways",
+    "WooCommerce extensions",
+    "Mailchimp for WooCommerce"
+  ],
+  "homepageType": "blog",
+  "dependencies": [],
+  "requires": []
+}

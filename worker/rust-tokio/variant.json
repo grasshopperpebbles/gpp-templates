@@ -1,0 +1,34 @@
+{
+  "name": "rust-tokio",
+  "displayName": "Rust Tokio Worker",
+  "description": "Rust background worker template using Tokio async runtime. Supports job queues, scheduled tasks, and long-running processes.",
+  "platform": "worker",
+  "runtime": "rust",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": ["database/postgres", "database/redis"]
+  },
+  "features": {
+    "included": [
+      "Tokio async runtime",
+      "Job queue processing",
+      "Scheduled tasks (cron-like)",
+      "Graceful shutdown handling",
+      "Health check endpoint",
+      "Structured logging",
+      "Signal handling (SIGTERM/SIGINT)",
+      "Docker + docker-compose",
+      "Multi-stage Dockerfile"
+    ],
+    "excluded": [
+      "Message broker (add Redis/RabbitMQ separately)",
+      "Database (add SQLx separately)",
+      "Metrics/monitoring (add separately)"
+    ]
+  },
+  "homepageType": "worker",
+  "routes": {
+    "shared": []
+  }
+}

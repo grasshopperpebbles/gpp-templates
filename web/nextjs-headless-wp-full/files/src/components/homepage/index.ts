@@ -1,0 +1,5 @@
+export { Hero } from './hero'
+export { EcommerceCMSHomepage } from './ecommerce-cms-homepage'
+export { CMSEcommerceHomepage } from './cms-ecommerce-homepage'
+export { CMSOnlyHomepage } from './cms-only-homepage'
+export { EcommerceOnlyHomepage } from './ecommerce-only-homepage'

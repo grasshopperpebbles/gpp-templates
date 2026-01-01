@@ -1,0 +1,35 @@
+{
+  "name": "flutter-api-client",
+  "displayName": "Flutter API Client",
+  "description": "Flutter mobile app template that connects to an API backend. Includes HTTP client setup, state management (Riverpod), local database (SQLite), and API service patterns.",
+  "platform": "mobile",
+  "dependencies": {
+    "requires": ["api"],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "HTTP client setup (http or dio)",
+      "State management with Riverpod",
+      "Local database with SQLite (sqflite)",
+      "API service layer",
+      "Error handling",
+      "JSON serialization",
+      "Platform folders (Android, iOS, Web, macOS, Linux, Windows)"
+    ],
+    "excluded": [
+      "Firebase integration (can be added separately)",
+      "Authentication UI (implement as needed)",
+      "Offline-first architecture (can be added)"
+    ]
+  },
+  "homepageType": "app",
+  "routes": {
+    "api": [
+      "/api",
+      "/api/v1"
+    ],
+    "shared": []
+  }
+}

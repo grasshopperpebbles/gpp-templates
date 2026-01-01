@@ -1,0 +1,48 @@
+{
+  "name": "saas-dashboard",
+  "displayName": "SaaS Dashboard",
+  "description": "Next.js frontend template for customer-facing SaaS application dashboards. Includes authentication, data visualization, real-time updates, and admin features within the app.",
+  "platform": "web",
+  "dependencies": {
+    "requires": ["api"],
+    "requiresVariant": null,
+    "optional": ["worker"]
+  },
+  "features": {
+    "included": [
+      "Customer-facing dashboard",
+      "Authentication (JWT-based AuthContext)",
+      "Protected routes",
+      "Data visualization (charts, metrics)",
+      "Real-time data support (WebSocket/polling)",
+      "API integration (Express/FastAPI)",
+      "User profile and settings",
+      "Admin features (team management, billing)",
+      "Responsive design",
+      "React Query for data fetching"
+    ],
+    "excluded": [
+      "CMS integration",
+      "WordPress backend",
+      "E-commerce functionality",
+      "Content management",
+      "Blog/articles"
+    ]
+  },
+  "homepageType": "dashboard",
+  "routes": {
+    "api": [
+      "/api/auth",
+      "/api/dashboard",
+      "/api/health"
+    ],
+    "shared": [
+      "/dashboard",
+      "/settings",
+      "/profile",
+      "/login",
+      "/register",
+      "/admin"
+    ]
+  }
+}

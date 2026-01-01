@@ -1,0 +1,34 @@
+{
+  "name": "sveltekit-landing",
+  "displayName": "SvelteKit Landing Page",
+  "description": "Single-page landing template for conversion-focused sites. Built with SvelteKit and Tailwind CSS with dark mode support.",
+  "platform": "web",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "SvelteKit 2 with Svelte 5",
+      "Hero section with CTA",
+      "Features grid",
+      "Email signup form",
+      "Dark mode support",
+      "TypeScript support",
+      "Tailwind CSS",
+      "Responsive design",
+      "Static adapter for deployment"
+    ],
+    "excluded": [
+      "Multi-page navigation",
+      "Authentication",
+      "CMS integration",
+      "E-commerce functionality"
+    ]
+  },
+  "homepageType": "landing",
+  "routes": {
+    "shared": ["/"]
+  }
+}

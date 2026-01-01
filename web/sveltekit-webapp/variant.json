@@ -1,0 +1,41 @@
+{
+  "name": "sveltekit-webapp",
+  "displayName": "SvelteKit Web Application",
+  "description": "General-purpose web application template for tools, utilities, and portals. Built with SvelteKit, featuring forms, data tables, and modals.",
+  "platform": "web",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": ["api"]
+  },
+  "features": {
+    "included": [
+      "SvelteKit 2 with Svelte 5",
+      "Form handling with Superforms + Zod",
+      "Data tables with sorting/filtering",
+      "Toast notifications",
+      "Modal dialogs",
+      "Responsive navigation with sidebar",
+      "Optional authentication context",
+      "Optional API client",
+      "Dark mode support",
+      "TypeScript support",
+      "Tailwind CSS",
+      "Bits UI components"
+    ],
+    "excluded": [
+      "CMS integration",
+      "E-commerce functionality",
+      "Admin dashboard"
+    ]
+  },
+  "homepageType": "dashboard",
+  "routes": {
+    "shared": [
+      "/",
+      "/dashboard",
+      "/settings",
+      "/login"
+    ]
+  }
+}

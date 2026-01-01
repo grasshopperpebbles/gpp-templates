@@ -1,0 +1,27 @@
+{
+  "name": "sveltekit-devtool-site",
+  "displayName": "SvelteKit Developer Tool Site",
+  "platform": "web",
+  "description": "Documentation and marketing site for developer tools and OSS projects (like svelte.dev, kit.svelte.dev). Built with SvelteKit and mdsvex.",
+  "dependencies": [],
+  "features": {
+    "included": [
+      "SvelteKit 2 with Svelte 5",
+      "MDX/Markdown via mdsvex",
+      "Tailwind CSS with typography",
+      "Dark mode (mode-watcher)",
+      "Shiki syntax highlighting",
+      "Documentation sidebar",
+      "Hero section",
+      "Feature grid",
+      "Pagefind search",
+      "Responsive design",
+      "Static adapter"
+    ],
+    "excluded": [
+      "Authentication",
+      "Database",
+      "API routes (beyond static)"
+    ]
+  }
+}

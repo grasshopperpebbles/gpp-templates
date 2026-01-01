@@ -1,0 +1,25 @@
+{
+  "name": "celery-python",
+  "displayName": "Celery Python Worker",
+  "description": "Python background worker using Celery with Redis broker",
+  "platform": "worker",
+  "features": [
+    "Celery task queue",
+    "Redis broker",
+    "Task scheduling with Celery Beat",
+    "Result backend",
+    "Docker support",
+    "Health checks"
+  ],
+  "dependencies": {
+    "api": {
+      "optional": true,
+      "variants": ["fastapi"],
+      "description": "Can share Celery app with FastAPI for task dispatching"
+    }
+  },
+  "docker": {
+    "services": ["worker", "redis", "beat"],
+    "volumes": ["redis_data"]
+  }
+}

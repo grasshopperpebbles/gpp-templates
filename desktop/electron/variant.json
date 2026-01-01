@@ -1,0 +1,34 @@
+{
+  "name": "electron",
+  "displayName": "Electron Desktop App",
+  "description": "Electron desktop application template with React, TypeScript, Vite, and standard Electron utilities (electron-store, electron-window-state, electron-log, electron-builder, electron-updater).",
+  "platform": "desktop",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Electron with React + TypeScript",
+      "Vite for fast development and building",
+      "electron-store for persistent settings",
+      "electron-window-state for window persistence",
+      "electron-log for structured logging",
+      "electron-builder for packaging/distribution",
+      "electron-updater for auto-updates",
+      "IPC handlers structure",
+      "Preload script with context isolation",
+      "Security best practices (sandbox, context isolation)"
+    ],
+    "excluded": [
+      "Monaco Editor (can be added separately)",
+      "AI integrations (can be added separately)",
+      "Terminal integration (can be added separately)"
+    ]
+  },
+  "homepageType": "app",
+  "routes": {
+    "shared": []
+  }
+}

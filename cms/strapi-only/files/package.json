@@ -1,0 +1,43 @@
+{
+  "name": "strapi-cms",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Strapi CMS for GPP",
+  "scripts": {
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "build": "strapi build",
+    "strapi": "strapi"
+  },
+  "dependencies": {
+    "@strapi/strapi": "^5.0.0",
+    "@strapi/plugin-graphql": "^5.0.0",
+    "@strapi/plugin-users-permissions": "^5.0.0",
+    "@strapi/plugin-documentation": "^5.0.0",
+    "@strapi/plugin-sentry": "^5.0.0",
+    "@strapi/plugin-seo": "^2.0.0",
+    "@_sh/strapi-plugin-ckeditor": "^5.0.0",
+    "strapi-plugin-navigation": "^3.0.0",
+    "strapi-plugin-comments": "^3.0.0",
+    "strapi-plugin-config-sync": "^3.0.0",
+    "strapi-provider-upload-aws-s3": "^5.0.0",
+    "strapi-provider-upload-cloudinary": "^5.0.0",
+    "mysql2": "^3.16.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {},
+  "author": {
+    "name": "GPP"
+  },
+  "strapi": {
+    "uuid": "generated-on-setup"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=22.x.x",
+    "npm": ">=6.0.0"
+  },
+  "license": "MIT"
+}

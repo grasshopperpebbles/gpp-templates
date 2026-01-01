@@ -1,0 +1,50 @@
+{
+  "name": "headless-strapi",
+  "displayName": "Headless Strapi - CMS",
+  "description": "Next.js frontend template for Strapi headless CMS. Includes blog, article, and content management features with GraphQL and REST API support.",
+  "platform": "web",
+  "dependencies": {
+    "requires": ["cms"],
+    "requiresVariant": ["strapi-only", "strapi-dev"],
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Blog routes (/blog, /article, /articles)",
+      "Content management",
+      "GraphQL client for Strapi",
+      "REST API client for Strapi",
+      "Post categories and tags",
+      "Search functionality",
+      "Authentication (NextAuth)",
+      "SEO optimization",
+      "Responsive design",
+      "Dark mode support"
+    ],
+    "excluded": [
+      "Product catalog",
+      "Shopping cart",
+      "Checkout process",
+      "Payment processing",
+      "Order management",
+      "Customer accounts",
+      "E-commerce integration"
+    ]
+  },
+  "homepageType": "blog",
+  "routes": {
+    "cms": [
+      "/blog",
+      "/article",
+      "/articles"
+    ],
+    "shared": [
+      "/about",
+      "/contact",
+      "/login",
+      "/signup",
+      "/privacy",
+      "/terms"
+    ]
+  }
+}

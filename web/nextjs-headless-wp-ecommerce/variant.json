@@ -1,0 +1,53 @@
+{
+  "name": "headless-wp-ecommerce",
+  "displayName": "Headless WordPress - E-commerce Only",
+  "description": "Next.js frontend template for e-commerce-only headless WordPress sites. Includes product catalog, cart, checkout, and order management. No blog/CMS features.",
+  "platform": "web",
+  "dependencies": {
+    "requires": ["cms"],
+    "requiresVariant": "ecommerce-only",
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Product catalog (/products)",
+      "Shopping cart",
+      "Checkout process",
+      "Payment processing (Stripe)",
+      "Order management",
+      "Customer accounts (/my-account)",
+      "Wishlist functionality",
+      "Product reviews",
+      "WooCommerce API integration",
+      "Shipping calculation",
+      "Tax calculation",
+      "Price drop notifications"
+    ],
+    "excluded": [
+      "Blog routes",
+      "Article management",
+      "Post categories",
+      "Content management features"
+    ]
+  },
+  "homepageType": "products",
+  "routes": {
+    "ecommerce": [
+      "/products",
+      "/cart",
+      "/checkout",
+      "/my-account",
+      "/order-confirmation"
+    ],
+    "shared": [
+      "/about",
+      "/contact",
+      "/login",
+      "/signup",
+      "/privacy",
+      "/terms",
+      "/shipping",
+      "/returns"
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "headless-wp-cms",
+  "displayName": "Headless WordPress - CMS Only",
+  "description": "Next.js frontend template for CMS-only headless WordPress sites. Includes blog, article, and content management features only. No e-commerce functionality.",
+  "platform": "web",
+  "dependencies": {
+    "requires": ["cms"],
+    "requiresVariant": "cms-only",
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Blog routes (/blog, /article, /articles)",
+      "Content management",
+      "GraphQL client for posts",
+      "Post categories and tags",
+      "Search functionality",
+      "Authentication (NextAuth)",
+      "SEO optimization",
+      "Responsive design",
+      "Dark mode support"
+    ],
+    "excluded": [
+      "Product catalog",
+      "Shopping cart",
+      "Checkout process",
+      "Payment processing",
+      "Order management",
+      "Customer accounts",
+      "WooCommerce integration"
+    ]
+  },
+  "homepageType": "blog",
+  "routes": {
+    "cms": [
+      "/blog",
+      "/article",
+      "/articles"
+    ],
+    "shared": [
+      "/about",
+      "/contact",
+      "/login",
+      "/signup",
+      "/privacy",
+      "/terms"
+    ]
+  }
+}

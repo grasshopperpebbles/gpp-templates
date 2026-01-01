@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build
+.svelte-kit/
+build/
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

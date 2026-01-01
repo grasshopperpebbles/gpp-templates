@@ -1,0 +1,16 @@
+{
+  "name": "conda-trading",
+  "displayName": "Conda Trading",
+  "description": "Python trading algorithms template with Conda environment for quantitative analysis",
+  "platform": "python",
+  "runtime": "python",
+  "includes": ["Conda", "pandas", "numpy", "matplotlib"],
+  "dependencies": [],
+  "features": [
+    "Conda environment configuration",
+    "Trading strategy framework",
+    "Backtesting utilities",
+    "Jupyter notebook support",
+    "Data analysis libraries"
+  ]
+}

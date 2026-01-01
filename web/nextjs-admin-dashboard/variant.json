@@ -1,0 +1,46 @@
+{
+  "name": "admin-dashboard",
+  "displayName": "Admin Dashboard",
+  "description": "Next.js frontend template for platform-level admin dashboards. Designed for admin-only management interfaces, typically deployed on a separate domain. Includes user management, analytics, system configuration, and automatic CRUD generation from Prisma schema.",
+  "platform": "web",
+  "dependencies": {
+    "requires": ["api"],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Admin-only authentication",
+      "User management",
+      "System configuration",
+      "Analytics and reporting",
+      "CRUD operations (auto-generated from Prisma schema)",
+      "API integration (Express/FastAPI)",
+      "Protected admin routes",
+      "Responsive design",
+      "React Query for data fetching"
+    ],
+    "excluded": [
+      "Customer-facing features",
+      "CMS integration",
+      "E-commerce functionality",
+      "Public pages",
+      "User registration (admin-only access)"
+    ]
+  },
+  "homepageType": "admin",
+  "routes": {
+    "api": [
+      "/api/admin",
+      "/api/admin/crud",
+      "/api/health"
+    ],
+    "shared": [
+      "/admin",
+      "/admin/users",
+      "/admin/settings",
+      "/admin/analytics",
+      "/login"
+    ]
+  }
+}

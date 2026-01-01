@@ -1,0 +1,63 @@
+name: gpp-trading
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  # Core runtime
+  - python=3.11
+  - pip
+
+  # Data + numerics
+  - numpy
+  - pandas
+  - scipy
+  - statsmodels
+
+  # Plotting / analysis
+  - matplotlib
+  - seaborn
+  - plotly
+
+  # ML
+  - scikit-learn
+  - pytorch
+  - torchvision
+  - torchaudio
+
+  # Notebooks
+  - jupyterlab
+  - ipykernel
+
+  # Database / IO
+  - sqlalchemy
+  - psycopg2
+  - redis-py
+  - requests
+  - aiohttp
+
+  # Performance / utils
+  - numba
+  - joblib
+  - python-dateutil
+  - pytz
+  - pyyaml
+
+  # Testing / quality
+  - pytest
+  - pytest-cov
+  - ruff
+
+  # Optional: technical analysis + market data helpers
+  - ta
+  - yfinance
+
+  # Optional: trading calendars / scheduling
+  - pandas-market-calendars
+
+  # TA-Lib can be tricky on some systems; conda-forge usually works.
+  - ta-lib
+
+  - pip:
+      - rich
+      - typer
+      - python-dotenv

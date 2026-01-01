@@ -1,0 +1,72 @@
+{
+  "name": "headless-wp-full",
+  "displayName": "Headless WordPress - Full (CMS + E-commerce)",
+  "description": "Next.js frontend template for full-featured headless WordPress sites with both CMS/blog and e-commerce functionality. Supports both CMS-primary and E-commerce-primary homepage configurations.",
+  "platform": "web",
+  "dependencies": {
+    "requires": ["cms"],
+    "requiresVariant": ["cms-ecommerce", "ecommerce-cms"],
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Blog routes (/blog, /article, /articles)",
+      "Product catalog (/products)",
+      "Shopping cart",
+      "Checkout process",
+      "Payment processing (Stripe)",
+      "Order management",
+      "Customer accounts (/my-account)",
+      "Content management",
+      "Post categories and tags",
+      "Product categories",
+      "Wishlist functionality",
+      "Product reviews",
+      "WooCommerce API integration",
+      "GraphQL client (posts + products)",
+      "Search functionality",
+      "Authentication (NextAuth)",
+      "SEO optimization",
+      "Responsive design",
+      "Dark mode support"
+    ],
+    "excluded": []
+  },
+  "homepageType": "dynamic",
+  "homepageVariants": {
+    "cms-ecommerce": {
+      "component": "CMSEcommerceHomepage",
+      "type": "blog",
+      "description": "CMS primary - Blog homepage with featured products section"
+    },
+    "ecommerce-cms": {
+      "component": "EcommerceCMSHomepage",
+      "type": "products",
+      "description": "E-commerce primary - Product homepage with recent posts section"
+    }
+  },
+  "routes": {
+    "cms": [
+      "/blog",
+      "/article",
+      "/articles"
+    ],
+    "ecommerce": [
+      "/products",
+      "/cart",
+      "/checkout",
+      "/my-account",
+      "/order-confirmation"
+    ],
+    "shared": [
+      "/about",
+      "/contact",
+      "/login",
+      "/signup",
+      "/privacy",
+      "/terms",
+      "/shipping",
+      "/returns"
+    ]
+  }
+}

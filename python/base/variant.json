@@ -1,0 +1,14 @@
+{
+  "name": "base",
+  "displayName": "Python Base",
+  "description": "Basic Python project template with pyproject.toml and test structure",
+  "platform": "python",
+  "runtime": "python",
+  "includes": ["pyproject.toml", "pytest"],
+  "dependencies": [],
+  "features": [
+    "Modern pyproject.toml configuration",
+    "Test directory structure",
+    "Source directory structure"
+  ]
+}

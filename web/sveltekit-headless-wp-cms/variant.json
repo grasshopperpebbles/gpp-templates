@@ -1,0 +1,41 @@
+{
+  "name": "sveltekit-headless-wp-cms",
+  "displayName": "SvelteKit Headless WordPress - CMS Only",
+  "description": "SvelteKit frontend template for CMS-only headless WordPress sites. Includes blog, article, and content management features only. No e-commerce functionality.",
+  "platform": "web",
+  "framework": "sveltekit",
+  "dependencies": {
+    "requires": ["cms"],
+    "requiresVariant": "cms-only",
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Blog routes (/blog, /blog/[slug])",
+      "Content management",
+      "GraphQL client for posts",
+      "Post categories and tags",
+      "Author pages",
+      "SEO optimization",
+      "Responsive design",
+      "Dark mode support"
+    ],
+    "excluded": [
+      "Product catalog",
+      "Shopping cart",
+      "Checkout process",
+      "Payment processing",
+      "Order management",
+      "WooCommerce integration"
+    ]
+  },
+  "homepageType": "blog",
+  "routes": {
+    "cms": [
+      "/blog",
+      "/blog/[slug]",
+      "/category/[slug]",
+      "/tag/[slug]"
+    ]
+  }
+}
