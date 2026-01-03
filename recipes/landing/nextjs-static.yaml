@@ -1,0 +1,15 @@
+kind: recipe
+id: nextjs-static
+version: 1.0.0
+name: Next.js Static Landing Page
+description: Static marketing site with Next.js and Tailwind CSS
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-landing
+    deployTarget: vercel
+
+installers:
+  - action: envSeed
+    args: { profile: dev }

@@ -1,0 +1,26 @@
+kind: recipe
+id: nextjs-wordpress
+version: 1.0.0
+name: Next.js + WordPress
+description: Headless WordPress CMS with Next.js frontend
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-headless-wp-cms
+    deployTarget: vercel
+
+  - id: cms
+    path: apps/cms
+    pack: cms/cms-only
+    deployTarget: cloudways
+
+adapters:
+  - id: nextjs-to-wordpress
+    args:
+      webId: web
+      cmsId: cms
+
+installers:
+  - action: envSeed
+    args: { profile: dev }

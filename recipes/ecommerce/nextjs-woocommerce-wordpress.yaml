@@ -1,0 +1,26 @@
+kind: recipe
+id: nextjs-woocommerce-wordpress
+version: 1.0.0
+name: Next.js + WooCommerce + WordPress Blog
+description: Full e-commerce with integrated blog using WordPress CMS and WooCommerce
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-headless-wp-full
+    deployTarget: vercel
+
+  - id: cms
+    path: apps/cms
+    pack: cms/cms-ecommerce
+    deployTarget: cloudways
+
+adapters:
+  - id: nextjs-to-wordpress
+    args:
+      webId: web
+      cmsId: cms
+
+installers:
+  - action: envSeed
+    args: { profile: dev }

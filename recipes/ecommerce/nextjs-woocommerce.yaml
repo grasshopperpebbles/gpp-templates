@@ -1,0 +1,26 @@
+kind: recipe
+id: nextjs-woocommerce
+version: 1.0.0
+name: Next.js + WooCommerce
+description: Headless e-commerce with Next.js frontend and WordPress/WooCommerce backend
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-headless-wp-ecommerce
+    deployTarget: vercel
+
+  - id: cms
+    path: apps/cms
+    pack: cms/ecommerce-only
+    deployTarget: cloudways
+
+adapters:
+  - id: nextjs-to-wordpress
+    args:
+      webId: web
+      cmsId: cms
+
+installers:
+  - action: envSeed
+    args: { profile: dev }

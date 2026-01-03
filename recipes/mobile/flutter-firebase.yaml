@@ -1,0 +1,15 @@
+kind: recipe
+id: flutter-firebase
+version: 1.0.0
+name: Flutter + Firebase
+description: Cross-platform mobile app with Firebase backend services
+
+workspaces:
+  - id: mobile
+    path: apps/mobile
+    pack: mobile/flutter-standalone
+    deployTarget: app-store
+
+installers:
+  - action: envSeed
+    args: { profile: dev }

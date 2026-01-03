@@ -1,0 +1,26 @@
+kind: recipe
+id: flutter-fastapi
+version: 1.0.0
+name: Flutter + FastAPI
+description: Cross-platform mobile app with Python FastAPI backend
+
+workspaces:
+  - id: mobile
+    path: apps/mobile
+    pack: mobile/flutter-api-client
+    deployTarget: app-store
+
+  - id: api
+    path: apps/api
+    pack: python/fastapi
+    deployTarget: railway
+
+adapters:
+  - id: flutter-to-fastapi
+    args:
+      mobileId: mobile
+      apiId: api
+
+installers:
+  - action: envSeed
+    args: { profile: dev }
