@@ -5,6 +5,10 @@
 # Run: docker compose --env-file .env up -d
 #===============================================================================
 
+# Fixed project name prevents volume name changes when directory is renamed
+# This ensures database volumes persist across directory renames
+name: ${PROJECT_SLUG:-strapi-dev}
+
 services:
   db:
     image: mysql:8.0
