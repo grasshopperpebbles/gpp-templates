@@ -252,12 +252,12 @@ if [ -d "/var/www/html/wp-content/plugins/headless-config" ]; then
     wp plugin activate headless-config --allow-root --quiet && echo "✅ Headless Config activated" || true
 fi
 
-if [ -d "/var/www/html/wp-content/plugins/gp-featured-items" ]; then
-    wp plugin activate gp-featured-items --allow-root --quiet && echo "✅ GP Featured Items activated" || true
+if [ -d "/var/www/html/wp-content/plugins/gpp-wp-featured-items" ]; then
+    wp plugin activate gpp-wp-featured-items --allow-root --quiet && echo "✅ GPP WP Featured Items activated" || true
 fi
 
-if [ -d "/var/www/html/wp-content/plugins/gp-most-popular" ]; then
-    wp plugin activate gp-most-popular --allow-root --quiet && echo "✅ GP Most Popular activated" || true
+if [ -d "/var/www/html/wp-content/plugins/gpp-wp-most-popular" ]; then
+    wp plugin activate gpp-wp-most-popular --allow-root --quiet && echo "✅ GPP WP Most Popular activated" || true
 fi
 
 if [ -d "/var/www/html/wp-content/plugins/gp-social-poster" ]; then

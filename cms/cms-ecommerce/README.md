@@ -8,7 +8,7 @@ This template provides a headless WordPress setup with **both CMS and WooCommerc
 - All WordPress core features
 - All CMS plugins (WPGraphQL, ACF, SEO, etc.)
 - All WooCommerce plugins (payments, shipping, reviews, etc.)
-- All custom plugins (gp-featured-items, gp-most-popular, gp-social-poster, gp-headless-config)
+- All custom plugins (gpp-wp-featured-items, gpp-wp-most-popular, gp-social-poster, gp-headless-config)
 
 ## Homepage Configuration
 

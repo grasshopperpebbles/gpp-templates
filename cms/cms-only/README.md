@@ -8,7 +8,7 @@ This template provides a headless WordPress setup with **CMS/blog features only*
 - WordPress 6.x with PHP 8.3
 - Docker Compose setup (WordPress, MariaDB, Redis, phpMyAdmin)
 - CMS-only plugins (no WooCommerce)
-- Custom plugins: gp-featured-items, gp-most-popular, gp-social-poster, gp-headless-config
+- Custom plugins: gpp-wp-featured-items, gpp-wp-most-popular, gp-social-poster, gp-headless-config
 
 ### Next.js Frontend (`apps/web/`)
 - Next.js 15 with App Router

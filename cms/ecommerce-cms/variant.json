@@ -32,7 +32,7 @@
     "Customer Reviews for WooCommerce",
     "Mailchimp for WooCommerce",
     "WP Offload Media Lite",
-    "All custom plugins: gp-featured-items, gp-most-popular, gp-social-poster, gp-headless-config"
+    "All custom plugins: gpp-wp-featured-items, gpp-wp-most-popular, gp-social-poster, gp-headless-config"
   ],
   "excludes": [],
   "homepageType": "products",

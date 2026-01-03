@@ -8,7 +8,7 @@ This template provides a headless WordPress setup with **both CMS and WooCommerc
 - WordPress 6.x with PHP 8.3
 - Docker Compose setup
 - **All plugins**: CMS plugins + WooCommerce plugins
-- All custom plugins: gp-featured-items, gp-most-popular, gp-social-poster, gp-headless-config
+- All custom plugins: gpp-wp-featured-items, gpp-wp-most-popular, gp-social-poster, gp-headless-config
 
 ### Next.js Frontend (`apps/web/`)
 - Next.js 15 with App Router

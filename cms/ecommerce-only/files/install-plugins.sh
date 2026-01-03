@@ -279,7 +279,7 @@ if [ -d "/var/www/html/wp-content/plugins/headless-config" ]; then
     wp plugin activate headless-config --allow-root --quiet && echo "✅ Headless Config activated" || true
 fi
 
-# NOTE: gp-featured-items, gp-most-popular, gp-social-poster are NOT activated for ecommerce-only
+# NOTE: gpp-wp-featured-items, gpp-wp-most-popular, gp-social-poster are NOT activated for ecommerce-only
 
 #-------------------------------------------------------------------------------
 # Configure WordPress Settings

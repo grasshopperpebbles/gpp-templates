@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "site_settings",
+  "info": {
+    "singularName": "site-setting",
+    "pluralName": "site-settings",
+    "displayName": "Site Setting",
+    "description": "Site settings for featured items configuration. Equivalent to WordPress gpp-wp-featured-items plugin."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "content-manager": {
+      "visible": true
+    },
+    "content-type-builder": {
+      "visible": true
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "default": "Site Settings",
+      "required": true
+    },
+    "featuredTitle": {
+      "type": "string",
+      "default": "Featured Items",
+      "maxLength": 100,
+      "required": false
+    },
+    "featuredDescription": {
+      "type": "text",
+      "maxLength": 500,
+      "required": false
+    },
+    "featuredItems": {
+      "type": "relation",
+      "relation": "morphToMany",
+      "target": "*",
+      "required": false
+    }
+  }
+}
+

@@ -771,70 +771,83 @@ export interface CategoriesResponse {
   }
 }
 
-// Featured Items ACF Types
+// Featured Items Types (Strapi Format)
 export interface FeaturedItemsSettings {
   featuredTitle: string
   featuredDescription: string
   featuredItems: {
-    nodes: Product[]
+    data: Array<{
+      id: string
+      attributes: Record<string, unknown> // Content type specific attributes
+    }>
   } | null
 }
 
 export interface SiteSetting {
   id: string
-  databaseId: number
-  title: string
-  featuredItems: FeaturedItemsSettings
+  attributes: {
+    title: string
+    featuredTitle?: string
+    featuredDescription?: string
+    featuredItems?: {
+      data: Array<{
+        id: string
+        attributes: Record<string, unknown>
+      }>
+    }
+  }
 }
 
 export interface FeaturedItemsResponse {
   siteSettings: {
-    nodes: SiteSetting[]
+    data: SiteSetting[]
+    meta: {
+      pagination: {
+        total: number
+      }
+    }
   }
 }
 
-// Query for Featured Items Settings
+// Query for Featured Items Settings (Strapi GraphQL Format)
 export const GET_FEATURED_ITEMS = `
   query GetFeaturedItems {
-    siteSettings(first: 1) {
-      nodes {
+    siteSettings(pagination: { limit: 1 }) {
+      data {
         id
-        databaseId
-        title
-        featuredItems {
+        attributes {
+          title
           featuredTitle
           featuredDescription
           featuredItems {
-            nodes {
-              ... on Product {
-                id
-                databaseId
-                name
-                slug
-                type
-                onSale
-                shortDescription
-                ... on SimpleProduct {
+            data {
+              id
+              attributes {
+                # For Article content type
+                ... on Article {
+                  title
+                  slug
+                  excerpt
+                  featuredImage {
+                    data {
+                      attributes {
+                        url
+                        alternativeText
+                      }
+                    }
+                  }
+                }
+                # For Product content type (if using Strapi e-commerce)
+                ... on Product {
+                  name
+                  slug
                   price
-                  regularPrice
-                  salePrice
-                  stockStatus
-                }
-                image {
-                  id
-                  sourceUrl
-                  altText
-                }
-                productCategories {
-                  nodes {
-                    id
-                    name
-                    slug
-                    parent {
-                      node {
-                        id
-                        name
-                        slug
+                  shortDescription
+                  image {
+                    data {
+                      attributes {
+                        url
+                        alternativeText
                       }
                     }
                   }
@@ -842,6 +855,11 @@ export const GET_FEATURED_ITEMS = `
               }
             }
           }
+        }
+      }
+      meta {
+        pagination {
+          total
         }
       }
     }

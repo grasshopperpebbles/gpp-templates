@@ -19,7 +19,7 @@
     "Redis Object Cache",
     "Blog2Social",
     "WP Offload Media Lite",
-    "Custom plugins: gp-featured-items, gp-most-popular, gp-social-poster, gp-headless-config"
+    "Custom plugins: gpp-wp-featured-items, gpp-wp-most-popular, gp-social-poster, gp-headless-config"
   ],
   "excludes": [
     "WooCommerce",

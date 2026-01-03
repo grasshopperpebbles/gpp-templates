@@ -54,6 +54,17 @@ export interface Author {
   avatar?: StrapiImage;
 }
 
+export interface SiteSetting {
+  id: number;
+  title: string;
+  featuredTitle?: string;
+  featuredDescription?: string;
+  featuredItems?: Array<{
+    id: number;
+    attributes: Record<string, unknown>; // Content type specific attributes
+  }>;
+}
+
 class StrapiClient {
   private baseUrl: string;
 
@@ -120,6 +131,14 @@ class StrapiClient {
     query.set("filters[slug][$eq]", slug);
 
     return this.fetch(`/categories?${query}`);
+  }
+
+  async getFeaturedItems(): Promise<StrapiResponse<SiteSetting[]>> {
+    const query = new URLSearchParams();
+    query.set("populate[featuredItems][populate]", "*");
+    query.set("pagination[limit]", "1");
+
+    return this.fetch(`/site-settings?${query}`);
   }
 
   getImageUrl(image?: StrapiImage, size?: "thumbnail" | "small" | "medium" | "large"): string {

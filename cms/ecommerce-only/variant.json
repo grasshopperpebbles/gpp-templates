@@ -35,7 +35,7 @@
   ],
   "excludes": [
     "Blog2Social",
-    "Custom plugins: gp-featured-items, gp-most-popular, gp-social-poster"
+    "Custom plugins: gpp-wp-featured-items, gpp-wp-most-popular, gp-social-poster"
   ],
   "homepageType": "products",
   "dependencies": [],
