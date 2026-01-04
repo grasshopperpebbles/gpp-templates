@@ -8,5 +8,10 @@ export default ({ env }) => ({
   admin: {
     url: env('STRAPI_ADMIN_URL', '/admin'),
   },
+  logger: {
+    updates: {
+      enabled: false, // Replaces STRAPI_DISABLE_UPDATE_NOTIFICATION
+    },
+  },
 });
 

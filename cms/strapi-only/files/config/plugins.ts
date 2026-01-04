@@ -6,7 +6,7 @@ export default ({ env }) => ({
     config: {
       endpoint: '/graphql',
       shadowCRUD: true,
-      playgroundAlways: false,
+      landingPage: false, // Replaces playgroundAlways
       depthLimit: 7,
       amountLimit: 100,
       apolloServer: {

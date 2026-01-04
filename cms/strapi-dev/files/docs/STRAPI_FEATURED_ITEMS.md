@@ -94,7 +94,7 @@ If you prefer to use the schema file directly:
        config: {
         endpoint: '/graphql',
         shadowCRUD: true,
-        playgroundAlways: false,
+        landingPage: false, // Replaces deprecated playgroundAlways
         depthLimit: 7,
         amountLimit: 100,
         apolloServer: {

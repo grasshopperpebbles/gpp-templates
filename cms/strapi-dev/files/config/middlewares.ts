@@ -27,13 +27,14 @@ export default ({ env }) => [
       },
     },
   },
-  {
-    name: 'strapi::cors',
-    config: {
-      enabled: env.bool('CORS_ENABLED', true),
-      origin: env('CORS_ORIGIN', 'http://localhost:3001').split(','),
+  ...(env.bool('CORS_ENABLED', true) ? [
+    {
+      name: 'strapi::cors',
+      config: {
+        origin: env('CORS_ORIGIN', 'http://localhost:3001').split(','),
+      },
     },
-  },
+  ] : []),
   'strapi::poweredBy',
   'strapi::query',
   'strapi::body',
