@@ -175,6 +175,36 @@ export async function getCategories(): Promise<PostCategory[]> {
 }
 
 /**
+ * Fetch subcategories for a parent category
+ */
+export async function getSubcategories(parentSlug: string): Promise<PostCategory[]> {
+  try {
+    const categories = await getCategories()
+    // Find parent category
+    const parent = categories.find(cat => cat.slug === parentSlug)
+    if (!parent) return []
+    // Filter categories that have this parent
+    return categories.filter(cat => cat.parentId === parent.databaseId?.toString())
+  } catch (error) {
+    console.error(`Error fetching subcategories for "${parentSlug}":`, error)
+    return []
+  }
+}
+
+/**
+ * Fetch category by slug
+ */
+export async function getCategoryBySlug(slug: string): Promise<PostCategory | null> {
+  try {
+    const categories = await getCategories()
+    return categories.find(cat => cat.slug === slug) || null
+  } catch (error) {
+    console.error(`Error fetching category "${slug}":`, error)
+    return null
+  }
+}
+
+/**
  * Fetch all post tags
  */
 export async function getTags(): Promise<PostTag[]> {
@@ -184,6 +214,58 @@ export async function getTags(): Promise<PostTag[]> {
   } catch (error) {
     console.error('Error fetching tags:', error)
     return []
+  }
+}
+
+/**
+ * Get primary categories (categories without a parent)
+ */
+export async function getPrimaryCategories(): Promise<PostCategory[]> {
+  const categories = await getCategories()
+  return categories.filter(cat => !cat.parent?.node)
+}
+
+/**
+ * Get previous and next posts relative to the current post
+ * Posts are ordered by date (newest first)
+ */
+export async function getAdjacentPosts(
+  currentPostSlug: string,
+  categorySlug?: string
+): Promise<{ previous: Post | null; next: Post | null }> {
+  try {
+    // Fetch all posts in the category (or all posts if no category)
+    const postsResponse = categorySlug
+      ? await getPostsByCategory(categorySlug, { first: 100 })
+      : await getPosts({ first: 100 })
+
+    const posts = postsResponse.posts.nodes
+
+    // Sort posts by date (newest first)
+    const sortedPosts = [...posts].sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime()
+    })
+
+    // Find current post index
+    const currentIndex = sortedPosts.findIndex(
+      post => post.slug === currentPostSlug
+    )
+
+    if (currentIndex === -1) {
+      return { previous: null, next: null }
+    }
+
+    // Get previous (newer) and next (older) posts
+    const previous = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null
+    const next =
+      currentIndex < sortedPosts.length - 1
+        ? sortedPosts[currentIndex + 1]
+        : null
+
+    return { previous, next }
+  } catch (error) {
+    console.error('Error fetching adjacent posts:', error)
+    return { previous: null, next: null }
   }
 }
 
@@ -339,4 +421,167 @@ export function createPaginationState(pageInfo: PaginationInfo) {
     nextCursor: pageInfo.endCursor,
     previousCursor: pageInfo.startCursor,
   }
+}
+
+// ============================================================================
+// PATH RESOLUTION FOR CATCH-ALL ROUTES
+// ============================================================================
+
+export type ResolvedPathType = 'post' | 'category' | 'subcategory' | 'not_found'
+
+export interface ResolvedPath {
+  type: ResolvedPathType
+  post?: Post
+  category?: PostCategory
+  subcategory?: PostCategory
+  /** Full category path for breadcrumbs (e.g., ['travel', 'europe']) */
+  categoryPath?: string[]
+}
+
+/**
+ * Resolve URL path segments to determine content type.
+ *
+ * Handles catch-all routes like /blog/[...slug] or /article/[...slug]
+ *
+ * Examples:
+ * - ['travel'] → category "travel"
+ * - ['travel', 'europe'] → subcategory "europe" under "travel" OR post "europe" in "travel"
+ * - ['travel', 'europe', 'paris-guide'] → post "paris-guide" in subcategory "europe"
+ * - ['my-post'] → post "my-post" (no category)
+ *
+ * Resolution strategy:
+ * 1. Check if last segment is a post slug
+ * 2. If not a post, check if it's a category/subcategory
+ * 3. Walk backwards to build category hierarchy
+ */
+export async function resolvePathSegments(segments: string[]): Promise<ResolvedPath> {
+  if (!segments || segments.length === 0) {
+    return { type: 'not_found' }
+  }
+
+  const categories = await getCategories()
+  const lastSegment = segments[segments.length - 1]
+
+  // First, check if the last segment is a post
+  const post = await getPostBySlug(lastSegment)
+
+  if (post) {
+    // It's a post - validate category path if provided
+    const categorySegments = segments.slice(0, -1)
+
+    if (categorySegments.length > 0) {
+      // Validate that the category path matches the post's categories
+      const resolvedCategories = resolveCategoryPath(categorySegments, categories)
+
+      if (resolvedCategories.length > 0) {
+        const deepestCategory = resolvedCategories[resolvedCategories.length - 1]
+
+        // Check if post belongs to this category or its children
+        const postCategories = post.categories?.nodes || []
+        const belongsToCategory = postCategories.some(
+          cat => cat.slug === deepestCategory.slug ||
+                 cat.parent?.node?.slug === deepestCategory.slug
+        )
+
+        if (belongsToCategory) {
+          return {
+            type: 'post',
+            post,
+            category: resolvedCategories[0],
+            subcategory: resolvedCategories.length > 1 ? resolvedCategories[resolvedCategories.length - 1] : undefined,
+            categoryPath: categorySegments,
+          }
+        }
+      }
+    }
+
+    // Post without category path or category validation skipped
+    return {
+      type: 'post',
+      post,
+      categoryPath: [],
+    }
+  }
+
+  // Not a post - check if it's a category hierarchy
+  const resolvedCategories = resolveCategoryPath(segments, categories)
+
+  if (resolvedCategories.length === 0) {
+    return { type: 'not_found' }
+  }
+
+  if (resolvedCategories.length === segments.length) {
+    // All segments resolved to categories
+    if (segments.length === 1) {
+      return {
+        type: 'category',
+        category: resolvedCategories[0],
+        categoryPath: segments,
+      }
+    } else {
+      return {
+        type: 'subcategory',
+        category: resolvedCategories[0],
+        subcategory: resolvedCategories[resolvedCategories.length - 1],
+        categoryPath: segments,
+      }
+    }
+  }
+
+  return { type: 'not_found' }
+}
+
+/**
+ * Resolve a category path, validating parent-child relationships
+ * Returns array of categories in order, or empty array if invalid
+ */
+function resolveCategoryPath(segments: string[], categories: PostCategory[]): PostCategory[] {
+  const resolved: PostCategory[] = []
+  let parentId: string | null = null
+
+  for (const segment of segments) {
+    const category = categories.find(cat => {
+      if (cat.slug !== segment) return false
+
+      // Check parent relationship
+      if (parentId === null) {
+        // First segment should be a root category (no parent)
+        return !cat.parent?.node
+      } else {
+        // Subsequent segments should have correct parent
+        return cat.parent?.node?.databaseId?.toString() === parentId ||
+               cat.parentId === parentId
+      }
+    })
+
+    if (!category) {
+      // Segment doesn't match a valid category in the hierarchy
+      break
+    }
+
+    resolved.push(category)
+    parentId = category.databaseId?.toString() || null
+  }
+
+  return resolved
+}
+
+/**
+ * Build the canonical URL path for a post based on its categories
+ * Used for generating SEO-friendly URLs
+ */
+export function buildPostPath(post: Post, baseRoute: string = '/blog'): string {
+  const primaryCategory = post.categories?.nodes?.[0]
+
+  if (!primaryCategory) {
+    return `${baseRoute}/${post.slug}`
+  }
+
+  const parentCategory = primaryCategory.parent?.node
+
+  if (parentCategory) {
+    return `${baseRoute}/${parentCategory.slug}/${primaryCategory.slug}/${post.slug}`
+  }
+
+  return `${baseRoute}/${primaryCategory.slug}/${post.slug}`
 }

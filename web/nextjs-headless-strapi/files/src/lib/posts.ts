@@ -340,3 +340,165 @@ export function createPaginationState(pageInfo: PaginationInfo) {
     previousCursor: pageInfo.startCursor,
   }
 }
+
+// ============================================================================
+// PATH RESOLUTION FOR CATCH-ALL ROUTES
+// ============================================================================
+
+export type ResolvedPathType = 'post' | 'category' | 'subcategory' | 'not_found'
+
+export interface ResolvedPath {
+  type: ResolvedPathType
+  post?: Post
+  category?: PostCategory
+  subcategory?: PostCategory
+  /** Full category path for breadcrumbs (e.g., ['travel', 'europe']) */
+  categoryPath?: string[]
+}
+
+/**
+ * Resolve URL path segments to determine content type.
+ *
+ * Handles catch-all routes like /blog/[...slug] or /article/[...slug]
+ *
+ * Examples:
+ * - ['travel'] → category "travel"
+ * - ['travel', 'europe'] → subcategory "europe" under "travel" OR post "europe" in "travel"
+ * - ['travel', 'europe', 'paris-guide'] → post "paris-guide" in subcategory "europe"
+ * - ['my-post'] → post "my-post" (no category)
+ *
+ * Resolution strategy:
+ * 1. Check if last segment is a post slug
+ * 2. If not a post, check if it's a category/subcategory
+ * 3. Walk backwards to build category hierarchy
+ */
+export async function resolvePathSegments(segments: string[]): Promise<ResolvedPath> {
+  if (!segments || segments.length === 0) {
+    return { type: 'not_found' }
+  }
+
+  const categories = await getCategories()
+  const lastSegment = segments[segments.length - 1]
+
+  // First, check if the last segment is a post
+  const post = await getPostBySlug(lastSegment)
+
+  if (post) {
+    // It's a post - validate category path if provided
+    const categorySegments = segments.slice(0, -1)
+
+    if (categorySegments.length > 0) {
+      // Validate that the category path matches the post's categories
+      const resolvedCategories = resolveCategoryPath(categorySegments, categories)
+
+      if (resolvedCategories.length > 0) {
+        const deepestCategory = resolvedCategories[resolvedCategories.length - 1]
+
+        // Check if post belongs to this category or its children
+        const postCategories = post.categories?.nodes || []
+        const belongsToCategory = postCategories.some(
+          cat => cat.slug === deepestCategory.slug ||
+                 cat.parent?.node?.slug === deepestCategory.slug
+        )
+
+        if (belongsToCategory) {
+          return {
+            type: 'post',
+            post,
+            category: resolvedCategories[0],
+            subcategory: resolvedCategories.length > 1 ? resolvedCategories[resolvedCategories.length - 1] : undefined,
+            categoryPath: categorySegments,
+          }
+        }
+      }
+    }
+
+    // Post without category path or category validation skipped
+    return {
+      type: 'post',
+      post,
+      categoryPath: [],
+    }
+  }
+
+  // Not a post - check if it's a category hierarchy
+  const resolvedCategories = resolveCategoryPath(segments, categories)
+
+  if (resolvedCategories.length === 0) {
+    return { type: 'not_found' }
+  }
+
+  if (resolvedCategories.length === segments.length) {
+    // All segments resolved to categories
+    if (segments.length === 1) {
+      return {
+        type: 'category',
+        category: resolvedCategories[0],
+        categoryPath: segments,
+      }
+    } else {
+      return {
+        type: 'subcategory',
+        category: resolvedCategories[0],
+        subcategory: resolvedCategories[resolvedCategories.length - 1],
+        categoryPath: segments,
+      }
+    }
+  }
+
+  return { type: 'not_found' }
+}
+
+/**
+ * Resolve a category path, validating parent-child relationships
+ * Returns array of categories in order, or empty array if invalid
+ */
+function resolveCategoryPath(segments: string[], categories: PostCategory[]): PostCategory[] {
+  const resolved: PostCategory[] = []
+  let parentId: string | null = null
+
+  for (const segment of segments) {
+    const category = categories.find(cat => {
+      if (cat.slug !== segment) return false
+
+      // Check parent relationship
+      if (parentId === null) {
+        // First segment should be a root category (no parent)
+        return !cat.parent?.node
+      } else {
+        // Subsequent segments should have correct parent
+        return cat.parent?.node?.id === parentId
+      }
+    })
+
+    if (!category) {
+      // Segment doesn't match a valid category in the hierarchy
+      break
+    }
+
+    resolved.push(category)
+    parentId = category.id || null
+  }
+
+  return resolved
+}
+
+/**
+ * Build the canonical URL path for a post based on its categories
+ * Used for generating SEO-friendly URLs
+ */
+export function buildPostPath(post: Post, baseRoute: string = '/blog'): string {
+  const primaryCategory = post.categories?.nodes?.[0]
+
+  if (!primaryCategory) {
+    return `${baseRoute}/${post.slug}`
+  }
+
+  const parentCategory = primaryCategory.parent?.node
+
+  if (parentCategory) {
+    return `${baseRoute}/${parentCategory.slug}/${primaryCategory.slug}/${post.slug}`
+  }
+
+  return `${baseRoute}/${primaryCategory.slug}/${post.slug}`
+}

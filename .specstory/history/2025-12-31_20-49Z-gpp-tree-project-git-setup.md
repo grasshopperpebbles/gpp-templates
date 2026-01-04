@@ -410,3 +410,1444 @@ Ready to commit and push when you are. No commits or pushes have been made yet.
 
 ---
 
+_**User (2025-12-31 22:11Z)**_
+
+more files to add/commit/push
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Checking untracked files and .gitignore before adding, committing, and pushing.
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git status --short</summary>
+
+```bash
+git status --short
+```
+
+```
+?? .cursorindexingignore
+?? .specstory/
+?? README.md
+?? add-ons/
+?? api/
+?? cms/
+?? desktop/
+?? mobile/
+?? python/
+?? web/
+?? worker/
+
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase ".gitignore" • **24** results in **1** directory</summary>
+
+Directory: **/Users/lesliegreen/projects/gpp-templates** (24 files)
+
+| File |
+|------|
+| `web/sveltekit-headless-wp-full/files/.gitignore` |
+| `web/sveltekit-headless-wp-ecommerce/files/.gitignore` |
+| `web/sveltekit-headless-wp-cms/files/.gitignore` |
+| `web/sveltekit-headless-strapi/files/.gitignore` |
+| `web/sveltekit-saas-dashboard/files/.gitignore` |
+| `web/sveltekit-admin-dashboard/files/.gitignore` |
+| `web/sveltekit-devtool-site/files/.gitignore` |
+| `web/sveltekit-webapp/files/.gitignore` |
+| `web/sveltekit-landing/files/.gitignore` |
+| `web/sveltekit-marketing/files/.gitignore` |
+| `worker/rust-tokio/files/.gitignore` |
+| `api/rust-axum/files/.gitignore` |
+| `desktop/tauri/files/.gitignore` |
+| `worker/celery-python/files/.gitignore` |
+| `desktop/electron/files/.gitignore` |
+| `mobile/flutter-api-client/files/.gitignore` |
+| `mobile/flutter-standalone/files/.gitignore` |
+| `web/nextjs-headless-strapi/files/.gitignore` |
+| `web/nextjs-marketing/files/.gitignore` |
+| `web/nextjs-admin-dashboard/files/.gitignore` |
+| `web/nextjs-saas-dashboard/files/.gitignore` |
+| `web/nextjs-headless-wp-full/files/.gitignore` |
+| `web/nextjs-headless-wp-ecommerce/files/.gitignore` |
+| `web/nextjs-headless-wp-cms/files/.gitignore` |
+
+</details>
+</tool-use>
+
+---
+
+Could not find file '.gitignore' in the workspace.
+
+---
+
+
+
+---
+
+
+No root .gitignore found. Adding all files, then committing and pushing:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git add .</summary>
+
+```bash
+git add .
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git status --short | head -30</summary>
+
+```bash
+git status --short | head -30
+```
+
+```
+A  .cursorindexingignore
+A  .specstory/.gitignore
+A  .specstory/history/2025-12-31_20-49Z-gpp-tree-project-git-setup.md
+A  README.md
+A  add-ons/auth-flows/addon.json
+A  add-ons/auth-flows/api-express/.env.auth-flows.example
+A  add-ons/auth-flows/api-express/src/routes/auth-flows.ts
+A  add-ons/auth-flows/api-express/src/services/email.ts
+A  add-ons/auth-flows/api-fastapi/.env.auth-flows.example
+A  add-ons/auth-flows/api-fastapi/alembic/versions/add_verification_tokens.py
+A  add-ons/auth-flows/api-fastapi/app/api/v1/routes/auth_flows.py
+A  add-ons/auth-flows/api-fastapi/app/core/email.py
+A  add-ons/auth-flows/api-fastapi/app/db/models/verification_token.py
+A  add-ons/auth-flows/api-fastapi/app/schemas/auth_flows.py
+A  add-ons/auth-flows/desktop-tauri/src-tauri/src/auth.rs
+A  add-ons/auth-flows/desktop-tauri/src/components/auth/LoginForm.tsx
+A  add-ons/auth-flows/desktop-tauri/src/components/auth/RegisterForm.tsx
+A  add-ons/auth-flows/desktop-tauri/src/lib/auth.ts
+A  add-ons/auth-flows/web/.env.auth-flows.example
+A  add-ons/auth-flows/web/src/app/(auth)/forgot-password/page.tsx
+A  add-ons/auth-flows/web/src/app/(auth)/register/page.tsx
+A  add-ons/auth-flows/web/src/app/(auth)/reset-password/page.tsx
+A  add-ons/auth-flows/web/src/app/(auth)/verify-email/page.tsx
+A  add-ons/auth-flows/web/src/app/api/auth/forgot-password/route.ts
+A  add-ons/auth-flows/web/src/app/api/auth/register/route.ts
+A  add-ons/auth-flows/web/src/app/api/auth/reset-password/route.ts
+A  add-ons/auth-flows/web/src/app/api/auth/verify-email/route.ts
+A  add-ons/auth-flows/web/src/components/auth/forgot-password-form.tsx
+A  add-ons/auth-flows/web/src/components/auth/register-form.tsx
+A  add-ons/auth-flows/web/src/components/auth/reset-password-form.tsx
+
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git commit -m "Initial commit: Add gpp-templates project structure"</summary>
+
+```bash
+git commit -m "Initial commit: Add gpp-templates project structure"
+```
+
+```
+[main (root-commit) e605346] Initial commit: Add gpp-templates project structure
+ 1207 files changed, 108714 insertions(+)
+ create mode 100644 .cursorindexingignore
+ create mode 100644 .specstory/.gitignore
+ create mode 100644 .specstory/history/2025-12-31_20-49Z-gpp-tree-project-git-setup.md
+ create mode 100644 README.md
+ create mode 100644 add-ons/auth-flows/addon.json
+ create mode 100644 add-ons/auth-flows/api-express/.env.auth-flows.example
+ create mode 100644 add-ons/auth-flows/api-express/src/routes/auth-flows.ts
+ create mode 100644 add-ons/auth-flows/api-express/src/services/email.ts
+ create mode 100644 add-ons/auth-flows/api-fastapi/.env.auth-flows.example
+ create mode 100644 add-ons/auth-flows/api-fastapi/alembic/versions/add_verification_tokens.py
+ create mode 100644 add-ons/auth-flows/api-fastapi/app/api/v1/routes/auth_flows.py
+ create mode 100644 add-ons/auth-flows/api-fastapi/app/core/email.py
+ create mode 100644 add-ons/auth-flows/api-fastapi/app/db/models/verification_token.py
+ create mode 100644 add-ons/auth-flows/api-fastapi/app/schemas/auth_flows.py
+ create mode 100644 add-ons/auth-flows/desktop-tauri/src-tauri/src/auth.rs
+ create mode 100644 add-ons/auth-flows/desktop-tauri/src/components/auth/LoginForm.tsx
+ create mode 100644 add-ons/auth-flows/desktop-tauri/src/components/auth/RegisterForm.tsx
+ create mode 100644 add-ons/auth-flows/desktop-tauri/src/lib/auth.ts
+ create mode 100644 add-ons/auth-flows/web/.env.auth-flows.example
+ create mode 100644 add-ons/auth-flows/web/src/app/(auth)/forgot-password/page.tsx
+ create mode 100644 add-ons/auth-flows/web/src/app/(auth)/register/page.tsx
+ create mode 100644 add-ons/auth-flows/web/src/app/(auth)/reset-password/page.tsx
+ create mode 100644 add-ons/auth-flows/web/src/app/(auth)/verify-email/page.tsx
+ create mode 100644 add-ons/auth-flows/web/src/app/api/auth/forgot-password/route.ts
+ create mode 100644 add-ons/auth-flows/web/src/app/api/auth/register/route.ts
+ create mode 100644 add-ons/auth-flows/web/src/app/api/auth/reset-password/route.ts
+ create mode 100644 add-ons/auth-flows/web/src/app/api/auth/verify-email/route.ts
+ create mode 100644 add-ons/auth-flows/web/src/components/auth/forgot-password-form.tsx
+ create mode 100644 add-ons/auth-flows/web/src/components/auth/register-form.tsx
+ create mode 100644 add-ons/auth-flows/web/src/components/auth/reset-password-form.tsx
+ create mode 100644 add-ons/auth-flows/web/src/lib/email/index.ts
+ create mode 100644 add-ons/auth-flows/web/src/lib/email/resend.ts
+ create mode 100644 add-ons/auth-flows/web/src/lib/email/sendgrid.ts
+ create mode 100644 add-ons/auth-flows/web/src/lib/email/ses.ts
+ create mode 100644 api/rust-axum/files/.env.example
+ create mode 100644 api/rust-axum/files/.gitignore
+ create mode 100644 api/rust-axum/files/Cargo.toml
+ create mode 100644 api/rust-axum/files/Dockerfile
+ create mode 100644 api/rust-axum/files/docker-compose.yml
+ create mode 100644 api/rust-axum/files/src/config.rs
+ create mode 100644 api/rust-axum/files/src/error.rs
+ create mode 100644 api/rust-axum/files/src/handlers/health.rs
+ create mode 100644 api/rust-axum/files/src/handlers/items.rs
+ create mode 100644 api/rust-axum/files/src/handlers/mod.rs
+ create mode 100644 api/rust-axum/files/src/main.rs
+ create mode 100644 api/rust-axum/files/src/middleware/mod.rs
+ create mode 100644 api/rust-axum/files/src/models/mod.rs
+ create mode 100644 api/rust-axum/files/src/routes/mod.rs
+ create mode 100644 api/rust-axum/variant.json
+ create mode 100644 cms/cms-ecommerce/README.md
+ create mode 100644 cms/cms-ecommerce/files/.env.example
+ create mode 100644 cms/cms-ecommerce/files/Dockerfile
+ create mode 100755 cms/cms-ecommerce/files/dev.sh
+ create mode 100644 cms/cms-ecommerce/files/docker-compose.yml
+ create mode 100755 cms/cms-ecommerce/files/install-plugins.sh
+ create mode 100644 cms/cms-ecommerce/files/uploads.ini
+ create mode 100644 cms/cms-ecommerce/variant.json
+ create mode 100644 cms/cms-only/README.md
+ create mode 100644 cms/cms-only/files/.env.example
+ create mode 100644 cms/cms-only/files/Dockerfile
+ create mode 100755 cms/cms-only/files/dev.sh
+ create mode 100644 cms/cms-only/files/docker-compose.yml
+ create mode 100755 cms/cms-only/files/install-plugins.sh
+ create mode 100644 cms/cms-only/files/uploads.ini
+ create mode 100644 cms/cms-only/variant.json
+ create mode 100644 cms/ecommerce-cms/README.md
+ create mode 100644 cms/ecommerce-cms/files/.env.example
+ create mode 100644 cms/ecommerce-cms/files/Dockerfile
+ create mode 100755 cms/ecommerce-cms/files/dev.sh
+ create mode 100644 cms/ecommerce-cms/files/docker-compose.yml
+ create mode 100755 cms/ecommerce-cms/files/install-plugins.sh
+ create mode 100644 cms/ecommerce-cms/files/uploads.ini
+ create mode 100644 cms/ecommerce-cms/variant.json
+ create mode 100644 cms/ecommerce-only/README.md
+ create mode 100644 cms/ecommerce-only/files/.env.example
+ create mode 100644 cms/ecommerce-only/files/Dockerfile
+ create mode 100755 cms/ecommerce-only/files/dev.sh
+ create mode 100644 cms/ecommerce-only/files/docker-compose.yml
+ create mode 100755 cms/ecommerce-only/files/install-plugins.sh
+ create mode 100644 cms/ecommerce-only/files/uploads.ini
+ create mode 100644 cms/ecommerce-only/variant.json
+ create mode 100644 cms/strapi-dev/README.md
+ create mode 100644 cms/strapi-dev/TEST_COMPLETE.md
+ create mode 100644 cms/strapi-dev/TEST_RESULTS.md
+ create mode 100644 cms/strapi-dev/TEST_SUMMARY.md
+ create mode 100644 cms/strapi-dev/TEST_TEMPLATE.md
+ create mode 100644 cms/strapi-dev/TEST_VERIFICATION.md
+ create mode 100644 cms/strapi-dev/USAGE.md
+ create mode 100644 cms/strapi-dev/files/.strapiignore
+ create mode 100644 cms/strapi-dev/files/Dockerfile
+ create mode 100644 cms/strapi-dev/files/README.md
+ create mode 100644 cms/strapi-dev/files/config/admin.ts
+ create mode 100644 cms/strapi-dev/files/config/app.ts
+ create mode 100644 cms/strapi-dev/files/config/database.ts
+ create mode 100644 cms/strapi-dev/files/config/middlewares.ts
+ create mode 100644 cms/strapi-dev/files/config/server.ts
+ create mode 100644 cms/strapi-dev/files/dev.sh
+ create mode 100644 cms/strapi-dev/files/docker-compose.yml
+ create mode 100644 cms/strapi-dev/files/env/.env.example
+ create mode 100644 cms/strapi-dev/files/favicon.ico
+ create mode 100644 cms/strapi-dev/files/package.json
+ create mode 100644 cms/strapi-dev/files/postcss.config.mjs
+ create mode 100644 cms/strapi-dev/files/setup.sh
+ create mode 100644 cms/strapi-dev/files/src/index.ts
+ create mode 100644 cms/strapi-dev/files/src/plugins/gpp-strapi-site-builder/README.md
+ create mode 100644 cms/strapi-dev/files/src/plugins/gpp-strapi-site-builder/package.json
+ create mode 100644 cms/strapi-dev/files/src/plugins/gpp-strapi-site-builder/strapi-admin.js
+ create mode 100644 cms/strapi-dev/files/tsconfig.json
+ create mode 100644 cms/strapi-dev/variant.json
+ create mode 100644 cms/strapi-only/PLUGINS.md
+ create mode 100644 cms/strapi-only/PLUGINS_SUMMARY.md
+ create mode 100644 cms/strapi-only/README.md
+ create mode 100644 cms/strapi-only/files/.strapiignore
+ create mode 100644 cms/strapi-only/files/Dockerfile
+ create mode 100644 cms/strapi-only/files/config/admin.ts
+ create mode 100644 cms/strapi-only/files/config/app.ts
+ create mode 100644 cms/strapi-only/files/config/database.ts
+ create mode 100644 cms/strapi-only/files/config/middlewares.ts
+ create mode 100644 cms/strapi-only/files/config/plugins.ts
+ create mode 100644 cms/strapi-only/files/config/plugins.ts.example
+ create mode 100644 cms/strapi-only/files/config/server.ts
+ create mode 100755 cms/strapi-only/files/dev.sh
+ create mode 100644 cms/strapi-only/files/docker-compose.yml
+ create mode 100644 cms/strapi-only/files/package.json
+ create mode 100644 cms/strapi-only/variant.json
+ create mode 100644 desktop/electron/files/.eslintrc.cjs
+ create mode 100644 desktop/electron/files/.gitignore
+ create mode 100644 desktop/electron/files/.prettierrc.json
+ create mode 100644 desktop/electron/files/README.md
+ create mode 100644 desktop/electron/files/electron/ipc/settingsHandlers.ts
+ create mode 100644 desktop/electron/files/electron/main.ts
+ create mode 100644 desktop/electron/files/electron/preload.ts
+ create mode 100644 desktop/electron/files/package.json
+ create mode 100644 desktop/electron/files/postcss.config.js
+ create mode 100644 desktop/electron/files/public/.gitkeep
+ create mode 100644 desktop/electron/files/src/App.tsx
+ create mode 100644 desktop/electron/files/src/index.html
+ create mode 100644 desktop/electron/files/src/main.tsx
+ create mode 100644 desktop/electron/files/src/styles/index.css
+ create mode 100644 desktop/electron/files/tailwind.config.js
+ create mode 100644 desktop/electron/files/tsconfig.electron.json
+ create mode 100644 desktop/electron/files/tsconfig.json
+ create mode 100644 desktop/electron/files/tsconfig.node.json
+ create mode 100644 desktop/electron/files/vite.config.ts
+ create mode 100644 desktop/electron/variant.json
+ create mode 100644 desktop/tauri/files/.gitignore
+ create mode 100644 desktop/tauri/files/README.md
+ create mode 100644 desktop/tauri/files/index.html
+ create mode 100644 desktop/tauri/files/package.json
+ create mode 100644 desktop/tauri/files/postcss.config.js
+ create mode 100644 desktop/tauri/files/src-tauri/Cargo.toml
+ create mode 100644 desktop/tauri/files/src-tauri/build.rs
+ create mode 100644 desktop/tauri/files/src-tauri/src/lib.rs
+ create mode 100644 desktop/tauri/files/src-tauri/src/main.rs
+ create mode 100644 desktop/tauri/files/src-tauri/tauri.conf.json
+ create mode 100644 desktop/tauri/files/src/App.tsx
+ create mode 100644 desktop/tauri/files/src/lib/tauri.ts
+ create mode 100644 desktop/tauri/files/src/main.tsx
+ create mode 100644 desktop/tauri/files/src/styles/index.css
+ create mode 100644 desktop/tauri/files/tailwind.config.js
+ create mode 100644 desktop/tauri/files/tsconfig.json
+ create mode 100644 desktop/tauri/files/tsconfig.node.json
+ create mode 100644 desktop/tauri/files/vite.config.ts
+ create mode 100644 desktop/tauri/variant.json
+ create mode 100644 mobile/flutter-api-client/files/.gitignore
+ create mode 100644 mobile/flutter-api-client/files/README.md
+ create mode 100644 mobile/flutter-api-client/files/analysis_options.yaml
+ create mode 100644 mobile/flutter-api-client/files/env.example.txt
+ create mode 100644 mobile/flutter-api-client/files/lib/app/app.dart
+ create mode 100644 mobile/flutter-api-client/files/lib/core/api/api_client.dart
+ create mode 100644 mobile/flutter-api-client/files/lib/core/api/api_service.dart
+ create mode 100644 mobile/flutter-api-client/files/lib/core/config/app_config.dart
+ create mode 100644 mobile/flutter-api-client/files/lib/core/database/database_helper.dart
+ create mode 100644 mobile/flutter-api-client/files/lib/main.dart
+ create mode 100644 mobile/flutter-api-client/files/pubspec.yaml
+ create mode 100755 mobile/flutter-api-client/files/setup.sh
+ create mode 100644 mobile/flutter-api-client/files/test/widget_test.dart
+ create mode 100644 mobile/flutter-api-client/variant.json
+ create mode 100644 mobile/flutter-standalone/files/.gitignore
+ create mode 100644 mobile/flutter-standalone/files/README.md
+ create mode 100644 mobile/flutter-standalone/files/analysis_options.yaml
+ create mode 100644 mobile/flutter-standalone/files/lib/app/app.dart
+ create mode 100644 mobile/flutter-standalone/files/lib/core/database/database_helper.dart
+ create mode 100644 mobile/flutter-standalone/files/lib/main.dart
+ create mode 100644 mobile/flutter-standalone/files/pubspec.yaml
+ create mode 100755 mobile/flutter-standalone/files/setup.sh
+ create mode 100644 mobile/flutter-standalone/files/test/widget_test.dart
+ create mode 100644 mobile/flutter-standalone/variant.json
+ create mode 100644 python/base/.DS_Store
+ create mode 100644 python/base/files/README.md
+ create mode 100644 python/base/files/pyproject.toml
+ create mode 100644 python/base/files/src/{{project_name}}/__init__.py
+ create mode 100644 python/base/files/tests/__init__.py
+ create mode 100644 python/base/variant.json
+ create mode 100644 python/conda-trading/files/README.md
+ create mode 100644 python/conda-trading/files/environment.yml
+ create mode 100644 python/conda-trading/files/notebooks/README.md
+ create mode 100644 python/conda-trading/files/pyproject.toml
+ create mode 100644 python/conda-trading/files/scripts/README.md
+ create mode 100644 python/conda-trading/files/src/trading/__init__.py
+ create mode 100644 python/conda-trading/files/src/trading/backtest.py
+ create mode 100644 python/conda-trading/files/src/trading/cli.py
+ create mode 100644 python/conda-trading/files/src/trading/config.py
+ create mode 100644 python/conda-trading/files/src/trading/data.py
+ create mode 100644 python/conda-trading/files/src/trading/logging_utils.py
+ create mode 100644 python/conda-trading/files/src/trading/strategies/__init__.py
+ create mode 100644 python/conda-trading/files/src/trading/strategies/momentum.py
+ create mode 100644 python/conda-trading/files/src/trading/strategy.py
+ create mode 100644 python/conda-trading/files/tests/test_smoke.py
+ create mode 100644 python/conda-trading/variant.json
+ create mode 100644 python/fastapi/.DS_Store
+ create mode 100644 python/fastapi/README.md
+ create mode 100644 python/fastapi/files/.DS_Store
+ create mode 100644 python/fastapi/files/.env
+ create mode 100644 python/fastapi/files/.env.example
+ create mode 100644 python/fastapi/files/Dockerfile
+ create mode 100644 python/fastapi/files/README.md
+ create mode 100644 python/fastapi/files/alembic.ini
+ create mode 100644 python/fastapi/files/alembic/env.py
+ create mode 100644 python/fastapi/files/alembic/script.py.mako
+ create mode 100644 python/fastapi/files/alembic/versions/2ceca0720bdd_add_refresh_tokens.py
+ create mode 100644 python/fastapi/files/app/__init__.py
+ create mode 100644 python/fastapi/files/app/api/v1/api.py
+ create mode 100644 python/fastapi/files/app/api/v1/routes/__init__.py
+ create mode 100644 python/fastapi/files/app/api/v1/routes/auth.py
+ create mode 100644 python/fastapi/files/app/api/v1/routes/health.py
+ create mode 100644 python/fastapi/files/app/api/v1/routes/users.py
+ create mode 100644 python/fastapi/files/app/core/cache.py
+ create mode 100644 python/fastapi/files/app/core/config.py
+ create mode 100644 python/fastapi/files/app/core/deps.py
+ create mode 100644 python/fastapi/files/app/core/rate_limit.py
+ create mode 100644 python/fastapi/files/app/core/security.py
+ create mode 100644 python/fastapi/files/app/db/base.py
+ create mode 100644 python/fastapi/files/app/db/migrate.py
+ create mode 100644 python/fastapi/files/app/db/models/__init__.py
+ create mode 100644 python/fastapi/files/app/db/models/refresh_token.py
+ create mode 100644 python/fastapi/files/app/db/models/user.py
+ create mode 100644 python/fastapi/files/app/db/seed_admin.py
+ create mode 100644 python/fastapi/files/app/db/session.py
+ create mode 100644 python/fastapi/files/app/graphql/README.md
+ create mode 100644 python/fastapi/files/app/graphql/__init__.py
+ create mode 100644 python/fastapi/files/app/graphql/auth.py
+ create mode 100644 python/fastapi/files/app/graphql/schema.py
+ create mode 100644 python/fastapi/files/app/main.py
+ create mode 100644 python/fastapi/files/app/prestart.py
+ create mode 100644 python/fastapi/files/app/schemas/auth.py
+ create mode 100644 python/fastapi/files/app/schemas/user.py
+ create mode 100644 python/fastapi/files/docker-compose.yml
+ create mode 100644 python/fastapi/files/scripts/smoke_test.py
+ create mode 100644 python/fastapi/files/tests/test_health.py
+ create mode 100644 python/fastapi/pyproject.fastapi.toml
+ create mode 100644 python/fastapi/variant.json
+ create mode 100644 web/nextjs-admin-dashboard/files/.gitignore
+ create mode 100644 web/nextjs-admin-dashboard/files/README.md
+ create mode 100644 web/nextjs-admin-dashboard/files/SETUP.md
+ create mode 100644 web/nextjs-admin-dashboard/files/components.json
+ create mode 100644 web/nextjs-admin-dashboard/files/env.example.txt
+ create mode 100644 web/nextjs-admin-dashboard/files/eslint.config.mjs
+ create mode 100644 web/nextjs-admin-dashboard/files/next.config.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/package.json
+ create mode 100644 web/nextjs-admin-dashboard/files/postcss.config.mjs
+ create mode 100644 web/nextjs-admin-dashboard/files/public/og-image.svg
+ create mode 100644 web/nextjs-admin-dashboard/files/src/app/admin/page.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/app/admin/users/page.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/app/api/auth/[...nextauth]/route.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/app/api/health/route.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/app/globals.css
+ create mode 100644 web/nextjs-admin-dashboard/files/src/app/layout.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/app/login/page.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/app/page.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/auth/index.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/auth/login-form.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/auth/protected-route.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/auth/register-form.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/data/data-table.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/data/empty-state.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/data/index.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/data/loading.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/data/pagination.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/data/search-input.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/feedback/index.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/feedback/toast.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/feedback/toaster.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/forms/checkbox.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/forms/form.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/forms/index.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/forms/switch.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/forms/textarea.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/layout/breadcrumbs.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/layout/index.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/layout/nav.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/layout/page-header.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/layout/sidebar.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/providers.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/session-provider.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/ui/badge.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/ui/button.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/ui/card.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/ui/dialog.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/ui/input.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/ui/label.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/ui/select.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/ui/tabs.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/components/ui/tooltip.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/contexts/AuthContext.tsx
+ create mode 100644 web/nextjs-admin-dashboard/files/src/hooks/index.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/hooks/use-debounce.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/hooks/use-local-storage.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/hooks/use-pagination.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/hooks/use-toast.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/lib/api.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/lib/auth-config.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/lib/config.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/lib/graphql.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/src/lib/utils.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/tailwind.config.ts
+ create mode 100644 web/nextjs-admin-dashboard/files/tsconfig.json
+ create mode 100644 web/nextjs-admin-dashboard/files/types/next-auth.d.ts
+ create mode 100644 web/nextjs-admin-dashboard/variant.json
+ create mode 100644 web/nextjs-headless-strapi/files/.gitignore
+ create mode 100644 web/nextjs-headless-strapi/files/components.json
+ create mode 100644 web/nextjs-headless-strapi/files/eslint.config.mjs
+ create mode 100644 web/nextjs-headless-strapi/files/next.config.ts
+ create mode 100644 web/nextjs-headless-strapi/files/package.json
+ create mode 100644 web/nextjs-headless-strapi/files/postcss.config.mjs
+ create mode 100644 web/nextjs-headless-strapi/files/public/file.svg
+ create mode 100644 web/nextjs-headless-strapi/files/public/globe.svg
+ create mode 100644 web/nextjs-headless-strapi/files/public/manifest.json
+ create mode 100644 web/nextjs-headless-strapi/files/public/next.svg
+ create mode 100644 web/nextjs-headless-strapi/files/public/og-image.svg
+ create mode 100644 web/nextjs-headless-strapi/files/public/vercel.svg
+ create mode 100644 web/nextjs-headless-strapi/files/public/window.svg
+ create mode 100644 web/nextjs-headless-strapi/files/sentry.client.config.ts
+ create mode 100644 web/nextjs-headless-strapi/files/sentry.edge.config.ts
+ create mode 100644 web/nextjs-headless-strapi/files/sentry.server.config.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/about/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/accessibility/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/api/articles/[slug]/route.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/api/articles/route.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/api/auth/[...nextauth]/route.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/api/contact/submit/route.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/api/newsletter/subscribe/route.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/api/resend-verification/route.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/api/verify-email/route.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/article/[category]/[subCategory]/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/article/[category]/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/article/[slug]/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/articles/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/blog/[category]/[subCategory]/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/blog/[category]/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/blog/[slug]/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/blog/category/[slug]/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/blog/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/contact/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/faq/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/favicon.ico
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/forgot-password/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/globals.css
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/layout.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/login/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/privacy/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/resend-verification/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/reset-password/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/signup/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/terms/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/app/verify-email/page.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/cookie-consent-banner.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/footer.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/homepage/cms-ecommerce-homepage.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/homepage/cms-only-homepage.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/homepage/ecommerce-cms-homepage.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/homepage/ecommerce-only-homepage.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/homepage/hero.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/homepage/index.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/navbar.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/search-suggestions.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/session-provider.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/accordion.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/alert-dialog.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/alert.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/badge.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/button.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/card.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/dialog.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/dropdown-menu.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/form.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/input.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/label.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/select.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/separator.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/sheet.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/skeleton.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/star-rating.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/switch.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/tabs.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/components/ui/textarea.tsx
+ create mode 100644 web/nextjs-headless-strapi/files/src/hooks/usePosts.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/lib/clients/strapi.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/lib/config.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/lib/graphql.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/lib/logger.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/lib/posts.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/lib/rate-limit.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/lib/site-options.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/lib/utils.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/lib/wordpress-config.ts
+ create mode 100644 web/nextjs-headless-strapi/files/src/middleware.ts
+ create mode 100644 web/nextjs-headless-strapi/files/tailwind.config.ts
+ create mode 100644 web/nextjs-headless-strapi/files/tsconfig.json
+ create mode 100644 web/nextjs-headless-strapi/files/types/gtag.d.ts
+ create mode 100644 web/nextjs-headless-strapi/files/types/next-auth.d.ts
+ create mode 100644 web/nextjs-headless-strapi/files/warm-cache.mjs
+ create mode 100644 web/nextjs-headless-strapi/variant.json
+ create mode 100644 web/nextjs-headless-wp-cms/files/.gitignore
+ create mode 100644 web/nextjs-headless-wp-cms/files/components.json
+ create mode 100644 web/nextjs-headless-wp-cms/files/eslint.config.mjs
+ create mode 100644 web/nextjs-headless-wp-cms/files/next.config.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/package.json
+ create mode 100644 web/nextjs-headless-wp-cms/files/postcss.config.mjs
+ create mode 100644 web/nextjs-headless-wp-cms/files/public/file.svg
+ create mode 100644 web/nextjs-headless-wp-cms/files/public/globe.svg
+ create mode 100644 web/nextjs-headless-wp-cms/files/public/manifest.json
+ create mode 100644 web/nextjs-headless-wp-cms/files/public/next.svg
+ create mode 100644 web/nextjs-headless-wp-cms/files/public/og-image.svg
+ create mode 100644 web/nextjs-headless-wp-cms/files/public/vercel.svg
+ create mode 100644 web/nextjs-headless-wp-cms/files/public/window.svg
+ create mode 100644 web/nextjs-headless-wp-cms/files/sentry.client.config.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/sentry.edge.config.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/sentry.server.config.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/about/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/accessibility/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/api/articles/[slug]/route.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/api/articles/route.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/api/auth/[...nextauth]/route.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/api/contact/submit/route.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/api/newsletter/subscribe/route.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/api/resend-verification/route.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/api/verify-email/route.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/article/[category]/[subCategory]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/article/[category]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/article/[slug]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/articles/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/blog/[category]/[subCategory]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/blog/[category]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/blog/[slug]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/blog/category/[slug]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/blog/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/contact/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/faq/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/favicon.ico
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/forgot-password/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/globals.css
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/layout.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/login/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/privacy/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/resend-verification/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/reset-password/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/signup/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/terms/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/app/verify-email/page.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/cookie-consent-banner.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/footer.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/homepage/cms-ecommerce-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/homepage/cms-only-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/homepage/ecommerce-cms-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/homepage/ecommerce-only-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/homepage/hero.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/homepage/index.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/navbar.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/search-suggestions.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/session-provider.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/accordion.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/alert-dialog.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/alert.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/badge.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/button.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/card.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/dialog.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/dropdown-menu.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/form.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/input.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/label.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/select.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/separator.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/sheet.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/skeleton.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/star-rating.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/switch.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/tabs.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/components/ui/textarea.tsx
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/hooks/usePosts.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/lib/config.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/lib/graphql.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/lib/logger.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/lib/posts.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/lib/rate-limit.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/lib/site-options.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/lib/utils.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/lib/wordpress-config.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/src/middleware.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/tailwind.config.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/tsconfig.json
+ create mode 100644 web/nextjs-headless-wp-cms/files/types/gtag.d.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/types/next-auth.d.ts
+ create mode 100644 web/nextjs-headless-wp-cms/files/warm-cache.mjs
+ create mode 100644 web/nextjs-headless-wp-cms/variant.json
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/.gitignore
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/components.json
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/eslint.config.mjs
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/next.config.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/package.json
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/postcss.config.mjs
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/public/file.svg
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/public/globe.svg
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/public/manifest.json
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/public/next.svg
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/public/og-image.svg
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/public/vercel.svg
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/public/window.svg
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/sentry.client.config.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/sentry.edge.config.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/sentry.server.config.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/about/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/accessibility/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/auth/[...nextauth]/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/calculate-shipping/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/calculate-tax/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/check-price-drops/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/contact/submit/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/create-payment-intent/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/email/order-confirmation/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/newsletter/subscribe/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/payment-methods/[id]/default/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/payment-methods/[id]/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/payment-methods/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/resend-verification/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/reviews/submit/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/api/verify-email/route.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/cart/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/checkout/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/contact/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/faq/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/favicon.ico
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/forgot-password/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/globals.css
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/layout.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/login/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/my-account/addresses/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/my-account/details/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/my-account/notifications/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/my-account/orders/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/my-account/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/my-account/payment-methods/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/my-account/settings/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/my-account/wishlist/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/order-confirmation/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/privacy/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/products/ProductsFilter.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/products/[category]/[subCategory]/[slug]/ProductDetailClient.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/products/[category]/[subCategory]/[slug]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/products/categories/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/products/new-arrivals/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/products/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/products/sale/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/resend-verification/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/reset-password/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/signup/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/terms/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/app/verify-email/page.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/add-payment-method-form.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/cart-drawer.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/cart-hydration.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/cookie-consent-banner.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/coupon-input.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/footer.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/homepage/cms-ecommerce-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/homepage/cms-only-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/homepage/ecommerce-cms-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/homepage/ecommerce-only-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/homepage/hero.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/homepage/index.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/navbar.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/price-drop-notifications.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/product-card.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/review-card.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/review-form.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/reviews-section.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/search-suggestions.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/session-provider.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/stripe-provider.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/accordion.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/alert-dialog.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/alert.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/badge.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/button.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/card.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/dialog.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/dropdown-menu.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/form.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/input.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/label.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/select.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/separator.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/sheet.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/skeleton.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/star-rating.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/switch.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/tabs.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/ui/textarea.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/components/wishlist-button.tsx
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/auth-woocommerce.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/config.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/customer-api.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/graphql.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/logger.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/orders.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/rate-limit.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/shipping-service.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/site-options.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/stripe-server.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/stripe.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/tax-service.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/utils.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/woocommerce.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/lib/wordpress-config.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/middleware.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/src/store/cart.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/tailwind.config.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/tsconfig.json
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/types/gtag.d.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/types/next-auth.d.ts
+ create mode 100644 web/nextjs-headless-wp-ecommerce/files/warm-cache.mjs
+ create mode 100644 web/nextjs-headless-wp-ecommerce/variant.json
+ create mode 100644 web/nextjs-headless-wp-full/files/.gitignore
+ create mode 100644 web/nextjs-headless-wp-full/files/.gpp/CONTENT_ROUTES.md
+ create mode 100644 web/nextjs-headless-wp-full/files/components.json
+ create mode 100644 web/nextjs-headless-wp-full/files/eslint.config.mjs
+ create mode 100644 web/nextjs-headless-wp-full/files/next.config.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/package.json
+ create mode 100644 web/nextjs-headless-wp-full/files/postcss.config.mjs
+ create mode 100644 web/nextjs-headless-wp-full/files/public/file.svg
+ create mode 100644 web/nextjs-headless-wp-full/files/public/globe.svg
+ create mode 100644 web/nextjs-headless-wp-full/files/public/manifest.json
+ create mode 100644 web/nextjs-headless-wp-full/files/public/next.svg
+ create mode 100644 web/nextjs-headless-wp-full/files/public/og-image.svg
+ create mode 100644 web/nextjs-headless-wp-full/files/public/vercel.svg
+ create mode 100644 web/nextjs-headless-wp-full/files/public/window.svg
+ create mode 100644 web/nextjs-headless-wp-full/files/sentry.client.config.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/sentry.edge.config.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/sentry.server.config.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/about/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/accessibility/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/articles/[slug]/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/articles/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/auth/[...nextauth]/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/calculate-shipping/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/calculate-tax/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/check-price-drops/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/contact/submit/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/create-payment-intent/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/email/order-confirmation/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/newsletter/subscribe/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/payment-methods/[id]/default/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/payment-methods/[id]/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/payment-methods/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/resend-verification/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/reviews/submit/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/api/verify-email/route.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/article/[...slug]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/articles/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/blog/[...slug]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/blog/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/cart/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/checkout/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/contact/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/faq/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/favicon.ico
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/forgot-password/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/globals.css
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/layout.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/login/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/my-account/addresses/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/my-account/details/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/my-account/notifications/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/my-account/orders/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/my-account/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/my-account/payment-methods/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/my-account/settings/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/my-account/wishlist/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/order-confirmation/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/privacy/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/products/ProductsFilter.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/products/[category]/[subCategory]/[slug]/ProductDetailClient.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/products/[category]/[subCategory]/[slug]/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/products/categories/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/products/new-arrivals/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/products/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/products/sale/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/resend-verification/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/reset-password/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/signup/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/terms/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/app/verify-email/page.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/add-payment-method-form.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/cart-drawer.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/cart-hydration.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/cookie-consent-banner.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/coupon-input.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/footer.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/homepage/cms-ecommerce-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/homepage/cms-only-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/homepage/ecommerce-cms-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/homepage/ecommerce-only-homepage.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/homepage/hero.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/homepage/index.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/navbar.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/price-drop-notifications.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/product-card.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/review-card.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/review-form.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/reviews-section.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/search-suggestions.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/session-provider.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/stripe-provider.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/accordion.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/alert-dialog.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/alert.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/badge.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/button.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/card.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/dialog.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/dropdown-menu.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/form.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/input.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/label.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/select.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/separator.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/sheet.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/skeleton.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/star-rating.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/switch.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/tabs.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/ui/textarea.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/components/wishlist-button.tsx
+ create mode 100644 web/nextjs-headless-wp-full/files/src/hooks/usePosts.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/admin-settings.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/auth-woocommerce.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/config.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/customer-api.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/email/resend.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/email/templates/order-confirmation.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/graphql.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/logger.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/orders.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/posts.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/rate-limit.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/shipping-service.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/site-options.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/stripe-server.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/stripe.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/tax-service.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/utils.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/woocommerce.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/lib/wordpress-config.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/middleware.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/src/store/cart.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/tailwind.config.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/tsconfig.json
+ create mode 100644 web/nextjs-headless-wp-full/files/types/gtag.d.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/types/next-auth.d.ts
+ create mode 100644 web/nextjs-headless-wp-full/files/warm-cache.mjs
+ create mode 100644 web/nextjs-headless-wp-full/variant.json
+ create mode 100644 web/nextjs-landing/files/next.config.js
+ create mode 100644 web/nextjs-landing/files/package.json
+ create mode 100644 web/nextjs-landing/files/postcss.config.js
+ create mode 100644 web/nextjs-landing/files/public/og-image.svg
+ create mode 100644 web/nextjs-landing/files/src/app/globals.css
+ create mode 100644 web/nextjs-landing/files/src/app/layout.tsx
+ create mode 100644 web/nextjs-landing/files/src/app/page.tsx
+ create mode 100644 web/nextjs-landing/files/src/lib/utils.ts
+ create mode 100644 web/nextjs-landing/files/tailwind.config.ts
+ create mode 100644 web/nextjs-landing/files/tsconfig.json
+ create mode 100644 web/nextjs-landing/variant.json
+ create mode 100644 web/nextjs-marketing/files/.gitignore
+ create mode 100644 web/nextjs-marketing/files/README.md
+ create mode 100644 web/nextjs-marketing/files/next.config.ts
+ create mode 100644 web/nextjs-marketing/files/package.json
+ create mode 100644 web/nextjs-marketing/files/postcss.config.mjs
+ create mode 100644 web/nextjs-marketing/files/public/og-image.svg
+ create mode 100644 web/nextjs-marketing/files/src/app/about/page.tsx
+ create mode 100644 web/nextjs-marketing/files/src/app/api/health/route.ts
+ create mode 100644 web/nextjs-marketing/files/src/app/contact/page.tsx
+ create mode 100644 web/nextjs-marketing/files/src/app/globals.css
+ create mode 100644 web/nextjs-marketing/files/src/app/layout.tsx
+ create mode 100644 web/nextjs-marketing/files/src/app/page.tsx
+ create mode 100644 web/nextjs-marketing/files/src/app/privacy/page.tsx
+ create mode 100644 web/nextjs-marketing/files/src/app/terms/page.tsx
+ create mode 100644 web/nextjs-marketing/files/src/components/Search.tsx
+ create mode 100644 web/nextjs-marketing/files/src/components/site-footer.tsx
+ create mode 100644 web/nextjs-marketing/files/src/components/site-header.tsx
+ create mode 100644 web/nextjs-marketing/files/src/components/ui/card.tsx
+ create mode 100644 web/nextjs-marketing/files/src/lib/clients/api.ts
+ create mode 100644 web/nextjs-marketing/files/src/lib/clients/graphql.ts
+ create mode 100644 web/nextjs-marketing/files/src/lib/clients/wp.ts
+ create mode 100644 web/nextjs-marketing/files/src/lib/env.ts
+ create mode 100644 web/nextjs-marketing/files/src/lib/http.ts
+ create mode 100644 web/nextjs-marketing/files/tailwind.config.ts
+ create mode 100644 web/nextjs-marketing/files/tsconfig.json
+ create mode 100644 web/nextjs-marketing/variant.json
+ create mode 100644 web/nextjs-saas-dashboard/files/.gitignore
+ create mode 100644 web/nextjs-saas-dashboard/files/README.md
+ create mode 100644 web/nextjs-saas-dashboard/files/components.json
+ create mode 100644 web/nextjs-saas-dashboard/files/env.example.txt
+ create mode 100644 web/nextjs-saas-dashboard/files/eslint.config.mjs
+ create mode 100644 web/nextjs-saas-dashboard/files/next.config.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/package.json
+ create mode 100644 web/nextjs-saas-dashboard/files/postcss.config.mjs
+ create mode 100644 web/nextjs-saas-dashboard/files/public/og-image.svg
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/admin/billing/page.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/admin/team/page.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/api/auth/[...nextauth]/route.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/api/health/route.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/dashboard/page.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/globals.css
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/layout.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/login/page.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/page.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/register/page.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/settings/page.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/app/settings/profile/page.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/auth/index.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/auth/login-form.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/auth/protected-route.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/auth/register-form.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/data/data-table.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/data/empty-state.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/data/index.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/data/loading.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/data/pagination.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/data/search-input.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/feedback/index.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/feedback/toast.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/feedback/toaster.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/forms/checkbox.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/forms/form.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/forms/index.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/forms/switch.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/forms/textarea.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/layout/breadcrumbs.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/layout/index.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/layout/nav.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/layout/page-header.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/layout/sidebar.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/providers.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/session-provider.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/ui/badge.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/ui/button.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/ui/card.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/ui/dialog.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/ui/input.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/ui/label.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/ui/select.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/ui/tabs.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/components/ui/tooltip.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/contexts/AuthContext.tsx
+ create mode 100644 web/nextjs-saas-dashboard/files/src/hooks/index.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/hooks/use-debounce.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/hooks/use-local-storage.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/hooks/use-pagination.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/hooks/use-toast.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/lib/api.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/lib/auth-config.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/lib/config.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/lib/graphql.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/lib/rate-limit.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/src/lib/utils.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/tailwind.config.ts
+ create mode 100644 web/nextjs-saas-dashboard/files/tsconfig.json
+ create mode 100644 web/nextjs-saas-dashboard/files/types/next-auth.d.ts
+ create mode 100644 web/nextjs-saas-dashboard/variant.json
+ create mode 100644 web/sveltekit-admin-dashboard/files/.gitignore
+ create mode 100644 web/sveltekit-admin-dashboard/files/env.example.txt
+ create mode 100644 web/sveltekit-admin-dashboard/files/package.json
+ create mode 100644 web/sveltekit-admin-dashboard/files/postcss.config.js
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/app.css
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/app.html
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/data/DataTable.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/data/Pagination.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/data/StatsCard.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/data/index.ts
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/layout/Header.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/layout/Sidebar.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/layout/index.ts
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/ui/Badge.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/ui/Button.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/ui/Card.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/ui/Input.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/components/ui/index.ts
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/config.ts
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/stores/auth.ts
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/lib/utils.ts
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/routes/admin/+layout.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/routes/admin/+page.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/routes/admin/analytics/+page.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/routes/admin/settings/+page.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/routes/admin/users/+page.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/src/routes/login/+page.svelte
+ create mode 100644 web/sveltekit-admin-dashboard/files/static/favicon.png
+ create mode 100644 web/sveltekit-admin-dashboard/files/svelte.config.js
+ create mode 100644 web/sveltekit-admin-dashboard/files/tailwind.config.js
+ create mode 100644 web/sveltekit-admin-dashboard/files/tsconfig.json
+ create mode 100644 web/sveltekit-admin-dashboard/files/vite.config.ts
+ create mode 100644 web/sveltekit-admin-dashboard/variant.json
+ create mode 100644 web/sveltekit-devtool-site/files/.gitignore
+ create mode 100644 web/sveltekit-devtool-site/files/package.json
+ create mode 100644 web/sveltekit-devtool-site/files/postcss.config.js
+ create mode 100644 web/sveltekit-devtool-site/files/src/app.css
+ create mode 100644 web/sveltekit-devtool-site/files/src/app.html
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/components/CodeBlock.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/components/DocsSidebar.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/components/Features.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/components/Footer.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/components/Header.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/components/Hero.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/components/Search.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/components/ThemeToggle.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/components/index.ts
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/layouts/DocsLayout.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/lib/utils.ts
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/docs/+page.md
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/docs/api/+page.md
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/docs/commands/+page.md
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/docs/configuration/+page.md
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/docs/examples/+page.md
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/docs/installation/+page.md
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/docs/plugins/+page.md
+ create mode 100644 web/sveltekit-devtool-site/files/src/routes/docs/quickstart/+page.md
+ create mode 100644 web/sveltekit-devtool-site/files/static/favicon.png
+ create mode 100644 web/sveltekit-devtool-site/files/svelte.config.js
+ create mode 100644 web/sveltekit-devtool-site/files/tailwind.config.js
+ create mode 100644 web/sveltekit-devtool-site/files/tsconfig.json
+ create mode 100644 web/sveltekit-devtool-site/files/vite.config.ts
+ create mode 100644 web/sveltekit-devtool-site/variant.json
+ create mode 100644 web/sveltekit-headless-strapi/files/.gitignore
+ create mode 100644 web/sveltekit-headless-strapi/files/env.example.txt
+ create mode 100644 web/sveltekit-headless-strapi/files/package.json
+ create mode 100644 web/sveltekit-headless-strapi/files/postcss.config.js
+ create mode 100644 web/sveltekit-headless-strapi/files/src/app.css
+ create mode 100644 web/sveltekit-headless-strapi/files/src/app.html
+ create mode 100644 web/sveltekit-headless-strapi/files/src/lib/components/blog/ArticleCard.svelte
+ create mode 100644 web/sveltekit-headless-strapi/files/src/lib/components/blog/Pagination.svelte
+ create mode 100644 web/sveltekit-headless-strapi/files/src/lib/components/layout/Footer.svelte
+ create mode 100644 web/sveltekit-headless-strapi/files/src/lib/components/layout/Header.svelte
+ create mode 100644 web/sveltekit-headless-strapi/files/src/lib/config.ts
+ create mode 100644 web/sveltekit-headless-strapi/files/src/lib/strapi.ts
+ create mode 100644 web/sveltekit-headless-strapi/files/src/lib/utils.ts
+ create mode 100644 web/sveltekit-headless-strapi/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-headless-strapi/files/src/routes/+page.server.ts
+ create mode 100644 web/sveltekit-headless-strapi/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-headless-strapi/files/src/routes/blog/+page.server.ts
+ create mode 100644 web/sveltekit-headless-strapi/files/src/routes/blog/+page.svelte
+ create mode 100644 web/sveltekit-headless-strapi/files/src/routes/blog/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-strapi/files/src/routes/blog/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-strapi/files/src/routes/category/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-strapi/files/src/routes/category/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-strapi/files/static/favicon.png
+ create mode 100644 web/sveltekit-headless-strapi/files/svelte.config.js
+ create mode 100644 web/sveltekit-headless-strapi/files/tailwind.config.js
+ create mode 100644 web/sveltekit-headless-strapi/files/tsconfig.json
+ create mode 100644 web/sveltekit-headless-strapi/files/vite.config.ts
+ create mode 100644 web/sveltekit-headless-strapi/variant.json
+ create mode 100644 web/sveltekit-headless-wp-cms/files/.gitignore
+ create mode 100644 web/sveltekit-headless-wp-cms/files/env.example.txt
+ create mode 100644 web/sveltekit-headless-wp-cms/files/package.json
+ create mode 100644 web/sveltekit-headless-wp-cms/files/postcss.config.js
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/app.css
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/app.html
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/lib/components/blog/Pagination.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/lib/components/blog/PostCard.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/lib/components/layout/Footer.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/lib/components/layout/Header.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/lib/config.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/lib/graphql.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/lib/utils.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/lib/wordpress.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/blog/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/blog/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/blog/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/blog/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/category/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/category/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/tag/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/files/src/routes/tag/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-cms/files/static/favicon.png
+ create mode 100644 web/sveltekit-headless-wp-cms/files/svelte.config.js
+ create mode 100644 web/sveltekit-headless-wp-cms/files/tailwind.config.js
+ create mode 100644 web/sveltekit-headless-wp-cms/files/tsconfig.json
+ create mode 100644 web/sveltekit-headless-wp-cms/files/vite.config.ts
+ create mode 100644 web/sveltekit-headless-wp-cms/variant.json
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/.gitignore
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/env.example.txt
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/package.json
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/postcss.config.js
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/app.css
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/app.html
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/lib/components/layout/Footer.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/lib/components/layout/Header.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/lib/components/product/ProductCard.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/lib/config.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/lib/graphql.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/lib/stores/cart.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/lib/utils.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/lib/woocommerce.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/cart/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/category/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/category/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/checkout/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/products/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/products/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/products/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/src/routes/products/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/static/favicon.png
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/svelte.config.js
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/tailwind.config.js
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/tsconfig.json
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/files/vite.config.ts
+ create mode 100644 web/sveltekit-headless-wp-ecommerce/variant.json
+ create mode 100644 web/sveltekit-headless-wp-full/files/.gitignore
+ create mode 100644 web/sveltekit-headless-wp-full/files/env.example.txt
+ create mode 100644 web/sveltekit-headless-wp-full/files/package.json
+ create mode 100644 web/sveltekit-headless-wp-full/files/postcss.config.js
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/app.css
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/app.html
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/components/blog/Pagination.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/components/blog/PostCard.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/components/layout/Footer.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/components/layout/Header.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/components/product/ProductCard.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/config.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/graphql.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/stores/cart.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/utils.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/woocommerce.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/lib/wordpress.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/blog/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/blog/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/blog/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/blog/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/cart/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/category/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/category/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/products/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/products/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/products/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/products/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/tag/[slug]/+page.server.ts
+ create mode 100644 web/sveltekit-headless-wp-full/files/src/routes/tag/[slug]/+page.svelte
+ create mode 100644 web/sveltekit-headless-wp-full/files/static/favicon.png
+ create mode 100644 web/sveltekit-headless-wp-full/files/svelte.config.js
+ create mode 100644 web/sveltekit-headless-wp-full/files/tailwind.config.js
+ create mode 100644 web/sveltekit-headless-wp-full/files/tsconfig.json
+ create mode 100644 web/sveltekit-headless-wp-full/files/vite.config.ts
+ create mode 100644 web/sveltekit-headless-wp-full/variant.json
+ create mode 100644 web/sveltekit-landing/files/.gitignore
+ create mode 100644 web/sveltekit-landing/files/README.md
+ create mode 100644 web/sveltekit-landing/files/package.json
+ create mode 100644 web/sveltekit-landing/files/postcss.config.js
+ create mode 100644 web/sveltekit-landing/files/src/app.css
+ create mode 100644 web/sveltekit-landing/files/src/app.html
+ create mode 100644 web/sveltekit-landing/files/src/lib/utils.ts
+ create mode 100644 web/sveltekit-landing/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-landing/files/src/routes/+layout.ts
+ create mode 100644 web/sveltekit-landing/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-landing/files/static/og-image.svg
+ create mode 100644 web/sveltekit-landing/files/svelte.config.js
+ create mode 100644 web/sveltekit-landing/files/tailwind.config.js
+ create mode 100644 web/sveltekit-landing/files/tsconfig.json
+ create mode 100644 web/sveltekit-landing/files/vite.config.ts
+ create mode 100644 web/sveltekit-landing/variant.json
+ create mode 100644 web/sveltekit-marketing/files/.gitignore
+ create mode 100644 web/sveltekit-marketing/files/README.md
+ create mode 100644 web/sveltekit-marketing/files/package.json
+ create mode 100644 web/sveltekit-marketing/files/postcss.config.js
+ create mode 100644 web/sveltekit-marketing/files/src/app.css
+ create mode 100644 web/sveltekit-marketing/files/src/app.html
+ create mode 100644 web/sveltekit-marketing/files/src/lib/clients/api.ts
+ create mode 100644 web/sveltekit-marketing/files/src/lib/components/Card.svelte
+ create mode 100644 web/sveltekit-marketing/files/src/lib/components/Search.svelte
+ create mode 100644 web/sveltekit-marketing/files/src/lib/components/SiteFooter.svelte
+ create mode 100644 web/sveltekit-marketing/files/src/lib/components/SiteHeader.svelte
+ create mode 100644 web/sveltekit-marketing/files/src/lib/env.ts
+ create mode 100644 web/sveltekit-marketing/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-marketing/files/src/routes/+layout.ts
+ create mode 100644 web/sveltekit-marketing/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-marketing/files/src/routes/about/+page.svelte
+ create mode 100644 web/sveltekit-marketing/files/src/routes/api/health/+server.ts
+ create mode 100644 web/sveltekit-marketing/files/src/routes/contact/+page.svelte
+ create mode 100644 web/sveltekit-marketing/files/src/routes/privacy/+page.svelte
+ create mode 100644 web/sveltekit-marketing/files/src/routes/terms/+page.svelte
+ create mode 100644 web/sveltekit-marketing/files/static/og-image.svg
+ create mode 100644 web/sveltekit-marketing/files/svelte.config.js
+ create mode 100644 web/sveltekit-marketing/files/tailwind.config.js
+ create mode 100644 web/sveltekit-marketing/files/tsconfig.json
+ create mode 100644 web/sveltekit-marketing/files/vite.config.ts
+ create mode 100644 web/sveltekit-marketing/variant.json
+ create mode 100644 web/sveltekit-saas-dashboard/files/.gitignore
+ create mode 100644 web/sveltekit-saas-dashboard/files/env.example.txt
+ create mode 100644 web/sveltekit-saas-dashboard/files/package.json
+ create mode 100644 web/sveltekit-saas-dashboard/files/postcss.config.js
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/app.css
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/app.html
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/data/StatsCard.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/data/index.ts
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/layout/Header.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/layout/Sidebar.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/layout/index.ts
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/ui/Badge.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/ui/Button.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/ui/Card.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/ui/Input.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/components/ui/index.ts
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/config.ts
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/stores/auth.ts
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/lib/utils.ts
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/(app)/+layout.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/(app)/admin/billing/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/(app)/admin/team/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/(app)/analytics/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/(app)/dashboard/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/(app)/profile/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/(app)/projects/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/(app)/settings/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/login/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/src/routes/register/+page.svelte
+ create mode 100644 web/sveltekit-saas-dashboard/files/static/favicon.png
+ create mode 100644 web/sveltekit-saas-dashboard/files/svelte.config.js
+ create mode 100644 web/sveltekit-saas-dashboard/files/tailwind.config.js
+ create mode 100644 web/sveltekit-saas-dashboard/files/tsconfig.json
+ create mode 100644 web/sveltekit-saas-dashboard/files/vite.config.ts
+ create mode 100644 web/sveltekit-saas-dashboard/variant.json
+ create mode 100644 web/sveltekit-webapp/files/.gitignore
+ create mode 100644 web/sveltekit-webapp/files/README.md
+ create mode 100644 web/sveltekit-webapp/files/package.json
+ create mode 100644 web/sveltekit-webapp/files/postcss.config.js
+ create mode 100644 web/sveltekit-webapp/files/src/app.css
+ create mode 100644 web/sveltekit-webapp/files/src/app.html
+ create mode 100644 web/sveltekit-webapp/files/src/lib/components/layout/navbar.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/lib/components/layout/sidebar.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/lib/components/ui/button.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/lib/components/ui/card.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/lib/components/ui/input.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/lib/components/ui/label.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/lib/utils.ts
+ create mode 100644 web/sveltekit-webapp/files/src/routes/+layout.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/routes/+page.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/routes/dashboard/+page.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/routes/settings/+page.svelte
+ create mode 100644 web/sveltekit-webapp/files/src/routes/tools/+page.svelte
+ create mode 100644 web/sveltekit-webapp/files/svelte.config.js
+ create mode 100644 web/sveltekit-webapp/files/tailwind.config.js
+ create mode 100644 web/sveltekit-webapp/files/tsconfig.json
+ create mode 100644 web/sveltekit-webapp/files/vite.config.ts
+ create mode 100644 web/sveltekit-webapp/variant.json
+ create mode 100644 worker/celery-python/files/.env.example
+ create mode 100644 worker/celery-python/files/.gitignore
+ create mode 100644 worker/celery-python/files/Dockerfile
+ create mode 100644 worker/celery-python/files/README.md
+ create mode 100644 worker/celery-python/files/app/__init__.py
+ create mode 100644 worker/celery-python/files/app/celery_app.py
+ create mode 100644 worker/celery-python/files/app/core/__init__.py
+ create mode 100644 worker/celery-python/files/app/core/config.py
+ create mode 100644 worker/celery-python/files/app/tasks/__init__.py
+ create mode 100644 worker/celery-python/files/app/tasks/example_tasks.py
+ create mode 100644 worker/celery-python/files/docker-compose.yml
+ create mode 100644 worker/celery-python/files/pyproject.toml
+ create mode 100644 worker/celery-python/variant.json
+ create mode 100644 worker/rust-tokio/files/.env.example
+ create mode 100644 worker/rust-tokio/files/.gitignore
+ create mode 100644 worker/rust-tokio/files/Cargo.toml
+ create mode 100644 worker/rust-tokio/files/Dockerfile
+ create mode 100644 worker/rust-tokio/files/docker-compose.yml
+ create mode 100644 worker/rust-tokio/files/src/config.rs
+ create mode 100644 worker/rust-tokio/files/src/health.rs
+ create mode 100644 worker/rust-tokio/files/src/jobs/example.rs
+ create mode 100644 worker/rust-tokio/files/src/jobs/mod.rs
+ create mode 100644 worker/rust-tokio/files/src/main.rs
+ create mode 100644 worker/rust-tokio/files/src/queue/mod.rs
+ create mode 100644 worker/rust-tokio/variant.json
+
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git push -u origin main</summary>
+
+```bash
+git push -u origin main
+```
+
+```
+To https://github.com/grasshopperpebbles/gpp-templates.git
+ * [new branch]      main -&gt; main
+branch 'main' set up to track 'origin/main'.
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Verifying the final git status:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **run_terminal_cmd** • Run command: git status</summary>
+
+```bash
+git status
+```
+
+```
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+All files have been added, committed, and pushed to GitHub.
+
+**Summary:**
+- **1,207 files** committed
+- **108,714 insertions** added
+- Commit message: "Initial commit: Add gpp-templates project structure"
+- Pushed to `origin/main`
+- Working tree is clean and up to date with the remote
+
+The repository is now fully synced with GitHub at `https://github.com/grasshopperpebbles/gpp-templates.git`. All project files (add-ons, api, cms, desktop, mobile, python, web, and worker templates) are now in version control.
+
+---
+
