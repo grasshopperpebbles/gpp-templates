@@ -81,6 +81,7 @@ services:
       - ./public:/opt/app/public
     ports:
       - "${STRAPI_PORT:-1338}:1337"
+      - "5173:5173"  # Vite dev server for admin panel
     networks:
       - strapi-dev-network
     healthcheck:
