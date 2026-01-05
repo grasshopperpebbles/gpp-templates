@@ -1,0 +1,21 @@
+kind: recipe
+id: sveltekit-storyblok
+version: 1.0.0
+name: SvelteKit + Storyblok
+description: Headless CMS with Storyblok (SaaS) and SvelteKit frontend
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/sveltekit-headless-storyblok
+    deployTarget: vercel
+
+adapters:
+  - id: sveltekit_to_storyblok
+    args:
+      webId: web
+
+installers:
+  - action: envSeed
+    args: { profile: dev }
+

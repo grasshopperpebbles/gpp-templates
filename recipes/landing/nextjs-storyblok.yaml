@@ -1,0 +1,21 @@
+kind: recipe
+id: nextjs-storyblok-landing
+version: 1.0.0
+name: Next.js + Storyblok Landing Page
+description: CMS-powered landing page with Storyblok for content management
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-headless-storyblok
+    deployTarget: vercel
+
+adapters:
+  - id: next_to_storyblok
+    args:
+      webId: web
+
+installers:
+  - action: envSeed
+    args: { profile: dev }
+

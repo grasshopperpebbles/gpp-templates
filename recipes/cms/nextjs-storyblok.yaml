@@ -1,0 +1,21 @@
+kind: recipe
+id: nextjs-storyblok
+version: 1.0.0
+name: Next.js + Storyblok
+description: Headless CMS with Storyblok (SaaS) and Next.js frontend
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-headless-storyblok
+    deployTarget: vercel
+
+adapters:
+  - id: next_to_storyblok
+    args:
+      webId: web
+
+installers:
+  - action: envSeed
+    args: { profile: dev }
+

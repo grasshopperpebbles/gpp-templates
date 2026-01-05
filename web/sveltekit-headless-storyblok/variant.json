@@ -1,0 +1,38 @@
+{
+  "name": "sveltekit-headless-storyblok",
+  "displayName": "SvelteKit Headless Storyblok - CMS",
+  "description": "SvelteKit frontend template for Storyblok headless CMS. Includes visual editor support, component-based content, and multilingual capabilities. Built with Svelte 5 runes.",
+  "platform": "web",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": [],
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Visual Editor integration",
+      "Component-based content blocks",
+      "Story management",
+      "Multilingual support",
+      "Real-time preview",
+      "SEO optimization",
+      "Responsive design",
+      "Dark mode support"
+    ],
+    "excluded": [
+      "Product catalog",
+      "Shopping cart",
+      "Checkout process",
+      "Payment processing",
+      "Order management",
+      "Customer accounts",
+      "E-commerce integration"
+    ]
+  },
+  "homepageType": "blog",
+  "routes": {
+    "cms": ["/blog", "/article", "/articles"],
+    "shared": ["/about", "/contact", "/privacy", "/terms"]
+  }
+}
+
