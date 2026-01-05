@@ -10,6 +10,12 @@ workspaces:
     pack: mobile/flutter-standalone
     deployTarget: app-store
 
+  - id: web
+    path: apps/web
+    pack: web/nextjs-app-landing
+    deployTarget: vercel
+    description: Marketing landing page for your mobile app
+
 installers:
   - action: envSeed
     args: { profile: dev }

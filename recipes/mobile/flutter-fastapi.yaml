@@ -15,6 +15,12 @@ workspaces:
     pack: python/fastapi
     deployTarget: railway
 
+  - id: web
+    path: apps/web
+    pack: web/nextjs-app-landing
+    deployTarget: vercel
+    description: Marketing landing page for your mobile app
+
 adapters:
   - id: flutter-to-fastapi
     args:

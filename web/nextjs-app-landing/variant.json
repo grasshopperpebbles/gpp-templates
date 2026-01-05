@@ -1,0 +1,58 @@
+{
+  "name": "nextjs-app-landing",
+  "description": "Marketing landing page for mobile apps with hero, features, screenshots carousel, testimonials, FAQ, and app store download buttons",
+  "features": [
+    "Responsive hero section with phone mockup",
+    "Feature highlights grid with icons",
+    "Screenshot carousel with Embla",
+    "Customer testimonials with ratings",
+    "FAQ accordion section",
+    "App Store and Play Store download buttons",
+    "Dark mode support",
+    "SEO optimized"
+  ],
+  "routes": [
+    "/"
+  ],
+  "dependencies": {
+    "required": [
+      "next",
+      "react",
+      "react-dom",
+      "tailwindcss",
+      "clsx",
+      "tailwind-merge",
+      "lucide-react",
+      "embla-carousel-react",
+      "embla-carousel-autoplay"
+    ]
+  },
+  "envVars": [
+    "NEXT_PUBLIC_APP_STORE_URL",
+    "NEXT_PUBLIC_PLAY_STORE_URL"
+  ],
+  "recommendedWith": ["mobile"],
+  "contentSchema": {
+    "APP_CONFIG": {
+      "name": "Your app name",
+      "tagline": "Short catchy tagline (5-10 words)",
+      "description": "Compelling description of benefits (1-2 sentences)"
+    },
+    "FEATURES": {
+      "count": "4-6 features",
+      "fields": ["icon", "title", "description"]
+    },
+    "SCREENSHOTS": {
+      "count": "3-5 screenshots",
+      "fields": ["src", "alt", "caption"]
+    },
+    "TESTIMONIALS": {
+      "count": "3 testimonials",
+      "fields": ["quote", "author", "role", "rating"]
+    },
+    "FAQ_ITEMS": {
+      "count": "4-6 questions",
+      "fields": ["question", "answer"]
+    }
+  }
+}
