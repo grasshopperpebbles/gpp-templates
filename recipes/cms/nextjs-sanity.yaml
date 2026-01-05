@@ -1,0 +1,27 @@
+kind: recipe
+id: nextjs-sanity
+version: 1.0.0
+name: Next.js + Sanity
+description: Real-time collaborative CMS with Sanity.io and Next.js frontend
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-headless-sanity
+    deployTarget: vercel
+
+  - id: cms
+    path: apps/cms
+    pack: cms/sanity-dev
+    deployTarget: vercel
+
+adapters:
+  - id: next_to_sanity
+    args:
+      webId: web
+      cmsId: cms
+
+installers:
+  - action: envSeed
+    args: { profile: dev }
+

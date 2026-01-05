@@ -1,0 +1,48 @@
+{
+  "name": "headless-sanity",
+  "displayName": "Headless Sanity - CMS",
+  "description": "Next.js frontend template for Sanity headless CMS. Includes blog, article, and content management features with GROQ queries and Portable Text support.",
+  "platform": "web",
+  "dependencies": {
+    "requires": ["cms"],
+    "requiresVariant": ["sanity-dev"],
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Blog routes (/blog, /article, /articles)",
+      "Content management",
+      "GROQ query client for Sanity",
+      "Portable Text rendering",
+      "Post categories and tags",
+      "Search functionality",
+      "SEO optimization",
+      "Responsive design",
+      "Dark mode support"
+    ],
+    "excluded": [
+      "Product catalog",
+      "Shopping cart",
+      "Checkout process",
+      "Payment processing",
+      "Order management",
+      "Customer accounts",
+      "E-commerce integration"
+    ]
+  },
+  "homepageType": "blog",
+  "routes": {
+    "cms": [
+      "/blog",
+      "/article",
+      "/articles"
+    ],
+    "shared": [
+      "/about",
+      "/contact",
+      "/privacy",
+      "/terms"
+    ]
+  }
+}
+

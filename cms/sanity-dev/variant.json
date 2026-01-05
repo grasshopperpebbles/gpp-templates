@@ -1,0 +1,23 @@
+{
+  "name": "sanity-dev",
+  "displayName": "Sanity Development",
+  "description": "Sanity Studio development instance for content management. Includes schema definitions and local Studio interface. Connects to Sanity Cloud backend.",
+  "platform": "cms",
+  "includes": [
+    "Sanity Studio",
+    "GROQ query support",
+    "Portable Text editor",
+    "Schema definitions",
+    "Local development server",
+    "Cloud-hosted content backend"
+  ],
+  "excludes": [
+    "Self-hosted backend",
+    "Database management",
+    "E-commerce features"
+  ],
+  "homepageType": "blog",
+  "dependencies": [],
+  "requires": []
+}
+

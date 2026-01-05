@@ -1,0 +1,27 @@
+kind: recipe
+id: nextjs-sanity-landing
+version: 1.0.0
+name: Next.js + Sanity Landing Page
+description: CMS-powered landing page with Sanity for content management
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-headless-sanity
+    deployTarget: vercel
+
+  - id: cms
+    path: apps/cms
+    pack: cms/sanity-dev
+    deployTarget: vercel
+
+adapters:
+  - id: next_to_sanity
+    args:
+      webId: web
+      cmsId: cms
+
+installers:
+  - action: envSeed
+    args: { profile: dev }
+

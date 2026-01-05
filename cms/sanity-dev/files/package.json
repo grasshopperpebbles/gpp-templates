@@ -1,0 +1,21 @@
+{
+  "name": "sanity-studio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "sanity dev",
+    "start": "sanity start",
+    "build": "sanity build",
+    "deploy": "sanity deploy"
+  },
+  "dependencies": {
+    "sanity": "^3.0.0",
+    "@sanity/vision": "^3.0.0"
+  },
+  "devDependencies": {
+    "@sanity/eslint-config-studio": "^3.0.0",
+    "@types/node": "^20",
+    "typescript": "^5.0.0"
+  }
+}
+
