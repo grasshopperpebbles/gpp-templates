@@ -1,0 +1,37 @@
+{
+  "name": "go-http",
+  "displayName": "Go HTTP API",
+  "description": "Go REST API template using standard library net/http with Go 1.22+ routing. Production-ready with structured logging, graceful shutdown, and Docker support.",
+  "platform": "api",
+  "runtime": "go",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": ["database/postgres", "database/mysql"]
+  },
+  "features": {
+    "included": [
+      "Go 1.22 standard library routing",
+      "Zero external framework dependencies",
+      "Structured logging (slog)",
+      "Graceful shutdown",
+      "Environment configuration",
+      "Health check endpoint",
+      "CORS middleware",
+      "Request logging middleware",
+      "Docker + docker-compose",
+      "Multi-stage Dockerfile",
+      "Makefile with common targets",
+      "Example CRUD endpoints"
+    ],
+    "excluded": [
+      "Database ORM (add GORM or sqlx separately)",
+      "Authentication (add separately)",
+      "OpenAPI/Swagger docs (add swaggo separately)"
+    ]
+  },
+  "homepageType": "api",
+  "routes": {
+    "shared": []
+  }
+}
