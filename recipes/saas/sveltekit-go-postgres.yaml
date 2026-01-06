@@ -1,0 +1,26 @@
+kind: recipe
+id: sveltekit-go-postgres
+version: 1.0.0
+name: SvelteKit + Go API + PostgreSQL
+description: Full-stack SaaS with Go HTTP backend and SvelteKit dashboard frontend
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/sveltekit-saas-dashboard
+    deployTarget: vercel
+
+  - id: api
+    path: apps/api
+    pack: api/go-http
+    deployTarget: railway
+
+adapters:
+  - id: sveltekit-to-go
+    args:
+      webId: web
+      apiId: api
+
+installers:
+  - action: envSeed
+    args: { profile: dev }

@@ -129,6 +129,7 @@ Recipes combine multiple templates into full-stack projects.
 |--------|-------------|
 | `saas/nextjs-go-postgres` | Next.js dashboard + Go API + PostgreSQL |
 | `saas/nextjs-fastapi-postgres` | Next.js dashboard + FastAPI + PostgreSQL |
+| `saas/sveltekit-go-postgres` | SvelteKit dashboard + Go API + PostgreSQL |
 
 ### CMS
 | Recipe | Description |
