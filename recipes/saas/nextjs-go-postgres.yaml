@@ -1,0 +1,26 @@
+kind: recipe
+id: nextjs-go-postgres
+version: 1.0.0
+name: Next.js + Go API + PostgreSQL
+description: Full-stack SaaS with Go HTTP backend and Next.js dashboard frontend
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-saas-dashboard
+    deployTarget: vercel
+
+  - id: api
+    path: apps/api
+    pack: api/go-http
+    deployTarget: railway
+
+adapters:
+  - id: nextjs-to-go
+    args:
+      webId: web
+      apiId: api
+
+installers:
+  - action: envSeed
+    args: { profile: dev }
