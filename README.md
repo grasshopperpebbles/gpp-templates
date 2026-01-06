@@ -158,3 +158,14 @@ Recipes combine multiple templates into full-stack projects.
 ```bash
 gpp init --recipe nextjs-go-postgres
 ```
+
+## Template Variables
+
+Templates can use placeholders that are replaced during project creation:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `{{PROJECT_SLUG}}` | Project name from CLI | `my-saas-app` |
+| `{{PLATFORM_SLUG}}` | Workspace ID from recipe | `api`, `web` |
+
+Essential for Go templates where module paths must match the project structure.
