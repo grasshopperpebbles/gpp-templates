@@ -54,6 +54,12 @@ gpp template install /path/to/gpp-templates/cms/cms-only --as cms/cms-only
 |----------|-------------|
 | `worker/celery-python` | Python Celery background worker |
 
+### API
+| Template | Description |
+|----------|-------------|
+| `api/go-http` | Go REST API using stdlib (no frameworks) |
+| `api/rust-axum` | Rust REST API using Axum framework |
+
 ### Python
 | Template | Description |
 |----------|-------------|
@@ -113,3 +119,41 @@ gpp template install /path/to/gpp-templates --all --force
 - Bundled templates: Inside GPP CLI package
 
 User-installed templates take precedence over bundled templates.
+
+## Recipes
+
+Recipes combine multiple templates into full-stack projects.
+
+### SaaS
+| Recipe | Description |
+|--------|-------------|
+| `saas/nextjs-go-postgres` | Next.js dashboard + Go API + PostgreSQL |
+| `saas/nextjs-fastapi-postgres` | Next.js dashboard + FastAPI + PostgreSQL |
+
+### CMS
+| Recipe | Description |
+|--------|-------------|
+| `cms/nextjs-strapi` | Next.js frontend + Strapi CMS |
+| `cms/nextjs-storyblok` | Next.js frontend + Storyblok CMS |
+| `cms/sveltekit-sanity` | SvelteKit frontend + Sanity CMS |
+| `cms/sveltekit-storyblok` | SvelteKit frontend + Storyblok CMS |
+
+### Landing
+| Recipe | Description |
+|--------|-------------|
+| `landing/nextjs-static` | Static Next.js landing page |
+| `landing/nextjs-strapi` | Next.js landing + Strapi CMS |
+| `landing/nextjs-sanity` | Next.js landing + Sanity CMS |
+| `landing/nextjs-storyblok` | Next.js landing + Storyblok CMS |
+
+### E-commerce
+| Recipe | Description |
+|--------|-------------|
+| `ecommerce/nextjs-woocommerce` | Next.js + WooCommerce |
+| `ecommerce/nextjs-woocommerce-wordpress` | Next.js + WooCommerce + WordPress CMS |
+
+### Usage
+
+```bash
+gpp init --recipe nextjs-go-postgres
+```
