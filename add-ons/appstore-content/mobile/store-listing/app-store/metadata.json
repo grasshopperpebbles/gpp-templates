@@ -1,0 +1,72 @@
+{
+  "name": "{{APP_NAME}}",
+  "subtitle": "",
+  "category": {
+    "primary": "",
+    "secondary": ""
+  },
+  "categories": [
+    "Books",
+    "Business",
+    "Developer Tools",
+    "Education",
+    "Entertainment",
+    "Finance",
+    "Food & Drink",
+    "Games",
+    "Graphics & Design",
+    "Health & Fitness",
+    "Lifestyle",
+    "Medical",
+    "Music",
+    "Navigation",
+    "News",
+    "Photo & Video",
+    "Productivity",
+    "Reference",
+    "Shopping",
+    "Social Networking",
+    "Sports",
+    "Travel",
+    "Utilities",
+    "Weather"
+  ],
+  "ageRating": "4+",
+  "ageRatingOptions": ["4+", "9+", "12+", "17+"],
+  "pricing": {
+    "type": "free",
+    "price": null,
+    "inAppPurchases": false,
+    "subscriptions": false
+  },
+  "availability": {
+    "countries": ["US", "CA", "GB", "AU", "DE", "FR", "JP"],
+    "releaseType": "manual",
+    "preOrder": false
+  },
+  "appStoreConnect": {
+    "bundleId": "com.yourcompany.{{APP_NAME_LOWER}}",
+    "sku": "{{APP_NAME_UPPER}}_IOS",
+    "appleId": ""
+  },
+  "support": {
+    "url": "https://yourwebsite.com/support",
+    "email": "support@yourcompany.com",
+    "phone": ""
+  },
+  "marketing": {
+    "url": "https://yourwebsite.com",
+    "privacyPolicyUrl": "https://yourwebsite.com/privacy"
+  },
+  "review": {
+    "notes": "Test account credentials if needed:\nEmail: \nPassword: ",
+    "contactInfo": {
+      "firstName": "",
+      "lastName": "",
+      "email": "",
+      "phone": ""
+    },
+    "demoAccountRequired": false,
+    "attachments": []
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "name": "firebase",
+  "displayName": "Firebase Backend",
+  "description": "Add Firebase for authentication, Firestore database, and Cloud Storage. Includes both client SDK and server-side Admin SDK.",
+  "version": "1.0.0",
+  "platforms": ["web"],
+  "variants": {
+    "web": ["webapp", "saas-dashboard", "admin-dashboard", "marketing", "landing", "devtool-site", "headless-strapi"]
+  },
+  "dependencies": {
+    "dependencies": {
+      "firebase": "^11.0.0",
+      "firebase-admin": "^13.0.0",
+      "server-only": "^0.0.1"
+    }
+  },
+  "files": {
+    "web": {
+      "lib/firebase/client.ts": "lib/firebase/client.ts",
+      "lib/firebase/admin.ts": "lib/firebase/admin.ts",
+      "lib/firebase/auth-context.tsx": "lib/firebase/auth-context.tsx",
+      "lib/firebase/db.ts": "lib/firebase/db.ts",
+      "lib/firebase/storage.ts": "lib/firebase/storage.ts",
+      "lib/firebase/middleware.ts": "lib/firebase/middleware.ts",
+      "middleware.ts": "middleware.ts",
+      ".env.firebase.example": ".env.firebase.example"
+    }
+  },
+  "envVars": [
+    "NEXT_PUBLIC_FIREBASE_API_KEY",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET",
+    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
+    "NEXT_PUBLIC_FIREBASE_APP_ID",
+    "FIREBASE_CLIENT_EMAIL",
+    "FIREBASE_PRIVATE_KEY"
+  ],
+  "instructions": {
+    "setup": [
+      "1. Create a Firebase project at https://console.firebase.google.com",
+      "2. Enable Authentication, Firestore, and Storage in Firebase Console",
+      "3. Copy your web app config to .env.local (NEXT_PUBLIC_* vars)",
+      "4. Generate a service account key for Admin SDK (FIREBASE_* private vars)",
+      "5. Run 'npm install' to install dependencies",
+      "6. Configure protected routes in middleware.ts as needed"
+    ],
+    "usage": [
+      "Client SDK: import { auth, db, storage } from '@/lib/firebase/client'",
+      "Admin SDK: import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin'",
+      "Auth Context: Wrap app with <AuthProvider> from '@/lib/firebase/auth-context'",
+      "Database: import { getDocument, addDocument } from '@/lib/firebase/db'",
+      "Storage: import { uploadFile, getFileUrl } from '@/lib/firebase/storage'",
+      "Sessions: import { createSessionCookie } from '@/lib/firebase/admin'"
+    ]
+  }
+}

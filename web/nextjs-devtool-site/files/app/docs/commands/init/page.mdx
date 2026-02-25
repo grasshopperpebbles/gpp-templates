@@ -1,0 +1,77 @@
+# gpp init
+
+Initialize a new GPP project with the standard directory structure.
+
+## Usage
+
+```bash
+gpp init <project-name>
+```
+
+## Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `project-name` | Name of the project directory to create | Yes |
+
+## What It Creates
+
+```
+project-name/
+├── .gpp/
+│   ├── config.json      # Project configuration
+│   ├── deploy.json      # Platform settings
+│   └── plans/           # Execution plans
+├── apps/                # Platform applications
+├── docs/                # Project documentation
+└── logs/                # Development logs
+```
+
+## Examples
+
+### Create a new project
+
+```bash
+gpp init my-saas
+cd my-saas
+```
+
+### Initialize in current directory
+
+```bash
+mkdir my-project
+cd my-project
+gpp init .
+```
+
+## Configuration Files
+
+### .gpp/config.json
+
+Stores project-level configuration:
+
+```json
+{
+  "name": "my-saas",
+  "version": "0.1.0"
+}
+```
+
+### .gpp/deploy.json
+
+Stores platform configurations:
+
+```json
+{
+  "platforms": {}
+}
+```
+
+## Next Steps
+
+After initializing, add platforms:
+
+```bash
+gpp add web saas-dashboard
+gpp add api fastapi
+```

@@ -1,0 +1,10 @@
+# Short Description
+# Character Limit: 80 characters
+# This appears in search results and the app listing header
+#
+# TIPS:
+# - Include your main keyword
+# - State the core benefit
+# - Be concise and compelling
+
+{{APP_NAME}} - [main benefit in remaining characters]

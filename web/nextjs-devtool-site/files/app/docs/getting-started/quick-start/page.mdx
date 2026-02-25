@@ -1,0 +1,98 @@
+# Quick Start
+
+This guide will walk you through creating a multi-platform project with GPP.
+
+## Create a Project
+
+```bash
+gpp init my-project
+cd my-project
+```
+
+This creates the GPP project structure:
+
+```
+my-project/
+├── .gpp/           # GPP configuration
+├── apps/           # Platform applications
+├── docs/           # Project documentation
+└── logs/           # Development logs
+```
+
+## Add a Web Platform
+
+```bash
+gpp add web
+```
+
+This scaffolds a Next.js application in `apps/web/`.
+
+### Available Web Variants
+
+- `webapp` - Generic Next.js app (default)
+- `saas-dashboard` - SaaS dashboard with auth
+- `admin-dashboard` - Admin panel
+- `marketing` - Marketing site
+- `devtool-site` - Documentation site
+
+Specify a variant:
+
+```bash
+gpp add web saas-dashboard
+```
+
+## Add an API Platform
+
+```bash
+gpp add api fastapi
+```
+
+This creates a FastAPI application in `apps/api/`.
+
+### Available API Variants
+
+- `fastapi` - Python FastAPI (default)
+- `express` - Node.js Express
+- `rust-axum` - Rust Axum
+
+## Add a Mobile Platform
+
+```bash
+gpp add mobile expo
+```
+
+### Available Mobile Variants
+
+- `expo` - React Native with Expo
+- `flutter-standalone` - Flutter standalone
+- `flutter-api-client` - Flutter with API client
+
+## Start Development
+
+Start any platform from the root:
+
+```bash
+# Start web
+gpp start web
+
+# Start API
+gpp start api
+
+# Start mobile
+gpp start mobile
+```
+
+Or navigate to the platform directory and just run:
+
+```bash
+cd apps/web
+gpp start
+```
+
+GPP auto-detects the current platform.
+
+## Next Steps
+
+- [Platforms](/docs/platforms) - Learn about all supported platforms
+- [Commands](/docs/commands/init) - Explore all GPP commands
+- [Templates](/docs/templates) - Use and create templates

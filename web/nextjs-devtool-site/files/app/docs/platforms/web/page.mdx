@@ -1,0 +1,103 @@
+# Web Platform
+
+The web platform uses Next.js for building modern web applications.
+
+## Variants
+
+### webapp (default)
+
+A generic Next.js application with App Router.
+
+```bash
+gpp add web
+# or
+gpp add web webapp
+```
+
+### saas-dashboard
+
+A SaaS dashboard with authentication, user management, and billing components.
+
+```bash
+gpp add web saas-dashboard
+```
+
+**Includes:**
+- Authentication (NextAuth.js)
+- Dashboard layout
+- User settings
+- Billing integration
+
+### admin-dashboard
+
+An administrative panel for managing data and users.
+
+```bash
+gpp add web admin-dashboard
+```
+
+**Includes:**
+- Admin layout
+- Data tables
+- CRUD interfaces
+- Role-based access
+
+### marketing
+
+A marketing website with landing pages and blog.
+
+```bash
+gpp add web marketing
+```
+
+**Includes:**
+- Landing page components
+- Blog with MDX
+- SEO optimization
+- Analytics integration
+
+### devtool-site
+
+A documentation site for developer tools and libraries.
+
+```bash
+gpp add web devtool-site
+```
+
+**Includes:**
+- Documentation layout
+- MDX support
+- Syntax highlighting
+- Dark mode
+
+## Configuration
+
+Web platform scripts in `.gpp/deploy.json`:
+
+```json
+{
+  "platforms": {
+    "web": {
+      "variant": "saas-dashboard",
+      "scripts": {
+        "start": "npm run dev",
+        "build": "npm run build",
+        "dev": "npm run dev"
+      }
+    }
+  }
+}
+```
+
+## Commands
+
+```bash
+# Start development server
+gpp start web
+
+# Build for production
+gpp build web
+
+# View logs
+gpp log web
+```

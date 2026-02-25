@@ -1,0 +1,88 @@
+# API Platform
+
+The API platform provides backend services using various frameworks.
+
+## Variants
+
+### fastapi (default)
+
+A Python FastAPI application with automatic OpenAPI documentation.
+
+```bash
+gpp add api
+# or
+gpp add api fastapi
+```
+
+**Includes:**
+- FastAPI framework
+- Pydantic models
+- SQLAlchemy ORM
+- Alembic migrations
+- OpenAPI/Swagger docs
+
+### express
+
+A Node.js Express application with TypeScript.
+
+```bash
+gpp add api express
+```
+
+**Includes:**
+- Express.js framework
+- TypeScript configuration
+- Prisma ORM
+- JWT authentication
+
+### rust-axum
+
+A Rust Axum application for high-performance APIs.
+
+```bash
+gpp add api rust-axum
+```
+
+**Includes:**
+- Axum framework
+- SQLx database
+- Tower middleware
+- OpenAPI generation
+
+## Configuration
+
+API platform scripts in `.gpp/deploy.json`:
+
+```json
+{
+  "platforms": {
+    "api": {
+      "variant": "fastapi",
+      "scripts": {
+        "start": "uvicorn main:app --reload",
+        "build": "pip install -r requirements.txt"
+      }
+    }
+  }
+}
+```
+
+## Commands
+
+```bash
+# Start development server
+gpp start api
+
+# Build/install dependencies
+gpp build api
+```
+
+## Connecting to Web
+
+Use `gpp wire` to connect your API to a web frontend:
+
+```bash
+gpp wire api web
+```
+
+This generates type-safe API clients and configures environment variables.

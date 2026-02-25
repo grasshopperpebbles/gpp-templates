@@ -1,0 +1,93 @@
+# Desktop Platform
+
+The desktop platform enables building cross-platform desktop applications using Electron or Tauri.
+
+## Variants
+
+### electron
+
+A desktop application using Electron with web technologies.
+
+```bash
+gpp add desktop electron
+```
+
+**Includes:**
+- Electron framework
+- React renderer
+- IPC communication
+- Auto-updater
+- Native menus
+
+### tauri
+
+A lightweight desktop application using Tauri with Rust backend.
+
+```bash
+gpp add desktop tauri
+```
+
+**Includes:**
+- Tauri framework
+- Rust backend
+- React/Vue frontend
+- Smaller bundle size
+- Better security
+
+## Configuration
+
+Desktop platform scripts in `.gpp/deploy.json`:
+
+```json
+{
+  "platforms": {
+    "desktop": {
+      "variant": "tauri",
+      "scripts": {
+        "start": "npm run tauri dev",
+        "build": "npm run tauri build"
+      }
+    }
+  }
+}
+```
+
+## Commands
+
+```bash
+# Start development
+gpp start desktop
+
+# Build for distribution
+gpp build desktop
+```
+
+## Electron vs Tauri
+
+| Feature | Electron | Tauri |
+|---------|----------|-------|
+| Bundle size | ~150MB | ~10MB |
+| Memory usage | Higher | Lower |
+| Backend | Node.js | Rust |
+| Web tech | Chromium | WebView |
+| Maturity | Established | Newer |
+
+## Building for Distribution
+
+### Electron
+
+```bash
+cd apps/desktop
+npm run make
+```
+
+Outputs installers for Windows, macOS, and Linux.
+
+### Tauri
+
+```bash
+cd apps/desktop
+npm run tauri build
+```
+
+Outputs native installers with smaller footprint.

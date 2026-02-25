@@ -1,0 +1,32 @@
+{
+  "name": "chrome-mv3",
+  "displayName": "Chrome Extension (Manifest V3)",
+  "description": "Chrome browser extension template using Manifest V3 with Vite and TypeScript. Includes content script, background service worker, and popup.",
+  "platform": "extension",
+  "runtime": "typescript",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Manifest V3 structure",
+      "Vite build with CRXJS plugin",
+      "TypeScript support",
+      "Content script template",
+      "Background service worker",
+      "Popup UI with React",
+      "Hot Module Replacement in dev",
+      "Chrome types included"
+    ],
+    "excluded": [
+      "Firefox support (use firefox-mv3 variant)",
+      "Chrome Web Store deployment automation"
+    ]
+  },
+  "homepageType": "extension",
+  "routes": {
+    "shared": []
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "title": "{{APP_NAME}}",
+  "category": "",
+  "categories": [
+    "Art & Design",
+    "Auto & Vehicles",
+    "Beauty",
+    "Books & Reference",
+    "Business",
+    "Comics",
+    "Communication",
+    "Dating",
+    "Education",
+    "Entertainment",
+    "Events",
+    "Finance",
+    "Food & Drink",
+    "Health & Fitness",
+    "House & Home",
+    "Libraries & Demo",
+    "Lifestyle",
+    "Maps & Navigation",
+    "Medical",
+    "Music & Audio",
+    "News & Magazines",
+    "Parenting",
+    "Personalization",
+    "Photography",
+    "Productivity",
+    "Shopping",
+    "Social",
+    "Sports",
+    "Tools",
+    "Travel & Local",
+    "Video Players & Editors",
+    "Weather"
+  ],
+  "contentRating": "Everyone",
+  "contentRatingOptions": [
+    "Everyone",
+    "Everyone 10+",
+    "Teen",
+    "Mature 17+"
+  ],
+  "pricing": {
+    "type": "free",
+    "price": null,
+    "containsAds": false,
+    "inAppPurchases": false
+  },
+  "targetAudience": {
+    "ageGroup": "general",
+    "options": ["children", "teens", "adults", "general"]
+  },
+  "distribution": {
+    "countries": ["US", "CA", "GB", "AU", "DE", "FR", "JP", "KR", "BR", "IN"],
+    "googlePlayForWork": false
+  },
+  "appDetails": {
+    "packageName": "com.yourcompany.{{APP_NAME_LOWER}}",
+    "defaultLanguage": "en-US"
+  },
+  "contact": {
+    "email": "support@yourcompany.com",
+    "website": "https://yourwebsite.com",
+    "phone": ""
+  },
+  "privacyPolicy": {
+    "url": "https://yourwebsite.com/privacy"
+  },
+  "dataUsage": {
+    "collectsUserData": false,
+    "sharesUserData": false,
+    "dataTypes": [],
+    "securityPractices": {
+      "dataEncrypted": true,
+      "dataDeleted": true
+    }
+  }
+}

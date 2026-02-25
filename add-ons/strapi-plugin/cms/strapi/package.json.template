@@ -1,0 +1,79 @@
+{
+  "_comment": "Merge these fields into your plugin's package.json",
+  "name": "@scope/strapi-plugin-name",
+  "version": "1.0.0",
+  "description": "A Strapi plugin that does something amazing",
+  "keywords": [
+    "strapi",
+    "strapi-plugin",
+    "plugin"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Your Name",
+    "email": "you@example.com",
+    "url": "https://yourwebsite.com"
+  },
+  "maintainers": [
+    {
+      "name": "Your Name",
+      "email": "you@example.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/username/strapi-plugin-name.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/strapi-plugin-name/issues"
+  },
+  "homepage": "https://github.com/username/strapi-plugin-name#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "name": "plugin-name",
+    "displayName": "Plugin Display Name",
+    "description": "A brief description of your plugin",
+    "kind": "plugin",
+    "required": false
+  },
+  "peerDependencies": {
+    "@strapi/strapi": "^5.0.0"
+  },
+  "main": "./dist/server/index.js",
+  "module": "./dist/admin/index.mjs",
+  "types": "./dist/server/index.d.ts",
+  "exports": {
+    "./strapi-server": {
+      "types": "./dist/server/index.d.ts",
+      "source": "./server/src/index.ts",
+      "require": "./dist/server/index.js",
+      "default": "./dist/server/index.js"
+    },
+    "./strapi-admin": {
+      "types": "./dist/admin/index.d.ts",
+      "source": "./admin/src/index.ts",
+      "import": "./dist/admin/index.mjs",
+      "require": "./dist/admin/index.js",
+      "default": "./dist/admin/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "strapi-server.js",
+    "strapi-admin.js"
+  ],
+  "scripts": {
+    "build": "strapi-plugin build",
+    "watch": "strapi-plugin watch",
+    "verify": "strapi-plugin verify",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

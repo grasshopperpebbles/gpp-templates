@@ -14,6 +14,7 @@ type Config struct {
 	LogLevel     slog.Level
 	LogFormat    string
 	DatabaseURL  string
+	RedisURL     string
 }
 
 // Load reads configuration from environment variables
@@ -25,6 +26,7 @@ func Load() Config {
 		LogLevel:     getLogLevel("LOG_LEVEL", slog.LevelInfo),
 		LogFormat:    getEnv("LOG_FORMAT", "json"),
 		DatabaseURL:  getEnv("DATABASE_URL", ""),
+		RedisURL:     getEnv("REDIS_URL", "redis://localhost:6379/0"),
 	}
 }
 

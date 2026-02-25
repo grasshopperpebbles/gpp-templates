@@ -1,0 +1,102 @@
+# Mobile Platform
+
+The mobile platform supports iOS and Android development using React Native (Expo) or Flutter.
+
+## Variants
+
+### expo
+
+A React Native application using Expo with file-based routing.
+
+```bash
+gpp add mobile expo
+```
+
+**Includes:**
+- Expo SDK 52
+- Expo Router (file-based routing)
+- NativeWind (Tailwind CSS)
+- TypeScript
+- Tab navigation example
+
+### flutter-standalone
+
+A standalone Flutter application without backend integration.
+
+```bash
+gpp add mobile flutter-standalone
+```
+
+**Includes:**
+- Flutter SDK
+- Material Design 3
+- Provider state management
+- Navigation 2.0
+
+### flutter-api-client
+
+A Flutter application with API client integration.
+
+```bash
+gpp add mobile flutter-api-client
+```
+
+**Includes:**
+- Everything in flutter-standalone
+- Dio HTTP client
+- API service layer
+- Authentication flow
+
+## Configuration
+
+Mobile platform scripts in `.gpp/deploy.json`:
+
+```json
+{
+  "platforms": {
+    "mobile": {
+      "variant": "expo",
+      "scripts": {
+        "start": "npx expo start",
+        "build": "npx expo export",
+        "dev": "npx expo start"
+      }
+    }
+  }
+}
+```
+
+## Commands
+
+```bash
+# Start development server
+gpp start mobile
+
+# Build for production
+gpp build mobile
+```
+
+## Running on Devices
+
+### Expo
+
+```bash
+# iOS Simulator
+npx expo start --ios
+
+# Android Emulator
+npx expo start --android
+
+# Physical device (scan QR code)
+npx expo start
+```
+
+### Flutter
+
+```bash
+# iOS Simulator
+flutter run -d ios
+
+# Android Emulator
+flutter run -d android
+```

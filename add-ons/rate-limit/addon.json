@@ -1,0 +1,23 @@
+{
+  "name": "rate-limit",
+  "displayName": "Rate Limiting",
+  "description": "Add rate limiting with Redis and in-memory backends for API projects",
+  "version": "1.0.0",
+  "platforms": ["api"],
+  "variants": {
+    "api": ["fastapi", "express"]
+  },
+  "dependencies": {
+    "fastapi": {
+      "requirements": ["redis>=5.0.1"]
+    },
+    "express": {
+      "package.json": {
+        "dependencies": {
+          "redis": "^4.6.0"
+        }
+      }
+    }
+  }
+}
+

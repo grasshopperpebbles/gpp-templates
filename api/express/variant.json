@@ -1,0 +1,39 @@
+{
+  "name": "express",
+  "displayName": "Express API",
+  "description": "Node.js Express API template with TypeScript, Prisma, comprehensive middleware (security, validation, error handling), and production-ready patterns.",
+  "platform": "api",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Express.js with TypeScript",
+      "Prisma ORM integration",
+      "Comprehensive middleware stack",
+      "Security headers (Helmet)",
+      "CORS configuration",
+      "Request ID tracking",
+      "Performance logging",
+      "Zod schema validation",
+      "Error handling with request IDs",
+      "JWT authentication support",
+      "Rate limiting",
+      "Type-safe routes",
+      "Health check endpoint",
+      "Graceful shutdown"
+    ],
+    "excluded": [
+      "Database migrations (use Prisma)",
+      "Docker configuration (add separately)",
+      "CI/CD pipelines (add separately)"
+    ]
+  },
+  "homepageType": "api",
+  "routes": {
+    "api": ["/api", "/api/v1"],
+    "shared": []
+  }
+}

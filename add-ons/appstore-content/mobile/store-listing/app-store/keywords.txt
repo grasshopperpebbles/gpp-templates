@@ -1,0 +1,16 @@
+# App Store Keywords
+# Character Limit: 100 characters total (comma-separated, no spaces after commas)
+#
+# TIPS:
+# - Use all 100 characters
+# - Don't repeat words from your app name (already indexed)
+# - Don't use plurals if you have the singular
+# - Don't use "app" or "free"
+# - Research competitor keywords
+# - Use App Store Optimization (ASO) tools
+# - Consider misspellings of popular terms
+# - Prioritize high-volume, low-competition keywords
+#
+# Example: productivity,tasks,todo,checklist,organize,planner,reminder,schedule
+
+keyword1,keyword2,keyword3,keyword4,keyword5

@@ -15,6 +15,8 @@ pub struct Config {
     pub log_level: String,
     /// CORS allowed origins (comma-separated)
     pub cors_origins: Vec<String>,
+    /// Redis URL for caching (default: redis://localhost:6379/0)
+    pub redis_url: String,
 }
 
 impl Config {
@@ -32,6 +34,8 @@ impl Config {
             .split(',')
             .map(|s| s.trim().to_string())
             .collect();
+        let redis_url = std::env::var("REDIS_URL")
+            .unwrap_or_else(|_| "redis://localhost:6379/0".to_string());
 
         Ok(Self {
             host,
@@ -39,6 +43,7 @@ impl Config {
             environment,
             log_level,
             cors_origins,
+            redis_url,
         })
     }
 
@@ -68,6 +73,7 @@ impl Default for Config {
             environment: "development".to_string(),
             log_level: "debug".to_string(),
             cors_origins: vec!["http://localhost:3000".to_string()],
+            redis_url: "redis://localhost:6379/0".to_string(),
         }
     }
 }

@@ -1,0 +1,20 @@
+{
+  "name": "npm-package",
+  "displayName": "npm Package",
+  "description": "npm package publishing content including README template, CHANGELOG, LICENSE, and build configuration",
+  "platforms": ["api"],
+  "compatibleVariants": {
+    "api": ["express"]
+  },
+  "features": {
+    "included": [
+      "npm package.json fields",
+      "README template",
+      "CHANGELOG format",
+      "MIT License",
+      ".npmignore",
+      "TypeScript build config"
+    ]
+  },
+  "envVars": []
+}

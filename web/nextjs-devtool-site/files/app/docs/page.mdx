@@ -1,0 +1,62 @@
+# Introduction
+
+GPP is a command-line toolkit for scaffolding and managing multi-platform projects. It provides a unified structure for web, API, CMS, mobile, and desktop applications.
+
+## Why GPP?
+
+Modern applications often span multiple platforms:
+- A **Next.js** frontend for the web
+- A **FastAPI** or **Express** backend
+- A **Flutter** or **Expo** mobile app
+- A **WordPress** or **Strapi** CMS
+- An **Electron** or **Tauri** desktop app
+
+Managing these as separate projects creates friction. GPP solves this by providing:
+
+1. **Unified project structure** - All platforms under one roof
+2. **Single-command control** - Start, stop, build any platform from root
+3. **Template system** - Quickly scaffold new platforms
+4. **Platform wiring** - Connect platforms with adapters
+
+## Quick Example
+
+```bash
+# Create a new project
+gpp init my-saas
+
+# Add a Next.js frontend
+gpp add web saas-dashboard
+
+# Add a FastAPI backend
+gpp add api fastapi
+
+# Add an Expo mobile app
+gpp add mobile expo
+
+# Start the web app
+gpp start web
+```
+
+## Project Structure
+
+After running the commands above, your project looks like:
+
+```
+my-saas/
+├── .gpp/
+│   ├── config.json      # Project configuration
+│   ├── deploy.json      # Platform settings
+│   └── plans/           # Saved execution plans
+├── apps/
+│   ├── web/             # Next.js frontend
+│   ├── api/             # FastAPI backend
+│   └── mobile/          # Expo mobile app
+├── docs/                # Project documentation
+└── logs/                # Development logs
+```
+
+## Next Steps
+
+- [Installation](/docs/getting-started/installation) - Install GPP on your system
+- [Quick Start](/docs/getting-started/quick-start) - Create your first project
+- [Platforms](/docs/platforms) - Learn about supported platforms

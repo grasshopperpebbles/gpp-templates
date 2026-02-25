@@ -1,0 +1,124 @@
+# gpp start/stop
+
+Control platform development servers from anywhere in your project.
+
+## Start
+
+Start a platform's development server.
+
+### Usage
+
+```bash
+# From project root
+gpp start <platform>
+
+# From within a platform directory
+gpp start
+```
+
+### Examples
+
+```bash
+# Start web platform
+gpp start web
+
+# Start API platform
+gpp start api
+
+# Auto-detect platform (from apps/web/)
+cd apps/web
+gpp start
+```
+
+## Stop
+
+Stop a running platform.
+
+### Usage
+
+```bash
+gpp stop <platform>
+gpp stop
+```
+
+## Restart
+
+Restart a platform's development server.
+
+### Usage
+
+```bash
+gpp restart <platform>
+gpp restart
+```
+
+## Build
+
+Build a platform for production.
+
+### Usage
+
+```bash
+gpp build <platform>
+gpp build
+```
+
+## Dev
+
+Run platform in development mode (alias for start).
+
+### Usage
+
+```bash
+gpp dev <platform>
+gpp dev
+```
+
+## Log
+
+View platform logs.
+
+### Usage
+
+```bash
+gpp log <platform>
+gpp log
+```
+
+## Platform Detection
+
+When no platform is specified, GPP auto-detects based on:
+
+1. Current working directory (if inside `apps/<platform>/`)
+2. Platform configuration in `.gpp/deploy.json`
+
+## Custom Scripts
+
+Override default scripts in `.gpp/deploy.json`:
+
+```json
+{
+  "platforms": {
+    "web": {
+      "scripts": {
+        "start": "npm run dev -- --port 3001",
+        "build": "npm run build && npm run export"
+      }
+    }
+  }
+}
+```
+
+## Running Multiple Platforms
+
+Open multiple terminals:
+
+```bash
+# Terminal 1
+gpp start web
+
+# Terminal 2
+gpp start api
+```
+
+Or use a process manager like PM2 or Docker Compose for more complex setups.

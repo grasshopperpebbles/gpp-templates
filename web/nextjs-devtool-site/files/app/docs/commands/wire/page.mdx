@@ -1,0 +1,111 @@
+# gpp wire
+
+Connect platforms together with type-safe adapters.
+
+## Usage
+
+```bash
+gpp wire <source> <target>
+```
+
+## What It Does
+
+The `wire` command creates connections between platforms:
+
+1. Generates type-safe API clients
+2. Configures environment variables
+3. Sets up authentication sharing
+4. Creates shared type definitions
+
+## Examples
+
+### Connect API to Web
+
+```bash
+gpp wire api web
+```
+
+This generates:
+- API client in `apps/web/lib/api.ts`
+- Type definitions from OpenAPI spec
+- Environment variables for API URL
+
+### Connect CMS to Web
+
+```bash
+gpp wire cms web
+```
+
+This generates:
+- CMS client in `apps/web/lib/cms.ts`
+- Content type definitions
+- Preview mode configuration
+
+### Connect API to Mobile
+
+```bash
+gpp wire api mobile
+```
+
+This generates:
+- API client in `apps/mobile/lib/api.ts`
+- Type definitions
+- Authentication flow integration
+
+## Generated Files
+
+### API to Web
+
+```
+apps/web/
+├── lib/
+│   ├── api.ts           # Generated API client
+│   └── api-types.ts     # Generated types
+├── .env.local           # Updated with API_URL
+```
+
+### CMS to Web
+
+```
+apps/web/
+├── lib/
+│   ├── cms.ts           # Generated CMS client
+│   └── cms-types.ts     # Content types
+├── .env.local           # Updated with CMS_URL
+```
+
+## Configuration
+
+Wire settings in `.gpp/deploy.json`:
+
+```json
+{
+  "wiring": {
+    "api-web": {
+      "source": "api",
+      "target": "web",
+      "adapter": "fetch",
+      "options": {
+        "baseUrl": "http://localhost:8000"
+      }
+    }
+  }
+}
+```
+
+## Adapter Types
+
+| Adapter | Description |
+|---------|-------------|
+| `fetch` | Native fetch API |
+| `axios` | Axios HTTP client |
+| `ky` | Ky HTTP client |
+| `graphql` | GraphQL client |
+
+## Re-wiring
+
+After API changes, regenerate the client:
+
+```bash
+gpp wire api web --force
+```

@@ -1,0 +1,27 @@
+{
+  "name": "app-landing",
+  "displayName": "App Landing Page",
+  "description": "Marketing landing page for mobile apps with hero, features, screenshots, and download CTAs",
+  "platforms": ["web"],
+  "compatibleVariants": {
+    "web": ["nextjs-webapp", "nextjs-saas-dashboard", "nextjs-landing"]
+  },
+  "features": {
+    "included": [
+      "Responsive hero section",
+      "Feature highlights grid",
+      "Screenshot carousel",
+      "App Store badges",
+      "FAQ section",
+      "Testimonials"
+    ]
+  },
+  "dependencies": {
+    "embla-carousel-react": "^8.0.0",
+    "embla-carousel-autoplay": "^8.0.0"
+  },
+  "envVars": [
+    "NEXT_PUBLIC_APP_STORE_URL",
+    "NEXT_PUBLIC_PLAY_STORE_URL"
+  ]
+}

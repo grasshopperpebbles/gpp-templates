@@ -1,0 +1,121 @@
+# Template Registry
+
+The GPP Template Registry is a collection of community and official templates.
+
+## Browsing Templates
+
+### Command Line
+
+```bash
+# List all templates
+gpp template list --registry
+
+# Search templates
+gpp template search dashboard
+
+# Get template info
+gpp template info @gpp/analytics-dashboard
+```
+
+### Online
+
+Visit [gppkit.dev/templates](https://gppkit.dev/templates) to browse templates with previews and documentation.
+
+## Installing from Registry
+
+```bash
+gpp template install @gpp/analytics-dashboard
+```
+
+Or specify a version:
+
+```bash
+gpp template install @gpp/analytics-dashboard@1.2.0
+```
+
+## Official Templates
+
+Templates prefixed with `@gpp/` are officially maintained:
+
+| Template | Platform | Description |
+|----------|----------|-------------|
+| @gpp/saas-starter | web | Complete SaaS starter |
+| @gpp/api-prisma | api | FastAPI with Prisma |
+| @gpp/mobile-auth | mobile | Mobile app with auth |
+
+## Community Templates
+
+Community templates use the author's namespace:
+
+```bash
+gpp template install @username/my-template
+```
+
+## Publishing Your Template
+
+### 1. Prepare Your Template
+
+Ensure your template has:
+- Valid `variant.json`
+- Complete `files/` directory
+- README.md with usage instructions
+
+### 2. Login to Registry
+
+```bash
+gpp registry login
+```
+
+### 3. Publish
+
+```bash
+gpp template publish ./my-template
+```
+
+### 4. Update
+
+```bash
+# Bump version in variant.json
+gpp template publish ./my-template
+```
+
+## Version Management
+
+Templates use semantic versioning:
+
+```bash
+# Install latest
+gpp template install @username/template
+
+# Install specific version
+gpp template install @username/template@1.0.0
+
+# Install version range
+gpp template install @username/template@^1.0.0
+```
+
+## Private Templates
+
+For team-internal templates:
+
+```bash
+# Set private registry
+gpp config set registry https://registry.yourcompany.com
+
+# Publish privately
+gpp template publish ./my-template --private
+```
+
+## Template Quality
+
+Official templates are reviewed for:
+- Security best practices
+- Code quality
+- Documentation completeness
+- Maintenance commitment
+
+Community templates display:
+- Download count
+- Star rating
+- Last updated date
+- Verified author badge

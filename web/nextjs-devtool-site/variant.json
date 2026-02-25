@@ -1,0 +1,26 @@
+{
+  "name": "devtool-site",
+  "displayName": "Developer Tool Site",
+  "platform": "web",
+  "description": "Documentation and marketing site for developer tools and OSS projects (like nextjs.org, strapi.io)",
+  "dependencies": [],
+  "features": {
+    "included": [
+      "Next.js 15 (App Router)",
+      "MDX for docs and blog",
+      "Tailwind CSS",
+      "Dark mode (next-themes)",
+      "Shiki syntax highlighting",
+      "Documentation sidebar",
+      "Hero section",
+      "Feature grid",
+      "Search functionality",
+      "Responsive design"
+    ],
+    "excluded": [
+      "Authentication",
+      "Database",
+      "API routes (beyond static)"
+    ]
+  }
+}

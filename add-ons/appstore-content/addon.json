@@ -1,0 +1,22 @@
+{
+  "name": "appstore-content",
+  "displayName": "App Store Content",
+  "description": "App Store and Play Store listing metadata, descriptions, and asset specifications",
+  "platforms": ["mobile"],
+  "compatibleVariants": {
+    "mobile": ["expo", "flutter-standalone", "flutter-api-client"]
+  },
+  "features": {
+    "included": [
+      "iOS App Store metadata",
+      "Google Play Store metadata",
+      "Description templates",
+      "Keywords file",
+      "Release notes template",
+      "Privacy policy template",
+      "Screenshot specifications",
+      "Feature graphic specifications"
+    ]
+  },
+  "envVars": []
+}

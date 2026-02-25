@@ -1,0 +1,39 @@
+{
+  "name": "supabase",
+  "displayName": "Supabase Backend",
+  "description": "Add Supabase for authentication, database, and storage. Uses @supabase/ssr for Next.js App Router with cookie-based auth.",
+  "version": "1.0.0",
+  "platforms": ["web"],
+  "variants": {
+    "web": ["webapp", "saas-dashboard", "admin-dashboard", "marketing", "landing", "devtool-site", "headless-strapi"]
+  },
+  "dependencies": {
+    "dependencies": {
+      "@supabase/supabase-js": "^2.47.0",
+      "@supabase/ssr": "^0.5.0"
+    }
+  },
+  "files": {
+    "web": {
+      "lib/supabase/client.ts": "lib/supabase/client.ts",
+      "lib/supabase/server.ts": "lib/supabase/server.ts",
+      "lib/supabase/middleware.ts": "lib/supabase/middleware.ts",
+      "middleware.ts": "middleware.ts"
+    }
+  },
+  "envVars": [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+  ],
+  "instructions": {
+    "setup": [
+      "1. Create a Supabase project at https://supabase.com",
+      "2. Copy your project URL and anon key to .env.local",
+      "3. Run 'npm install' to install dependencies"
+    ],
+    "usage": [
+      "Browser: import { createClient } from '@/lib/supabase/client'",
+      "Server: import { createClient } from '@/lib/supabase/server'"
+    ]
+  }
+}

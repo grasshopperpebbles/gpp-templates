@@ -1,0 +1,135 @@
+# Creating Templates
+
+Build reusable templates to share with your team or the community.
+
+## Template Structure
+
+A GPP template consists of:
+
+```
+my-template/
+├── variant.json         # Template metadata (required)
+├── files/               # Template files (required)
+│   ├── package.json
+│   ├── src/
+│   └── ...
+└── hooks/               # Lifecycle hooks (optional)
+    ├── pre-install.js
+    └── post-install.js
+```
+
+## variant.json
+
+The metadata file describes your template:
+
+```json
+{
+  "name": "my-dashboard",
+  "displayName": "My Custom Dashboard",
+  "platform": "web",
+  "description": "A dashboard template with analytics",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "features": {
+    "included": ["Analytics", "Charts", "Dark mode"],
+    "excluded": ["Authentication", "Billing"]
+  },
+  "variables": [
+    {
+      "name": "projectName",
+      "description": "Name of your project",
+      "default": "My Dashboard"
+    }
+  ]
+}
+```
+
+## Creating from Existing Platform
+
+The easiest way to create a template:
+
+```bash
+# Build your platform first
+cd apps/web
+# ... customize to your needs
+
+# Create template from it
+gpp template create web my-template
+```
+
+This packages `apps/web/` into a reusable template.
+
+## Template Variables
+
+Use variables for dynamic content in your templates.
+
+### Defining Variables
+
+In `variant.json`:
+
+```json
+{
+  "variables": [
+    {
+      "name": "projectName",
+      "description": "Project name",
+      "default": "My Project"
+    },
+    {
+      "name": "apiUrl",
+      "description": "API base URL",
+      "default": "http://localhost:8000"
+    }
+  ]
+}
+```
+
+### Using Variables
+
+In template files, use `{{variableName}}` syntax:
+
+```json
+{
+  "name": "{{projectName}}",
+  "version": "0.1.0"
+}
+```
+
+## Lifecycle Hooks
+
+Execute code before or after installation.
+
+### pre-install.js
+
+```javascript
+module.exports = async ({ variables, targetDir }) => {
+  console.log(`Installing to ${targetDir}`);
+  // Validate requirements
+  // Fetch additional data
+};
+```
+
+### post-install.js
+
+```javascript
+module.exports = async ({ variables, targetDir }) => {
+  console.log('Installation complete!');
+  // Run setup commands
+  // Generate additional files
+};
+```
+
+## Testing Your Template
+
+```bash
+# Create a test project
+gpp init test-project
+cd test-project
+
+# Install from local path
+gpp template install ../path/to/my-template
+```
+
+## Publishing
+
+See [Template Registry](/docs/templates/registry) for publishing your template.

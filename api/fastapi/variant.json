@@ -1,0 +1,38 @@
+{
+  "name": "fastapi",
+  "displayName": "FastAPI",
+  "description": "Python FastAPI template with SQLAlchemy, Pydantic, comprehensive middleware (CORS, security, logging), JWT authentication, and production-ready patterns.",
+  "platform": "api",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "FastAPI with Python 3.11+",
+      "SQLAlchemy ORM (async)",
+      "Pydantic models for validation",
+      "Alembic migrations",
+      "Comprehensive middleware stack",
+      "CORS configuration",
+      "Request logging",
+      "Error handling",
+      "JWT authentication support",
+      "Health check endpoint",
+      "OpenAPI/Swagger documentation",
+      "Async/await support"
+    ],
+    "excluded": [
+      "Celery integration (add separately)",
+      "Docker configuration (add separately)",
+      "CI/CD pipelines (add separately)"
+    ]
+  },
+  "homepageType": "api",
+  "routes": {
+    "api": ["/api", "/api/v1"],
+    "shared": ["/docs", "/openapi.json"]
+  }
+}
+

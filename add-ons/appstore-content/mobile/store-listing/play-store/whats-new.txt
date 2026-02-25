@@ -1,0 +1,16 @@
+# What's New - Release Notes
+# Character Limit: 500 characters
+#
+# TIPS:
+# - Be concise due to character limit
+# - Lead with the most important change
+# - Use bullet points or short lines
+# - Thank users when appropriate
+
+Version X.X.X
+
+• New: [Feature description]
+• Improved: [Improvement description]
+• Fixed: [Bug fix description]
+
+Thanks for using {{APP_NAME}}!

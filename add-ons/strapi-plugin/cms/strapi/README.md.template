@@ -1,0 +1,199 @@
+# {{PLUGIN_NAME}}
+
+<p align="center">
+  <img src="marketplace/logo.png" alt="{{PLUGIN_NAME}} Logo" width="128" height="128">
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/{{PLUGIN_NAME}}">
+    <img src="https://img.shields.io/npm/v/{{PLUGIN_NAME}}.svg" alt="npm version">
+  </a>
+  <a href="https://www.npmjs.com/package/{{PLUGIN_NAME}}">
+    <img src="https://img.shields.io/npm/dm/{{PLUGIN_NAME}}.svg" alt="npm downloads">
+  </a>
+  <a href="https://github.com/username/{{PLUGIN_NAME}}/blob/main/LICENSE">
+    <img src="https://img.shields.io/npm/l/{{PLUGIN_NAME}}.svg" alt="license">
+  </a>
+</p>
+
+> A brief, compelling description of what your plugin does.
+
+## Features
+
+- Feature 1: Description of the feature
+- Feature 2: Description of the feature
+- Feature 3: Description of the feature
+
+## Requirements
+
+- Strapi v5.0.0 or higher
+- Node.js v18 or higher
+
+## Installation
+
+```bash
+npm install {{PLUGIN_NAME}}
+# or
+yarn add {{PLUGIN_NAME}}
+# or
+pnpm add {{PLUGIN_NAME}}
+```
+
+## Configuration
+
+Add the plugin to your Strapi configuration:
+
+```typescript
+// config/plugins.ts
+export default {
+  '{{PLUGIN_NAME}}': {
+    enabled: true,
+    config: {
+      // Your configuration options here
+      option1: 'value1',
+      option2: true,
+    },
+  },
+};
+```
+
+### Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `option1` | `string` | `'default'` | Description of option1 |
+| `option2` | `boolean` | `false` | Description of option2 |
+| `option3` | `number` | `10` | Description of option3 |
+
+## Usage
+
+### Admin Panel
+
+After installation, you'll find the plugin in your Strapi admin panel sidebar.
+
+1. Navigate to the plugin section
+2. Configure your settings
+3. Start using the features
+
+### API Endpoints
+
+The plugin exposes the following endpoints:
+
+#### `GET /api/{{PLUGIN_NAME}}/example`
+
+Returns example data.
+
+**Response:**
+```json
+{
+  "data": {
+    "id": 1,
+    "attributes": {
+      "name": "Example"
+    }
+  }
+}
+```
+
+#### `POST /api/{{PLUGIN_NAME}}/action`
+
+Performs an action.
+
+**Request Body:**
+```json
+{
+  "param1": "value1",
+  "param2": "value2"
+}
+```
+
+### Content-Type Integration
+
+To use this plugin with your content types:
+
+```typescript
+// Example integration code
+```
+
+## Screenshots
+
+<p align="center">
+  <img src="marketplace/screenshots/screenshot1.png" alt="Screenshot 1" width="600">
+</p>
+
+## Permissions
+
+The plugin adds the following permissions:
+
+| Permission | Description |
+|------------|-------------|
+| `plugin::{{PLUGIN_NAME}}.read` | Read access to plugin data |
+| `plugin::{{PLUGIN_NAME}}.create` | Create new records |
+| `plugin::{{PLUGIN_NAME}}.update` | Update existing records |
+| `plugin::{{PLUGIN_NAME}}.delete` | Delete records |
+| `plugin::{{PLUGIN_NAME}}.settings` | Access plugin settings |
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue: Plugin not appearing in admin**
+- Ensure the plugin is properly configured in `config/plugins.ts`
+- Rebuild the admin panel: `npm run build`
+- Restart Strapi
+
+**Issue: API endpoints returning 403**
+- Check role permissions in Settings > Roles
+- Ensure the user has the required permissions
+
+## Development
+
+### Building the Plugin
+
+```bash
+npm run build
+```
+
+### Watch Mode
+
+```bash
+npm run watch
+```
+
+### Linking for Local Development
+
+```bash
+# In the plugin directory
+npm link
+
+# In your Strapi project
+npm link {{PLUGIN_NAME}}
+```
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes.
+
+## License
+
+[MIT](LICENSE) - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- [Documentation](https://github.com/username/{{PLUGIN_NAME}}#readme)
+- [Issues](https://github.com/username/{{PLUGIN_NAME}}/issues)
+- [Discord](https://discord.strapi.io)
+
+---
+
+Made with love for the Strapi community

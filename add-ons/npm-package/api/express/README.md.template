@@ -1,0 +1,113 @@
+# {{PACKAGE_NAME}}
+
+[![npm version](https://badge.fury.io/js/{{PACKAGE_NAME}}.svg)](https://www.npmjs.com/package/{{PACKAGE_NAME}})
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> {{PACKAGE_DESCRIPTION}}
+
+## Installation
+
+```bash
+npm install {{PACKAGE_NAME}}
+# or
+yarn add {{PACKAGE_NAME}}
+# or
+pnpm add {{PACKAGE_NAME}}
+```
+
+## Quick Start
+
+```typescript
+import { something } from '{{PACKAGE_NAME}}';
+
+// Your quick start example here
+const result = something();
+console.log(result);
+```
+
+## Features
+
+- Feature 1: Description
+- Feature 2: Description
+- Feature 3: Description
+
+## API Reference
+
+### `functionName(param1, param2)`
+
+Description of what the function does.
+
+**Parameters:**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `param1` | `string` | Description of param1 |
+| `param2` | `number` | Description of param2 (optional) |
+
+**Returns:** `ReturnType` - Description of return value
+
+**Example:**
+
+```typescript
+import { functionName } from '{{PACKAGE_NAME}}';
+
+const result = functionName('hello', 42);
+```
+
+## Configuration
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `option1` | `boolean` | `true` | Description |
+| `option2` | `string` | `'default'` | Description |
+
+## Examples
+
+### Basic Usage
+
+```typescript
+// Example code
+```
+
+### Advanced Usage
+
+```typescript
+// Example code
+```
+
+## TypeScript
+
+This package includes TypeScript definitions. No additional `@types/` package needed.
+
+```typescript
+import { SomeType, SomeInterface } from '{{PACKAGE_NAME}}';
+```
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes.
+
+## License
+
+[MIT](LICENSE) - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- Create an [issue](https://github.com/username/{{PACKAGE_NAME}}/issues)
+- Email: support@example.com
+
+---
+
+Made with love by [Your Name](https://yourwebsite.com)

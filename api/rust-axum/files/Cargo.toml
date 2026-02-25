@@ -39,6 +39,11 @@ chrono = { version = "0.4", features = ["serde"] }
 # UUID generation
 uuid = { version = "1", features = ["v4", "serde"] }
 
+# Caching
+moka = { version = "0.12", features = ["future"] }
+redis = { version = "0.26", features = ["tokio-comp", "connection-manager"] }
+async-trait = "0.1"
+
 [dev-dependencies]
 # Testing
 tokio-test = "0.4"

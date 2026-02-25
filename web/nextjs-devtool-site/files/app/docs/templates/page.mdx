@@ -1,0 +1,92 @@
+# Using Templates
+
+Templates are pre-built platform configurations that accelerate project setup.
+
+## What Are Templates?
+
+Templates provide:
+- Complete project scaffolding
+- Pre-configured dependencies
+- Best practices built-in
+- Ready-to-run code
+
+## Built-in Templates
+
+GPP ships with templates for every platform variant:
+
+### Web Templates
+
+| Template | Description |
+|----------|-------------|
+| webapp | Generic Next.js application |
+| saas-dashboard | SaaS with auth and billing |
+| admin-dashboard | Admin panel with data management |
+| marketing | Marketing site with blog |
+| devtool-site | Documentation site |
+
+### API Templates
+
+| Template | Description |
+|----------|-------------|
+| fastapi | Python FastAPI with OpenAPI |
+| express | Node.js Express with TypeScript |
+| rust-axum | Rust Axum for performance |
+
+### Mobile Templates
+
+| Template | Description |
+|----------|-------------|
+| expo | React Native with Expo Router |
+| flutter-standalone | Flutter standalone app |
+| flutter-api-client | Flutter with API integration |
+
+## Using Templates
+
+### Via gpp add
+
+The simplest way to use templates:
+
+```bash
+gpp add web saas-dashboard
+```
+
+### Via gpp template install
+
+For templates from the registry:
+
+```bash
+gpp template install @gpp/analytics-dashboard
+```
+
+### From Git
+
+```bash
+gpp template install github:username/my-template
+```
+
+## Template Variables
+
+Some templates support variables for customization:
+
+```bash
+gpp add web saas-dashboard --var projectName="My SaaS"
+```
+
+Or answer prompts during installation.
+
+## Listing Available Templates
+
+```bash
+gpp template list
+```
+
+## Getting Template Info
+
+```bash
+gpp template info web/saas-dashboard
+```
+
+## Next Steps
+
+- [Creating Templates](/docs/templates/creating) - Build your own templates
+- [Template Registry](/docs/templates/registry) - Browse community templates

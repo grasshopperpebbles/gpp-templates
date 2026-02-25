@@ -1,0 +1,66 @@
+# Platforms
+
+GPP supports multiple platform types, each with its own variants and configurations.
+
+## Supported Platforms
+
+| Platform | Variants | Description |
+|----------|----------|-------------|
+| **Web** | webapp, saas-dashboard, admin-dashboard, marketing, devtool-site | Next.js-based web applications |
+| **API** | fastapi, express, rust-axum | Backend API services |
+| **Mobile** | expo, flutter-standalone, flutter-api-client | iOS and Android apps |
+| **CMS** | wordpress, strapi | Content management systems |
+| **Desktop** | electron, tauri | Desktop applications |
+
+## Platform Structure
+
+Each platform lives in the `apps/` directory:
+
+```
+my-project/
+├── apps/
+│   ├── web/        # Web platform
+│   ├── api/        # API platform
+│   ├── mobile/     # Mobile platform
+│   ├── cms/        # CMS platform
+│   └── desktop/    # Desktop platform
+```
+
+## Adding Platforms
+
+Use `gpp add` to add a platform:
+
+```bash
+# Add with default variant
+gpp add web
+
+# Add with specific variant
+gpp add web saas-dashboard
+gpp add api fastapi
+gpp add mobile expo
+```
+
+## Platform Configuration
+
+Platform settings are stored in `.gpp/deploy.json`:
+
+```json
+{
+  "platforms": {
+    "web": {
+      "variant": "saas-dashboard",
+      "path": "apps/web",
+      "scripts": {
+        "start": "npm run dev",
+        "build": "npm run build"
+      }
+    }
+  }
+}
+```
+
+## Next Steps
+
+- [Web Platform](/docs/platforms/web) - Next.js web applications
+- [API Platform](/docs/platforms/api) - Backend services
+- [Mobile Platform](/docs/platforms/mobile) - Mobile apps

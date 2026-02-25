@@ -1,0 +1,100 @@
+# gpp add
+
+Add a new platform to your GPP project.
+
+## Usage
+
+```bash
+gpp add <platform> [variant]
+```
+
+## Arguments
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `platform` | Platform type (web, api, mobile, cms, desktop) | Yes |
+| `variant` | Specific variant of the platform | No (uses default) |
+
+## Platforms and Variants
+
+### Web
+
+```bash
+gpp add web              # Default: webapp
+gpp add web webapp
+gpp add web saas-dashboard
+gpp add web admin-dashboard
+gpp add web marketing
+gpp add web devtool-site
+```
+
+### API
+
+```bash
+gpp add api              # Default: fastapi
+gpp add api fastapi
+gpp add api express
+gpp add api rust-axum
+```
+
+### Mobile
+
+```bash
+gpp add mobile           # Default: expo
+gpp add mobile expo
+gpp add mobile flutter-standalone
+gpp add mobile flutter-api-client
+```
+
+### CMS
+
+```bash
+gpp add cms              # Default: strapi
+gpp add cms wordpress
+gpp add cms strapi
+```
+
+### Desktop
+
+```bash
+gpp add desktop          # Default: electron
+gpp add desktop electron
+gpp add desktop tauri
+```
+
+## What It Does
+
+1. Creates platform directory in `apps/<platform>/`
+2. Copies template files for the variant
+3. Registers platform in `.gpp/deploy.json`
+4. Sets up default scripts for the platform
+
+## Examples
+
+### Add a SaaS dashboard
+
+```bash
+gpp add web saas-dashboard
+```
+
+Creates `apps/web/` with authentication, dashboard layout, and billing components.
+
+### Add a FastAPI backend
+
+```bash
+gpp add api fastapi
+```
+
+Creates `apps/api/` with FastAPI, Pydantic models, and database setup.
+
+### Add an Expo mobile app
+
+```bash
+gpp add mobile expo
+```
+
+Creates `apps/mobile/` with Expo Router and NativeWind styling.
+
+## Overwriting Existing Platforms
+
+If a platform already exists, GPP will prompt for confirmation before overwriting.

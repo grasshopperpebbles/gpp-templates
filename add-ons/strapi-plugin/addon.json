@@ -1,0 +1,20 @@
+{
+  "name": "strapi-plugin",
+  "displayName": "Strapi Plugin",
+  "description": "Strapi marketplace plugin publishing content including README, metadata, and plugin structure",
+  "platforms": ["cms"],
+  "compatibleVariants": {
+    "cms": ["strapi"]
+  },
+  "features": {
+    "included": [
+      "Plugin package.json",
+      "Marketplace README",
+      "Plugin metadata",
+      "Server-side entry",
+      "Admin panel entry",
+      "Asset specifications"
+    ]
+  },
+  "envVars": []
+}

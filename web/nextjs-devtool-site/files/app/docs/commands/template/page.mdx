@@ -1,0 +1,121 @@
+# gpp template
+
+Manage and install GPP templates.
+
+## Usage
+
+```bash
+gpp template <command> [options]
+```
+
+## Commands
+
+### list
+
+List available templates.
+
+```bash
+gpp template list
+```
+
+Output:
+
+```
+Web Templates:
+  - webapp (default)
+  - saas-dashboard
+  - admin-dashboard
+  - marketing
+  - devtool-site
+
+API Templates:
+  - fastapi (default)
+  - express
+  - rust-axum
+
+Mobile Templates:
+  - expo (default)
+  - flutter-standalone
+  - flutter-api-client
+```
+
+### info
+
+Get details about a specific template.
+
+```bash
+gpp template info web/saas-dashboard
+```
+
+Output:
+
+```
+Template: saas-dashboard
+Platform: web
+Description: SaaS dashboard with auth and billing
+
+Features:
+  - NextAuth.js authentication
+  - Dashboard layout
+  - User settings
+  - Stripe billing integration
+
+Files: 47
+```
+
+### install
+
+Install a template from the registry.
+
+```bash
+gpp template install <template-name>
+```
+
+### create
+
+Create a new template from an existing platform.
+
+```bash
+gpp template create web my-custom-template
+```
+
+This packages the current `apps/web/` as a reusable template.
+
+## Template Sources
+
+GPP supports templates from:
+
+1. **Built-in** - Shipped with GPP
+2. **Registry** - Official GPP template registry
+3. **Git** - Any Git repository
+4. **Local** - Local directory
+
+### Installing from Git
+
+```bash
+gpp template install github:username/repo
+```
+
+### Installing from local
+
+```bash
+gpp template install ./my-local-template
+```
+
+## Template Structure
+
+Templates follow this structure:
+
+```
+my-template/
+├── variant.json         # Template metadata
+├── files/               # Template files
+│   ├── package.json
+│   ├── src/
+│   └── ...
+└── hooks/               # Optional lifecycle hooks
+    ├── pre-install.js
+    └── post-install.js
+```
+
+See [Creating Templates](/docs/templates/creating) for more details.

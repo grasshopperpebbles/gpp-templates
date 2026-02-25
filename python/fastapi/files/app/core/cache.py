@@ -16,6 +16,10 @@ Usage:
     # Delete a value
     await cache.delete("user:123")
 
+    # Delete all keys matching pattern (supports * wildcard)
+    await cache.delete_pattern("user:*")        # All user keys
+    await cache.delete_pattern("product:*")     # All product keys
+
     # Use decorator for function caching
     @cached(ttl=300)
     async def get_expensive_data(user_id: str):
@@ -72,6 +76,21 @@ class InMemoryCache:
     async def delete(self, key: str) -> None:
         """Delete value from cache."""
         self._store.pop(key, None)
+
+    async def delete_pattern(self, pattern: str) -> None:
+        """Delete all keys matching pattern (supports * wildcard)."""
+        # Simple wildcard support for in-memory cache
+        if "*" in pattern:
+            prefix, suffix = pattern.split("*", 1)
+            keys_to_delete = [
+                key for key in list(self._store.keys())
+                if key.startswith(prefix) and (not suffix or key.endswith(suffix))
+            ]
+            for key in keys_to_delete:
+                self._store.pop(key, None)
+        else:
+            # Exact match
+            self._store.pop(pattern, None)
 
     async def exists(self, key: str) -> bool:
         """Check if key exists and is not expired."""
@@ -130,6 +149,20 @@ class RedisCache:
         """Delete value from cache."""
         client = await self._get_client()
         await client.delete(key)
+
+    async def delete_pattern(self, pattern: str) -> None:
+        """Delete all keys matching pattern (supports * wildcard via SCAN)."""
+        client = await self._get_client()
+        deleted_count = 0
+        
+        async for key in client.scan_iter(match=pattern):
+            await client.delete(key)
+            deleted_count += 1
+        
+        if deleted_count > 0:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.debug(f"Deleted {deleted_count} cache keys matching pattern: {pattern}")
 
     async def exists(self, key: str) -> bool:
         """Check if key exists."""
@@ -236,10 +269,8 @@ def invalidate_cache(pattern: str) -> Callable[[Callable[P, T]], Callable[P, T]]
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             result = await func(*args, **kwargs)
 
-            # For Redis, we could use SCAN to find matching keys
-            # For in-memory, we'd need to iterate
-            # For now, just delete the exact pattern if it exists
-            await cache.delete(pattern)
+            # Delete all keys matching pattern (supports wildcards)
+            await cache.delete_pattern(pattern)
 
             return result
 

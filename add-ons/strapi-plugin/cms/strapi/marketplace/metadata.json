@@ -1,0 +1,53 @@
+{
+  "name": "{{PLUGIN_NAME}}",
+  "displayName": "Plugin Display Name",
+  "description": "A brief, compelling description of your plugin (max 120 characters for best display)",
+  "category": "content",
+  "categories": ["content"],
+  "keywords": [
+    "strapi",
+    "plugin",
+    "keyword1",
+    "keyword2"
+  ],
+  "author": {
+    "name": "Your Name",
+    "email": "you@example.com",
+    "url": "https://yourwebsite.com"
+  },
+  "strapiVersion": ">=5.0.0",
+  "version": "1.0.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/strapi-plugin-name"
+  },
+  "documentation": "https://github.com/username/strapi-plugin-name#readme",
+  "support": "https://github.com/username/strapi-plugin-name/issues",
+  "features": [
+    "Feature 1 description",
+    "Feature 2 description",
+    "Feature 3 description"
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/screenshot1.png",
+      "alt": "Main dashboard view",
+      "caption": "The main plugin dashboard"
+    },
+    {
+      "src": "screenshots/screenshot2.png",
+      "alt": "Settings page",
+      "caption": "Configure plugin settings"
+    }
+  ],
+  "pricing": {
+    "type": "free",
+    "currency": null,
+    "amount": null
+  },
+  "compatibility": {
+    "database": ["postgres", "mysql", "sqlite"],
+    "hosting": ["self-hosted", "cloud"]
+  }
+}

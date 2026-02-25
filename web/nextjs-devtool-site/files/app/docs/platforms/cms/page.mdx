@@ -1,0 +1,97 @@
+# CMS Platform
+
+The CMS platform provides content management capabilities using WordPress or Strapi.
+
+## Variants
+
+### wordpress
+
+A WordPress installation with Docker-based development.
+
+```bash
+gpp add cms wordpress
+```
+
+**Includes:**
+- WordPress latest
+- Docker Compose setup
+- MySQL database
+- phpMyAdmin
+- Custom theme starter
+
+### strapi
+
+A headless CMS using Strapi.
+
+```bash
+gpp add cms strapi
+```
+
+**Includes:**
+- Strapi v5
+- SQLite (dev) / PostgreSQL (prod)
+- REST and GraphQL APIs
+- Admin panel
+
+## Configuration
+
+CMS platform scripts in `.gpp/deploy.json`:
+
+```json
+{
+  "platforms": {
+    "cms": {
+      "variant": "strapi",
+      "scripts": {
+        "start": "npm run develop",
+        "build": "npm run build"
+      }
+    }
+  }
+}
+```
+
+## Commands
+
+```bash
+# Start CMS
+gpp start cms
+
+# Build for production
+gpp build cms
+```
+
+## Connecting to Web
+
+Use `gpp wire` to connect your CMS to a web frontend:
+
+```bash
+gpp wire cms web
+```
+
+This generates:
+- API client for fetching content
+- Type definitions for content types
+- Environment variable configuration
+
+## WordPress Development
+
+```bash
+cd apps/cms
+docker-compose up -d
+```
+
+Access:
+- WordPress: http://localhost:8080
+- phpMyAdmin: http://localhost:8081
+
+## Strapi Development
+
+```bash
+cd apps/cms
+npm run develop
+```
+
+Access:
+- Strapi Admin: http://localhost:1337/admin
+- API: http://localhost:1337/api

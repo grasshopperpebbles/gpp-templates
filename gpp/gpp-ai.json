@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GPP AI Assistant Contract",
+  "description": "Structured rules and capabilities for AI assistants working in GPP projects",
+  "type": "object",
+  "properties": {
+    "projectType": {
+      "type": "string",
+      "description": "GPP-managed project",
+      "const": "gpp"
+    },
+    "detection": {
+      "type": "object",
+      "properties": {
+        "marker": {
+          "type": "string",
+          "description": "Presence of .gpp/ directory indicates GPP project",
+          "const": ".gpp/"
+        },
+        "configFile": {
+          "type": "string",
+          "description": "Platform configuration",
+          "const": ".gpp/deploy.json"
+        },
+        "conventionsFile": {
+          "type": "string",
+          "description": "Code patterns and conventions - AI MUST read before modifying code",
+          "const": ".gpp/CONVENTIONS.md"
+        }
+      },
+      "required": ["marker", "configFile", "conventionsFile"]
+    },
+    "platforms": {
+      "type": "object",
+      "description": "Supported platforms and their variants",
+      "properties": {
+        "web": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["generic", "headless-wp-cms", "headless-wp-ecommerce", "headless-wp-full", "saas-dashboard", "admin-dashboard"]
+          },
+          "description": "Next.js frontend variants"
+        },
+        "api": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["fastapi", "express"]
+          },
+          "description": "Backend API variants"
+        },
+        "cms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["cms-only", "ecommerce-only", "cms-ecommerce", "ecommerce-cms"]
+          },
+          "description": "WordPress CMS variants"
+        },
+        "mobile": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["flutter-api-client", "flutter-standalone"]
+          },
+          "description": "Mobile app variants"
+        },
+        "desktop": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["electron"]
+          },
+          "description": "Desktop app variants"
+        }
+      }
+    },
+    "aiCapabilities": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Actions AI assistants MAY perform",
+          "default": [
+            "Read project structure",
+            "Read logs under logs/ and platform logs",
+            "Update code inside a single platform when instructed",
+            "Propose gpp commands instead of manual edits",
+            "Update TODO.md, DEVELOPMENT.md, CHANGELOG.md, and STRATEGY_NOTES.md when making changes"
+          ]
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Actions AI assistants MUST perform",
+          "default": [
+            "Read .gpp/CONVENTIONS.md before modifying any code",
+            "Use shadcn/ui components instead of plain HTML elements",
+            "Never remove apiClient export from @/lib/api",
+            "Use gpp add route for new pages",
+            "Use gpp add api for new domain APIs",
+            "Prefer gpp add/remove/convert over manual scaffolding",
+            "Treat templates as read-only",
+            "Avoid cross-platform edits unless explicitly requested",
+            "Assume databases require backups before schema changes",
+            "Check .gpp/deploy.json to understand platform configuration",
+            "Respect variant-specific patterns"
+          ]
+        },
+        "forbidden": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Actions AI assistants MUST NOT perform",
+          "default": [
+            "Modify .gpp/deploy.json without user confirmation",
+            "Run destructive commands without confirmation",
+            "Invent deploy or CI behavior not implemented in gpp",
+            "Mix variant patterns"
+          ]
+        }
+      }
+    },
+    "logging": {
+      "type": "object",
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": ["TODO.md", "DEVELOPMENT.md", "CHANGELOG.md", "STRATEGY_NOTES.md"]
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "Update TODO.md before starting work",
+            "Update DEVELOPMENT.md after completing work",
+            "Update CHANGELOG.md for version changes",
+            "Update STRATEGY_NOTES.md for architectural decisions",
+            "Never overwrite logs",
+            "Respect log archiving rules"
+          ]
+        }
+      }
+    },
+    "sourceOfTruth": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        ".gpp/ is the control plane",
+        ".gpp/deploy.json defines enabled platforms and variants",
+        ".gpp/CONVENTIONS.md defines code patterns (UI components, API patterns)",
+        "Templates define structure",
+        "gpp CLI defines lifecycle",
+        "logs/ directory contains project history"
+      ]
+    }
+  },
+  "required": ["projectType", "detection", "platforms", "aiCapabilities"]
+}

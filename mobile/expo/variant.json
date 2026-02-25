@@ -1,0 +1,21 @@
+{
+  "name": "expo",
+  "displayName": "Expo (React Native)",
+  "platform": "mobile",
+  "description": "React Native app using Expo with file-based routing (Expo Router)",
+  "dependencies": [],
+  "features": {
+    "included": [
+      "Expo Router (file-based routing)",
+      "TypeScript",
+      "NativeWind (Tailwind CSS)",
+      "Tab navigation example",
+      "API client utility"
+    ],
+    "excluded": [
+      "Firebase",
+      "Bare workflow",
+      "Ejected native code"
+    ]
+  }
+}

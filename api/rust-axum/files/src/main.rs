@@ -3,6 +3,7 @@
 use std::net::SocketAddr;
 use tracing::info;
 
+mod cache;
 mod config;
 mod error;
 mod handlers;

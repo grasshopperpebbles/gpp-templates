@@ -1,0 +1,53 @@
+{
+  "_comment": "Merge these fields into your existing package.json",
+  "name": "@scope/package-name",
+  "version": "1.0.0",
+  "description": "A brief description of what your package does",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/username/package-name.git"
+  },
+  "keywords": [
+    "keyword1",
+    "keyword2",
+    "keyword3"
+  ],
+  "author": {
+    "name": "Your Name",
+    "email": "you@example.com",
+    "url": "https://yourwebsite.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/username/package-name/issues"
+  },
+  "homepage": "https://github.com/username/package-name#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build:npm": "tsc -p tsconfig.npm.json",
+    "prepublishOnly": "npm run build:npm",
+    "preversion": "npm run lint && npm run test",
+    "postversion": "git push && git push --tags"
+  }
+}

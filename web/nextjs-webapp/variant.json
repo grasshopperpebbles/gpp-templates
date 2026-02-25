@@ -1,0 +1,42 @@
+{
+  "name": "webapp",
+  "description": "General-purpose web application template for tools, utilities, and portals",
+  "features": [
+    "Feature flags for optional functionality",
+    "Form handling with validation",
+    "Data tables and lists",
+    "Toast notifications",
+    "Modal dialogs",
+    "Responsive navigation",
+    "Optional authentication",
+    "Optional API client",
+    "Dark mode support"
+  ],
+  "routes": [
+    "/",
+    "/settings",
+    "/auth/login (optional)",
+    "/auth/register (optional)",
+    "/examples/forms",
+    "/examples/tables",
+    "/examples/search"
+  ],
+  "dependencies": {
+    "required": [
+      "next",
+      "react",
+      "react-dom",
+      "tailwindcss",
+      "clsx",
+      "tailwind-merge",
+      "lucide-react",
+      "zod",
+      "react-hook-form",
+      "@hookform/resolvers"
+    ],
+    "optional": [
+      "@tanstack/react-query"
+    ]
+  },
+  "isDefault": true
+}

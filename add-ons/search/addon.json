@@ -1,0 +1,27 @@
+{
+  "name": "search",
+  "displayName": "Pagefind Search",
+  "description": "Add static search functionality powered by Pagefind",
+  "version": "1.0.0",
+  "platforms": ["web"],
+  "variants": {
+    "web": ["devtool-site", "saas-dashboard", "saas-landing", "base"]
+  },
+  "dependencies": {
+    "devDependencies": {
+      "pagefind": "^1.4.0"
+    }
+  },
+  "scripts": {
+    "postbuild": "pagefind --site out"
+  },
+  "files": {
+    "web": {
+      "components/Search.tsx": "components/Search.tsx"
+    }
+  },
+  "instructions": {
+    "import": "import { Search } from '@/components/Search';",
+    "usage": "Add <Search /> to your header component"
+  }
+}

@@ -1,0 +1,40 @@
+# Full Description
+# Character Limit: 4,000 characters
+#
+# TIPS:
+# - First 80 characters are crucial (visible in search)
+# - Use keywords naturally throughout
+# - Include features as bullet points
+# - Add social proof if available
+# - End with a call-to-action
+# - Can use basic HTML: <b>, <i>, <u>, <br>
+
+{{APP_NAME}} - [Your main value proposition]
+
+[2-3 sentences expanding on what your app does and who it's for]
+
+<b>KEY FEATURES</b>
+
+★ Feature 1 - Brief description of the benefit
+★ Feature 2 - Brief description of the benefit
+★ Feature 3 - Brief description of the benefit
+★ Feature 4 - Brief description of the benefit
+★ Feature 5 - Brief description of the benefit
+
+<b>WHY CHOOSE {{APP_NAME}}?</b>
+
+[2-3 sentences about what makes your app unique]
+
+<b>WHAT USERS SAY</b>
+
+"[Testimonial quote]" - User
+
+<b>GET STARTED</b>
+
+Download {{APP_NAME}} today and [main benefit]!
+
+<b>CONTACT US</b>
+
+Questions or feedback? We'd love to hear from you!
+Email: support@yourcompany.com
+Website: https://yourwebsite.com
