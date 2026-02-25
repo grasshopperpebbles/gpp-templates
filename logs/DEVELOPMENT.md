@@ -1,6 +1,28 @@
 
 ---
 
+## Session: Fix useSearchParams Suspense boundaries (2026-02-26)
+
+**Date:** 2026-02-26
+**Focus:** Wrap `useSearchParams()` in Suspense boundaries in all verify-email templates
+
+### Problem
+
+Next.js requires `useSearchParams()` to be wrapped in a `<Suspense>` boundary when used in client components that are page exports. All 5 verify-email templates (auth-flows add-on + 4 platform variants) called `useSearchParams()` directly without Suspense, causing build failures.
+
+### Fix
+
+Split each verify-email page into an inner `VerifyEmailContent` component (which calls `useSearchParams()`) and an outer `VerifyEmailPage` export that wraps it in `<Suspense>` with a loading spinner fallback.
+
+### Files changed
+- `add-ons/auth-flows/web/src/app/(auth)/verify-email/page.tsx`
+- `web/nextjs-headless-wp-full/files/src/app/verify-email/page.tsx`
+- `web/nextjs-headless-wp-ecommerce/files/src/app/verify-email/page.tsx`
+- `web/nextjs-headless-wp-cms/files/src/app/verify-email/page.tsx`
+- `web/nextjs-headless-strapi/files/src/app/verify-email/page.tsx`
+
+---
+
 ## Session: Full template sync from gpp-cli (2026-02-25)
 
 **Date:** 2026-02-25

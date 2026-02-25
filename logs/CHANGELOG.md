@@ -1,6 +1,26 @@
 
 ---
 
+## [Unreleased] - 2026-02-26 - Fix useSearchParams Suspense boundaries
+
+**Status:** COMPLETED
+
+Wrapped `useSearchParams()` in Suspense boundaries across all verify-email page templates to fix Next.js build failures.
+
+### Files changed
+- `add-ons/auth-flows/web/src/app/(auth)/verify-email/page.tsx` — split into inner component + Suspense wrapper
+- `web/nextjs-headless-wp-full/files/src/app/verify-email/page.tsx` — same pattern (Card/shadcn variant)
+- `web/nextjs-headless-wp-ecommerce/files/src/app/verify-email/page.tsx` — same
+- `web/nextjs-headless-wp-cms/files/src/app/verify-email/page.tsx` — same
+- `web/nextjs-headless-strapi/files/src/app/verify-email/page.tsx` — same
+
+### Notes
+- Reset-password pages already had Suspense boundaries; no changes needed
+- CMS page templates already had proper null-checking; no changes needed
+- Synced from same fix applied in gpp-cli and expatmusings
+
+---
+
 ## [Unreleased] - 2026-02-25 - Full template sync from gpp-cli
 
 **Status:** COMPLETED

@@ -1,6 +1,16 @@
 
 ---
 
+## Template build resilience (2026-02-26)
+
+**Decision:** All page templates using `useSearchParams()` must wrap the call in a `<Suspense>` boundary.
+
+**Rationale:** Next.js static generation fails if `useSearchParams()` is called without Suspense. This was discovered in expatmusings and traced to GPP templates. The fix was applied across gpp-cli, gpp-templates, and the downstream project.
+
+**Pattern:** Split client pages into an inner content component (calls `useSearchParams()`) and an outer page export that wraps it in `<Suspense fallback={...}>`.
+
+---
+
 ## Template sync with gpp-cli (2026-02-25)
 
 **Status:** DONE (one-way sync gpp-cli → gpp-templates)
