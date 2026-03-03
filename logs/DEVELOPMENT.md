@@ -1,6 +1,25 @@
 
 ---
 
+## Session: gpp-cli GitHub repo rename (2026-02-27)
+
+**Date:** 2026-02-27
+**Focus:** Rename gpp-cli GitHub repo from `gpp` to `gpp-cli`
+
+### Problem
+
+The gpp-cli GitHub repository was named `grasshopperpebbles/gpp` instead of `grasshopperpebbles/gpp-cli`. This didn't match the package name or local folder, and caused the repo to not appear on GitHub.
+
+### Fix
+
+Renamed the repo to `grasshopperpebbles/gpp-cli` via GitHub settings and updated the local git remote URL.
+
+### Future
+
+Rename `gpp-templates` to `gpp-cli-templates` for consistency.
+
+---
+
 ## Session: Fix useSearchParams Suspense boundaries (2026-02-26)
 
 **Date:** 2026-02-26

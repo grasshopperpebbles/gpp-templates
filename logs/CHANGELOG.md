@@ -1,6 +1,18 @@
 
 ---
 
+## [Unreleased] - 2026-02-27 - gpp-cli GitHub repo rename
+
+**Status:** COMPLETED
+
+Renamed the gpp-cli GitHub repository from `grasshopperpebbles/gpp` to `grasshopperpebbles/gpp-cli` to match the package name and local folder. Updated local remote URL.
+
+### Notes
+- The repo name `gpp` was incorrect and caused the repo to not appear on GitHub
+- Future TODO: rename `gpp-templates` to `gpp-cli-templates` for consistency
+
+---
+
 ## [Unreleased] - 2026-02-26 - Fix useSearchParams Suspense boundaries
 
 **Status:** COMPLETED
