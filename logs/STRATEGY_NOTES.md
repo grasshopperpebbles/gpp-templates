@@ -3,9 +3,9 @@
 
 ## Hero slider sync scope (2026-03-04)
 
-**Decision:** Sync frontend files (data fetchers + carousel component) and Strapi schemas to gpp-templates, but not the WordPress plugin. SvelteKit variants are excluded since the carousel is React-only.
+**Decision:** Full sync of hero slider to gpp-templates: Next.js web variants, SvelteKit web variants (with Svelte 5 component port), Strapi schemas, and WP plugin to all CMS variants.
 
-**Rationale:** gpp-templates CMS variants don't bundle WP plugins — they rely on `install-plugins.sh` for plugin installation. The `gp-hero-slider` plugin is bundled in gpp-cli's `templates/cms/wp-content/plugins/` and copied at scaffolding time by `cms.ts`. SvelteKit variants would need a Svelte-native carousel component, which is out of scope for this sync.
+**Rationale:** gpp-templates should have feature parity across all variant families. The WP plugin was added to CMS variants under `files/wp-content/plugins/` so it's available when templates are installed. The Svelte carousel uses `$state`/`$effect` runes (Svelte 5), inline SVG chevrons (no lucide dependency), and native `<img>` (no Next.js `Image`), matching the existing SvelteKit template patterns.
 
 ---
 

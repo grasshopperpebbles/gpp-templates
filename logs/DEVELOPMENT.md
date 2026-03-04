@@ -16,10 +16,10 @@ gpp-cli added a rotating hero images feature for blog site homepages: a WordPres
 - **`hero-slides-strapi.ts`** → nextjs-headless-strapi only (Strapi REST API fetcher)
 - **Strapi schemas** (`hero/slide.json` component + `homepage/schema.json` single type) → cms/strapi-dev
 
-### Not synced
+### Additional sync (same session)
 
-- **WP plugin (`gp-hero-slider`)** — CMS templates in gpp-templates don't bundle WP plugins; they use `install-plugins.sh`. The plugin lives in gpp-cli's `templates/cms/wp-content/plugins/` and is copied at scaffolding time by `cms.ts`.
-- **SvelteKit variants** — Hero carousel is a React component; SvelteKit variants would need a Svelte port.
+- **WP plugin (`gp-hero-slider`)** — Copied to all 4 CMS variants (cms-only, cms-ecommerce, ecommerce-cms, ecommerce-only) under `files/wp-content/plugins/gp-hero-slider/`.
+- **SvelteKit variants** — Created `hero-slides.ts` (WP data fetcher using `graphqlClient`) and `HeroCarousel.svelte` (Svelte 5 component with `$state`/`$effect` runes) for all 4 SvelteKit headless-wp variants. Created `hero-slides-strapi.ts` for sveltekit-headless-strapi using `config.strapiUrl`. Svelte component uses inline SVG chevrons instead of lucide-react, and native `<img>` instead of Next.js `Image`.
 
 ---
 

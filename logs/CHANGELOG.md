@@ -19,6 +19,11 @@ Synced hero slider files from gpp-cli for rotating hero images on blog site home
 - `web/nextjs-headless-strapi/files/src/components/hero-carousel.tsx`
 - `cms/strapi-dev/files/src/components/hero/slide.json` — Strapi repeatable component
 - `cms/strapi-dev/files/src/api/homepage/content-types/homepage/schema.json` — Strapi single type
+- `cms/{cms-only,cms-ecommerce,ecommerce-cms,ecommerce-only}/files/wp-content/plugins/gp-hero-slider/` — WP plugin (CPT + ACF + WPGraphQL)
+- `web/sveltekit-headless-wp-{cms,ecommerce,full}/files/src/lib/hero-slides.ts` — SvelteKit WP data fetcher
+- `web/sveltekit-headless-strapi/files/src/lib/hero-slides.ts` — SvelteKit WP data fetcher
+- `web/sveltekit-headless-strapi/files/src/lib/hero-slides-strapi.ts` — SvelteKit Strapi data fetcher
+- `web/sveltekit-headless-wp-{cms,ecommerce,full,strapi}/files/src/lib/components/hero/HeroCarousel.svelte` — Svelte 5 carousel component
 
 ---
 
