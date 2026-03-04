@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_hero_slides",
+  "info": {
+    "displayName": "Slide",
+    "icon": "picture",
+    "description": "Hero slider slide with image, title, and optional CTA"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"]
+    },
+    "linkUrl": {
+      "type": "string"
+    },
+    "linkText": {
+      "type": "string"
+    }
+  }
+}
