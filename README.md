@@ -26,17 +26,51 @@ gpp template install /path/to/gpp-templates/cms/cms-only --as cms/cms-only
 | `cms/strapi-only` | Strapi headless CMS |
 | `cms/strapi-dev` | Strapi development instance for plugin development |
 
+All WordPress CMS variants include bundled custom plugins in `wp-content/plugins/`:
+- **gp-featured-items** — curate featured content sections (ACF relationship field + GraphQL)
+- **gp-headless-config** — expose GA4, Sentry, CloudWatch, Resend settings via GraphQL
+- **gp-hero-slider** — rotating hero images for blog homepages (ACF fields + GraphQL)
+- **gp-most-popular** — track and expose most-viewed posts via GraphQL
+- **gp-social-poster** — auto-post to social platforms on publish
+
+Strapi variants include content model schemas for hero slides (`hero.slide` component + `homepage` single type).
+
 ### Web (Next.js Frontends)
 | Template | Description |
 |----------|-------------|
-| `web/headless-wp-cms` | Next.js frontend for WordPress CMS |
-| `web/headless-wp-ecommerce` | Next.js frontend for WordPress e-commerce |
-| `web/headless-wp-full` | Next.js frontend for full WordPress (CMS + e-commerce) |
-| `web/headless-strapi` | Next.js frontend for Strapi CMS |
-| `web/admin-dashboard` | Admin dashboard template |
-| `web/saas-dashboard` | SaaS application dashboard |
-| `web/marketing` | Marketing site template |
-| `web/landing` | Landing page template |
+| `web/nextjs-headless-wp-cms` | Next.js frontend for WordPress CMS |
+| `web/nextjs-headless-wp-ecommerce` | Next.js frontend for WordPress e-commerce |
+| `web/nextjs-headless-wp-full` | Next.js frontend for full WordPress (CMS + e-commerce) |
+| `web/nextjs-headless-strapi` | Next.js frontend for Strapi CMS |
+| `web/nextjs-headless-sanity` | Next.js frontend for Sanity CMS |
+| `web/nextjs-headless-storyblok` | Next.js frontend for Storyblok CMS |
+| `web/nextjs-admin-dashboard` | Admin dashboard template |
+| `web/nextjs-saas-dashboard` | SaaS application dashboard |
+| `web/nextjs-app-landing` | Mobile app marketing landing page |
+| `web/nextjs-marketing` | Marketing site template |
+| `web/nextjs-landing` | Landing page template |
+| `web/nextjs-webapp` | General-purpose web application |
+| `web/nextjs-devtool-site` | Developer tool documentation site |
+
+### Web (SvelteKit Frontends)
+| Template | Description |
+|----------|-------------|
+| `web/sveltekit-headless-wp-cms` | SvelteKit frontend for WordPress CMS |
+| `web/sveltekit-headless-wp-ecommerce` | SvelteKit frontend for WordPress e-commerce |
+| `web/sveltekit-headless-wp-full` | SvelteKit frontend for full WordPress (CMS + e-commerce) |
+| `web/sveltekit-headless-strapi` | SvelteKit frontend for Strapi CMS |
+| `web/sveltekit-headless-sanity` | SvelteKit frontend for Sanity CMS |
+| `web/sveltekit-headless-storyblok` | SvelteKit frontend for Storyblok CMS |
+| `web/sveltekit-admin-dashboard` | SvelteKit admin dashboard |
+| `web/sveltekit-saas-dashboard` | SvelteKit SaaS dashboard |
+| `web/sveltekit-marketing` | SvelteKit marketing site |
+| `web/sveltekit-landing` | SvelteKit landing page |
+| `web/sveltekit-webapp` | SvelteKit general-purpose web application |
+| `web/sveltekit-devtool-site` | SvelteKit developer tool documentation site |
+
+All headless WordPress and Strapi web variants (both Next.js and SvelteKit) include:
+- **Hero slides data fetcher** (`hero-slides.ts`) for WP GraphQL; Strapi variants also include `hero-slides-strapi.ts`
+- **Hero carousel component** (`hero-carousel.tsx` for Next.js, `HeroCarousel.svelte` for SvelteKit) with auto-rotation, pause on hover/focus, `prefers-reduced-motion` support, and dot indicators
 
 ### Mobile
 | Template | Description |
