@@ -1,6 +1,14 @@
 
 ---
 
+## Hero slider sync scope (2026-03-04)
+
+**Decision:** Sync frontend files (data fetchers + carousel component) and Strapi schemas to gpp-templates, but not the WordPress plugin. SvelteKit variants are excluded since the carousel is React-only.
+
+**Rationale:** gpp-templates CMS variants don't bundle WP plugins — they rely on `install-plugins.sh` for plugin installation. The `gp-hero-slider` plugin is bundled in gpp-cli's `templates/cms/wp-content/plugins/` and copied at scaffolding time by `cms.ts`. SvelteKit variants would need a Svelte-native carousel component, which is out of scope for this sync.
+
+---
+
 ## Template build resilience (2026-02-26)
 
 **Decision:** All page templates using `useSearchParams()` must wrap the call in a `<Suspense>` boundary.

@@ -1,6 +1,27 @@
 
 ---
 
+## [Unreleased] - 2026-03-04 - Sync hero slider from gpp-cli
+
+**Status:** COMPLETED
+
+Synced hero slider files from gpp-cli for rotating hero images on blog site homepages.
+
+### Files added
+- `web/nextjs-headless-wp-cms/files/src/lib/hero-slides.ts` — WP GraphQL data fetcher
+- `web/nextjs-headless-wp-cms/files/src/components/hero-carousel.tsx` — carousel component
+- `web/nextjs-headless-wp-ecommerce/files/src/lib/hero-slides.ts`
+- `web/nextjs-headless-wp-ecommerce/files/src/components/hero-carousel.tsx`
+- `web/nextjs-headless-wp-full/files/src/lib/hero-slides.ts`
+- `web/nextjs-headless-wp-full/files/src/components/hero-carousel.tsx`
+- `web/nextjs-headless-strapi/files/src/lib/hero-slides.ts`
+- `web/nextjs-headless-strapi/files/src/lib/hero-slides-strapi.ts` — Strapi REST data fetcher
+- `web/nextjs-headless-strapi/files/src/components/hero-carousel.tsx`
+- `cms/strapi-dev/files/src/components/hero/slide.json` — Strapi repeatable component
+- `cms/strapi-dev/files/src/api/homepage/content-types/homepage/schema.json` — Strapi single type
+
+---
+
 ## [Unreleased] - 2026-02-27 - gpp-cli GitHub repo rename
 
 **Status:** COMPLETED

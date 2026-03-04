@@ -1,6 +1,28 @@
 
 ---
 
+## Session: Sync hero slider from gpp-cli (2026-03-04)
+
+**Date:** 2026-03-04
+**Focus:** Sync new hero slider files from gpp-cli to gpp-templates web and CMS variants.
+
+### Context
+
+gpp-cli added a rotating hero images feature for blog site homepages: a WordPress plugin (`gp-hero-slider`), Strapi content model, dual data fetchers (WP GraphQL + Strapi REST), and a shared `hero-carousel.tsx` component. The gpp-templates repo needed the frontend and Strapi schema files synced to the appropriate variant directories.
+
+### What was synced
+
+- **`hero-slides.ts` + `hero-carousel.tsx`** → 4 web variants: nextjs-headless-wp-cms, wp-ecommerce, wp-full, and nextjs-headless-strapi
+- **`hero-slides-strapi.ts`** → nextjs-headless-strapi only (Strapi REST API fetcher)
+- **Strapi schemas** (`hero/slide.json` component + `homepage/schema.json` single type) → cms/strapi-dev
+
+### Not synced
+
+- **WP plugin (`gp-hero-slider`)** — CMS templates in gpp-templates don't bundle WP plugins; they use `install-plugins.sh`. The plugin lives in gpp-cli's `templates/cms/wp-content/plugins/` and is copied at scaffolding time by `cms.ts`.
+- **SvelteKit variants** — Hero carousel is a React component; SvelteKit variants would need a Svelte port.
+
+---
+
 ## Session: gpp-cli GitHub repo rename (2026-02-27)
 
 **Date:** 2026-02-27
