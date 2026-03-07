@@ -14,8 +14,10 @@ This template provides a Strapi development instance for plugin development. It 
 gpp add cms strapi-dev
 cd apps/cms
 ./setup.sh
-./dev.sh
+docker compose --env-file .env up -d
 ```
+
+The first-start script runs automatically once (installs GraphQL plugin if needed). You can also use `./dev.sh` to start containers.
 
 ## Features
 

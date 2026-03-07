@@ -17,14 +17,16 @@ cd /path/to/your/gpp/project
 gpp add cms strapi-dev
 cd apps/cms
 ./setup.sh
-./dev.sh
+docker compose --env-file .env up -d
 ```
+
+A first-start script runs automatically in the container once (e.g. installs GraphQL plugin if needed). Alternatively run `./dev.sh` to start containers.
 
 ### Option 2: Manual Setup
 
 1. Copy template files from `templates/cms/strapi-dev/files/` to your project
 2. Run `./setup.sh` to generate `.env`
-3. Run `./dev.sh` to start containers
+3. Run `docker compose --env-file .env up -d` (first-start runs automatically) or `./dev.sh`
 
 ## What Gets Created
 
@@ -80,24 +82,19 @@ Then configure the frontend to connect to Strapi at http://localhost:1338
 
 1. **Start Strapi:**
    ```bash
-   ./dev.sh
+   docker compose --env-file .env up -d
    ```
+   The first-start script runs once and installs the GraphQL plugin if needed. You can also use `./dev.sh`.
 
 2. **Access Admin:**
    - Open http://localhost:1338/admin
    - Create first admin user (if first time)
 
-3. **Install GraphQL Plugin:**
-   ```bash
-   docker compose exec strapi yarn strapi install graphql
-   docker compose restart strapi
-   ```
-
-4. **Develop Plugin:**
+3. **Develop Plugin:**
    - Edit files in `src/plugins/gpp-strapi-site-builder/`
    - Strapi will hot-reload changes
 
-5. **Test with Frontend:**
+4. **Test with Frontend:**
    - Set up `headless-strapi` frontend
    - Connect to http://localhost:1338
    - Test plugin functionality

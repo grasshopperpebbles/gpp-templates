@@ -112,14 +112,14 @@ Key environment variables in `.env`:
 
 ## Development
 
-Start development environment:
-```bash
-./dev.sh
-```
-
-Or manually:
+Start the stack (first-start script runs automatically once to install GraphQL if needed):
 ```bash
 docker compose --env-file .env up -d
+```
+
+Alternatively use the dev helper:
+```bash
+./dev.sh
 ```
 
 View logs:
