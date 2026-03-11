@@ -357,12 +357,12 @@ wp wc shipping_zone_method create 1 --method_id="flat_rate" --settings='{"title"
 echo "✅ WooCommerce configuration completed"
 
 #-------------------------------------------------------------------------------
-# Configure GraphQL CORS
+# Configure WPGraphQL
 #-------------------------------------------------------------------------------
 
 echo ""
-echo "🔗 Configuring GraphQL CORS..."
-echo "=============================="
+echo "🔗 Configuring WPGraphQL..."
+echo "==========================="
 
 wp option update graphql_general_settings '{
     "public_introspection_enabled": "on",
@@ -370,18 +370,20 @@ wp option update graphql_general_settings '{
     "restrict_endpoint_to_logged_in_users": "off"
 }' --format=json --allow-root --quiet 2>/dev/null || true
 
-echo "✅ GraphQL CORS configured"
+echo "✅ WPGraphQL configured"
 
 #-------------------------------------------------------------------------------
-# Configure REST API CORS
+# Configure Headless CORS (headless-cors.php plugin)
 #-------------------------------------------------------------------------------
 
 echo ""
-echo "🔗 Configuring REST API CORS..."
+echo "🔗 Configuring headless CORS..."
 echo "==============================="
 
-wp option update rest_cors_allowed_origins '["*"]' --format=json --allow-root --quiet 2>/dev/null || true
-echo "✅ REST API CORS configured"
+# Set allowed origins for the headless-cors plugin (comma-separated)
+wp option update headless_cors_allowed_origins "\$FRONTEND_URL" --allow-root --quiet 2>/dev/null || true
+echo "  Allowed origins: \$FRONTEND_URL"
+echo "✅ Headless CORS configured"
 
 #-------------------------------------------------------------------------------
 # Configure Media Settings
