@@ -1,0 +1,30 @@
+{
+  "name": "remotion",
+  "displayName": "Remotion Video Pipeline",
+  "description": "Programmatic video generation pipeline using Remotion (React). Supports multi-channel faceless YouTube content with data-driven templates, channel analysis, and automated rendering.",
+  "platform": "video",
+  "runtime": "react",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": ["api"]
+  },
+  "features": {
+    "included": [
+      "Remotion video compositions (React/TypeScript)",
+      "Multi-channel configuration",
+      "Data-driven video templates",
+      "YouTube channel analyzer skill",
+      "Remotion Studio preview",
+      "MP4 rendering pipeline",
+      "Channel SOP generation"
+    ],
+    "excluded": [
+      "YouTube upload automation (use API platform or Broadkast)",
+      "Thumbnail generation (planned add-on)",
+      "TTS/voiceover generation (planned add-on)"
+    ]
+  },
+  "homepageType": "app",
+  "routes": {}
+}

@@ -1,6 +1,29 @@
 
 ---
 
+## Session: Added video platform with remotion variant (2026-04-02)
+
+**Date:** 2026-04-02
+**Focus:** Create a new `video` platform template for programmatic video generation using Remotion.
+
+### Context
+
+GPP CLI added a new `video` platform type (8th platform) to support Remotion-based video generation projects. The gpp-templates repo needed a corresponding `video/remotion` template with the full project structure.
+
+### What was created
+
+- **`video/remotion/`** — New platform template directory with `variant.json` and complete `files/` tree
+- **Remotion project structure** — `Root.tsx` entry point, `CountryComparison` starter composition with spring animations, shared types
+- **Multi-channel support** — `channels/` directory with example config (branding, fonts, tags, description templates)
+- **YouTube channel analyzer** — Claude Code skill that fetches top videos from any YouTube channel via yt-dlp, analyzes transcripts/metadata, and produces an analysis report + reusable SOP
+- **`gpp/gpp-ai.json`** — Updated to register the `video` platform with `remotion` variant
+
+### First use case
+
+TubeKast (tubekast.com) — a multi-channel faceless YouTube video factory. Scaffolded via `gpp add video remotion` in the tubekast project. Produces data visualization videos (country comparisons, rankings) at scale using Remotion + Claude Code.
+
+---
+
 ## Session: Sync hero slider from gpp-cli (2026-03-04)
 
 **Date:** 2026-03-04

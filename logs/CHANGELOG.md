@@ -1,6 +1,35 @@
 
 ---
 
+## [Unreleased] - 2026-04-02 - Added video platform with remotion variant
+
+**Status:** COMPLETED
+
+Added a new `video` platform type to gpp-templates for programmatic video generation using Remotion (React/TypeScript).
+
+### Files added
+- `video/remotion/variant.json` — Template metadata (platform: video, runtime: react)
+- `video/remotion/files/package.json` — Remotion 4 + React 19 dependencies
+- `video/remotion/files/tsconfig.json` — TypeScript config with path aliases
+- `video/remotion/files/remotion.config.ts` — Remotion CLI configuration
+- `video/remotion/files/src/index.ts` — Remotion root registration
+- `video/remotion/files/src/Root.tsx` — Remotion entry point with CountryComparison composition
+- `video/remotion/files/src/compositions/CountryComparison.tsx` — Starter composition: title card + country reveal sequence with spring animations
+- `video/remotion/files/src/lib/types.ts` — Shared types (ChannelConfig, VideoData, CountryItem)
+- `video/remotion/files/channels/example/config.json` — Example channel configuration (branding, fonts, tags, description template)
+- `video/remotion/files/.claude/skills/youtube-channel-analyzer/SKILL.md` — Claude skill for reverse-engineering YouTube channel formulas
+- `video/remotion/files/.claude/skills/youtube-channel-analyzer/fetch_channel.py` — Python script to fetch top videos + transcripts via yt-dlp
+- `video/remotion/files/.claude/skills/youtube-channel-analyzer/requirements.txt` — yt-dlp + youtube-transcript-api
+- `video/remotion/files/.claude/commands/youtube-channel-analyzer.md` — Slash command wiring
+- `video/remotion/files/data/.gitkeep` — Video data directory
+- `video/remotion/files/output/.gitkeep` — Rendered output directory
+- `video/remotion/files/.gitignore` — Ignores node_modules, output MP4s, venv, .env
+
+### Updated
+- `gpp/gpp-ai.json` — Registered `video: ["remotion"]` in platforms object
+
+---
+
 ## [Unreleased] - 2026-03-04 - Sync hero slider from gpp-cli
 
 **Status:** COMPLETED

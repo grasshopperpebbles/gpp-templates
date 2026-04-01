@@ -1,0 +1,17 @@
+{
+  "name": "Example Channel",
+  "handle": "@example",
+  "niche": "data visualization",
+  "colors": {
+    "primary": "#3b82f6",
+    "secondary": "#1e40af",
+    "background": "#1a1a2e",
+    "text": "#ffffff"
+  },
+  "fonts": {
+    "heading": "Arial",
+    "body": "Arial"
+  },
+  "defaultTags": ["data", "comparison", "ranking"],
+  "descriptionTemplate": "{{title}}\n\nMUSIC:\n\"{{music_track}}\" by {{music_artist}}"
+}

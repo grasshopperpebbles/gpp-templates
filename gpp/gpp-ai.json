@@ -73,6 +73,14 @@
             "enum": ["electron"]
           },
           "description": "Desktop app variants"
+        },
+        "video": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["remotion"]
+          },
+          "description": "Programmatic video generation variants"
         }
       }
     },

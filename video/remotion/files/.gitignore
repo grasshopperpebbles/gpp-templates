@@ -1,0 +1,10 @@
+node_modules/
+dist/
+output/*.mp4
+output/*.webm
+.claude/skills/youtube-channel-analyzer/.venv/
+.claude/skills/youtube-channel-analyzer/channel_data.json
+channel-analysis-report.md
+channel-sop.md
+.env
+.env.local
