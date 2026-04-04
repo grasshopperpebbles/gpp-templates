@@ -1,29 +1,9 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { redirect } from "next/navigation";
-import { useEffect } from "react";
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      redirect("/login");
-    }
-  }, [isLoading, isAuthenticated]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div>Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+  const { user } = useAuth();
 
   return (
     <div className="space-y-6 p-6">
@@ -35,7 +15,6 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {/* Add your dashboard cards here */}
         <div className="rounded-lg border border-zinc-200 p-6">
           <h3 className="text-sm font-medium text-zinc-600">Card Title</h3>
           <p className="text-2xl font-semibold mt-2">—</p>

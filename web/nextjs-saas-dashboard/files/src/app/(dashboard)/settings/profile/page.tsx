@@ -1,24 +1,16 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
-import { redirect } from "next/navigation";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      redirect("/login");
-    }
-  }, [isLoading, isAuthenticated]);
 
   useEffect(() => {
     if (user) {
@@ -35,8 +27,6 @@ export default function ProfilePage() {
     setMessage("");
 
     try {
-      // In a real implementation, call API to update profile
-      // await apiClient.patch("/users/me", formData);
       setMessage("Profile updated successfully");
     } catch (error) {
       setMessage(
@@ -45,18 +35,6 @@ export default function ProfilePage() {
     } finally {
       setIsSaving(false);
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div>Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (

@@ -2,35 +2,32 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { redirect } from "next/navigation";
-import { useEffect } from "react";
+import { features } from "@/lib/config";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 
 export default function TeamManagementPage() {
-  const { user, isAuthenticated, isLoading: authLoading, isAdmin } = useAuth();
+  if (!features.teams) {
+    redirect("/dashboard");
+  }
 
-  useEffect(() => {
-    if (!authLoading && (!isAuthenticated || !isAdmin)) {
-      redirect("/dashboard");
-    }
-  }, [authLoading, isAuthenticated, isAdmin]);
+  const { isAdmin } = useAuth();
+
+  if (!isAdmin) {
+    redirect("/dashboard");
+  }
 
   const { data: teamMembers, isLoading } = useQuery({
     queryKey: ["team-members"],
     queryFn: () => apiClient.get("/admin/team/members"),
-    enabled: isAuthenticated && isAdmin,
   });
 
-  if (authLoading || isLoading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center p-6">
         <div>Loading...</div>
       </div>
     );
-  }
-
-  if (!isAuthenticated || !isAdmin) {
-    return null;
   }
 
   return (

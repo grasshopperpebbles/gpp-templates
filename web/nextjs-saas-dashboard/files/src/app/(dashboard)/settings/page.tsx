@@ -1,30 +1,10 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { redirect } from "next/navigation";
-import { useEffect } from "react";
 import Link from "next/link";
 
 export default function SettingsPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      redirect("/login");
-    }
-  }, [isLoading, isAuthenticated]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div>Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
+  const { user } = useAuth();
 
   return (
     <div className="space-y-6 p-6">
