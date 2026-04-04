@@ -2,6 +2,7 @@ services:
   # Redis broker
   redis:
     image: redis:7-alpine
+    container_name: ${PROJECT_SLUG:-celery}-redis
     ports:
       - "6379:6379"
     volumes:
@@ -16,6 +17,7 @@ services:
   # Celery worker
   worker:
     build: .
+    container_name: ${PROJECT_SLUG:-celery}-worker
     env_file:
       - .env
     depends_on:
@@ -35,6 +37,7 @@ services:
   # Uncomment if you need scheduled tasks
   # beat:
   #   build: .
+  #   container_name: ${PROJECT_SLUG:-celery}-beat
   #   env_file:
   #     - .env
   #   depends_on:
@@ -47,6 +50,7 @@ services:
   # Uncomment to enable web-based task monitoring at http://localhost:5555
   # flower:
   #   build: .
+  #   container_name: ${PROJECT_SLUG:-celery}-flower
   #   env_file:
   #     - .env
   #   depends_on:

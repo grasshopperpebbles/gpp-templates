@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: ${PROJECT_SLUG:-go-http}-api
     ports:
       - "8080:8080"
     environment:
@@ -22,6 +23,7 @@ services:
   # Uncomment to add PostgreSQL
   # db:
   #   image: postgres:16-alpine
+  #   container_name: ${PROJECT_SLUG:-go-http}-db
   #   environment:
   #     POSTGRES_USER: app
   #     POSTGRES_PASSWORD: password

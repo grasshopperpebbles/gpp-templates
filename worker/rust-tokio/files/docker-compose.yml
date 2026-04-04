@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: ${PROJECT_SLUG:-rust-tokio}-worker
     ports:
       - "8080:8080"  # Health check endpoint
     environment:
@@ -26,6 +27,7 @@ services:
   # Uncomment to add Redis for job queue
   # redis:
   #   image: redis:7-alpine
+  #   container_name: ${PROJECT_SLUG:-rust-tokio}-redis
   #   ports:
   #     - "6379:6379"
   #   volumes:

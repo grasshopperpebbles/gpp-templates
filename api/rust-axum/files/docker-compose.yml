@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: ${PROJECT_SLUG:-rust-axum}-api
     ports:
       - "8000:8000"
     environment:
@@ -27,6 +28,7 @@ services:
   # Uncomment to add PostgreSQL
   # db:
   #   image: postgres:16-alpine
+  #   container_name: ${PROJECT_SLUG:-rust-axum}-db
   #   ports:
   #     - "5432:5432"
   #   environment:

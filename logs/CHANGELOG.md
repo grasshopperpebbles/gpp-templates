@@ -1,6 +1,21 @@
 
 ---
 
+## [Unreleased] - 2026-04-04 - Add container_name to backend docker-compose templates
+
+**Status:** COMPLETED
+
+Added `container_name` using `${PROJECT_SLUG}` prefix to all backend templates that were missing it. Without explicit container names, Docker Desktop shows bare generic names like `redis`, `db`, `phpmyadmin` — impossible to distinguish across projects.
+
+### Files modified
+- `python/fastapi/files/docker-compose.yml` — Added container_name to db, api, redis services
+- `api/go-http/files/docker-compose.yml` — Added container_name to api, db services
+- `api/rust-axum/files/docker-compose.yml` — Added container_name to api, db services
+- `worker/celery-python/files/docker-compose.yml` — Added container_name to redis, worker, beat, flower services
+- `worker/rust-tokio/files/docker-compose.yml` — Added container_name to worker, redis services
+
+---
+
 ## [Unreleased] - 2026-04-04 - SaaS dashboard: feature-flagged team/billing
 
 **Status:** COMPLETED

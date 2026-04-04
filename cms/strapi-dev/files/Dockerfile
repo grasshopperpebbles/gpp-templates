@@ -20,9 +20,10 @@ RUN CI=true npm install --legacy-peer-deps
 # Copy application files (excluding start-strapi.sh which we'll copy separately)
 COPY . .
 
-# Copy startup script to /usr/local/bin (not in /opt/app to avoid volume mount override)
+# Copy startup scripts to /usr/local/bin (not in /opt/app to avoid volume mount override)
 COPY start-strapi.sh /usr/local/bin/start-strapi.sh
-RUN chmod +x /usr/local/bin/start-strapi.sh
+COPY scripts/strapi-first-start.sh /usr/local/bin/strapi-first-start.sh
+RUN chmod +x /usr/local/bin/start-strapi.sh /usr/local/bin/strapi-first-start.sh
 
 # Expose port
 EXPOSE 1337

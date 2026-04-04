@@ -1,9 +1,8 @@
 #===============================================================================
 # STRAPI DEVELOPMENT - DOCKER COMPOSE
 #===============================================================================
-# This file uses environment variables from .env
-# First-start script runs automatically when container starts (once).
-# Run: docker compose --env-file .env up -d
+# Strapi starts via start-strapi.sh (install deps, first-start once, then develop).
+# Uses environment variables from .env. Run: docker compose --env-file .env up -d
 #===============================================================================
 
 # Fixed project name prevents volume name changes when directory is renamed
@@ -80,13 +79,11 @@ services:
       - ./config:/opt/app/config
       - ./database:/opt/app/database
       - ./public:/opt/app/public
-      - ./scripts/strapi-first-start.sh:/usr/local/bin/strapi-first-start.sh:ro
     ports:
       - "${STRAPI_PORT:-1338}:1337"
       - "5173:5173"  # Vite dev server for admin panel
     networks:
       - strapi-dev-network
-    command: ["bash", "-c", "(npm run develop &); while ! curl -sf http://localhost:1337/_health >/dev/null 2>&1; do sleep 3; done; [ -f /opt/app/.gpp-strapi-setup-done ] || (echo '[gpp] Running first-start...' && bash /usr/local/bin/strapi-first-start.sh && touch /opt/app/.gpp-strapi-setup-done); wait"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:1337/_health"]
       interval: 30s

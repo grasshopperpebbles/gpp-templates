@@ -1,6 +1,30 @@
 
 ---
 
+## Session: Docker container naming conventions (2026-04-04)
+
+**Date:** 2026-04-04
+**Focus:** Add `container_name` to backend docker-compose templates that were missing it.
+
+### Context
+
+Five backend templates had no `container_name` set in their docker-compose.yml files. This caused Docker Desktop to show bare generic names (`redis`, `db`) that are indistinguishable across projects. The CMS and Strapi templates already used `${PROJECT_SLUG:-default}-service` naming — these five did not.
+
+### What changed
+
+- Added `container_name: ${PROJECT_SLUG:-<default>}-<service>` to all active and commented-out services in:
+  - `python/fastapi` (db, api, redis)
+  - `api/go-http` (api, db)
+  - `api/rust-axum` (api, db)
+  - `worker/celery-python` (redis, worker, beat, flower)
+  - `worker/rust-tokio` (worker, redis)
+
+### Result
+
+All backend templates now produce project-prefixed container names in Docker Desktop (e.g. `myproject-db`, `myproject-api` instead of bare `db`, `api`).
+
+---
+
 ## Session: SaaS dashboard feature flags and route group layout (2026-04-04)
 
 **Date:** 2026-04-04

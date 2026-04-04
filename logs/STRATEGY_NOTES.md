@@ -1,6 +1,14 @@
 
 ---
 
+## Docker container naming convention (2026-04-04)
+
+**Decision:** All backend docker-compose templates must set `container_name: ${PROJECT_SLUG:-<default>}-<service>` on every service.
+
+**Rationale:** Without explicit container names, Docker uses bare service names (`redis`, `db`) which collide across projects and are unidentifiable in Docker Desktop. The `${PROJECT_SLUG}` env var is already used by CMS/Strapi templates. Commented-out optional services should also include the pattern so it's correct when uncommented.
+
+---
+
 ## Feature flags for opt-in template features (2026-04-04)
 
 **Decision:** Multi-tenant features (team management, billing) in the `nextjs-saas-dashboard` template are controlled by runtime env vars (`NEXT_PUBLIC_ENABLE_TEAMS`, `NEXT_PUBLIC_ENABLE_BILLING`), defaulting to `false`. All code is scaffolded but dormant until the user sets the flag to `true`.
