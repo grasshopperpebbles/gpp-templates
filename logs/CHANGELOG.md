@@ -1,6 +1,25 @@
 
 ---
 
+## [Unreleased] - 2026-04-04 - SaaS dashboard: feature-flagged team/billing
+
+**Status:** COMPLETED
+
+Added feature flags to the `nextjs-saas-dashboard` template so team management and billing are opt-in (off by default). Restructured authenticated pages into a `(dashboard)` route group with a shared layout that handles auth guards and sidebar navigation.
+
+### Files modified
+- `web/nextjs-saas-dashboard/files/src/lib/config.ts` — Added `teams` and `billing` feature flags
+- `web/nextjs-saas-dashboard/files/env.example.txt` — Added `NEXT_PUBLIC_ENABLE_TEAMS=false` and `NEXT_PUBLIC_ENABLE_BILLING=false`
+- `web/nextjs-saas-dashboard/files/src/app/(dashboard)/layout.tsx` — New route group layout with auth guard and conditional sidebar nav
+- `web/nextjs-saas-dashboard/files/src/app/(dashboard)/admin/team/page.tsx` — Feature-gated behind `NEXT_PUBLIC_ENABLE_TEAMS`
+- `web/nextjs-saas-dashboard/files/src/app/(dashboard)/admin/billing/page.tsx` — Feature-gated behind `NEXT_PUBLIC_ENABLE_BILLING`
+- `web/nextjs-saas-dashboard/files/src/app/(dashboard)/dashboard/page.tsx` — Simplified (auth handled by layout)
+- `web/nextjs-saas-dashboard/files/src/app/(dashboard)/settings/page.tsx` — Simplified (auth handled by layout)
+- `web/nextjs-saas-dashboard/files/src/app/(dashboard)/settings/profile/page.tsx` — Simplified (auth handled by layout)
+- `web/nextjs-saas-dashboard/variant.json` — Added `optIn` features/routes sections
+
+---
+
 ## [Unreleased] - 2026-04-02 - Added video platform with remotion variant
 
 **Status:** COMPLETED

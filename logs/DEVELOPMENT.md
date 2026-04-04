@@ -1,6 +1,31 @@
 
 ---
 
+## Session: SaaS dashboard feature flags and route group layout (2026-04-04)
+
+**Date:** 2026-04-04
+**Focus:** Make team management and billing opt-in via feature flags in the `nextjs-saas-dashboard` template.
+
+### Context
+
+The `nextjs-saas-dashboard` template baked in multi-tenant features (team management, billing, RBAC) that are unnecessary for single-creator use cases. These features added ~30% code weight to the default experience.
+
+### What changed
+
+- Added `teams` and `billing` feature flags to `config.ts` (pattern matches existing `auth`, `api`, etc. flags)
+- Added `NEXT_PUBLIC_ENABLE_TEAMS=false` and `NEXT_PUBLIC_ENABLE_BILLING=false` to `env.example.txt`
+- Created `(dashboard)` route group with shared layout that handles auth guards and sidebar navigation
+- Admin pages (team, billing) gate on their respective feature flags — redirect to `/dashboard` when off
+- Sidebar conditionally shows admin group items based on feature flags
+- Auth boilerplate removed from individual pages (layout handles it)
+- Updated `variant.json` with `optIn` features and routes sections
+
+### Result
+
+Template is lighter by default. `gpp add web nextjs-saas-dashboard` scaffolds a dashboard with auth, data tables, settings — no team/billing unless opted in. Bundled into gpp-cli.
+
+---
+
 ## Session: Added video platform with remotion variant (2026-04-02)
 
 **Date:** 2026-04-02

@@ -1,6 +1,14 @@
 
 ---
 
+## Feature flags for opt-in template features (2026-04-04)
+
+**Decision:** Multi-tenant features (team management, billing) in the `nextjs-saas-dashboard` template are controlled by runtime env vars (`NEXT_PUBLIC_ENABLE_TEAMS`, `NEXT_PUBLIC_ENABLE_BILLING`), defaulting to `false`. All code is scaffolded but dormant until the user sets the flag to `true`.
+
+**Rationale:** Runtime flags (vs build-time scaffolder exclusion) mean users can enable features by flipping an env var without re-scaffolding. The code cost of including dormant features is minimal (two page files + sidebar conditionals). This pattern extends the existing `features` object in `config.ts` that already gates auth and API integration.
+
+---
+
 ## Hero slider sync scope (2026-03-04)
 
 **Decision:** Full sync of hero slider to gpp-templates: Next.js web variants, SvelteKit web variants (with Svelte 5 component port), Strapi schemas, and WP plugin to all CMS variants.
