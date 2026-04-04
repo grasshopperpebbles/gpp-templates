@@ -45,6 +45,18 @@ export const features = {
    * Always available by default
    */
   settings: true,
+
+  /**
+   * Team Management - Enable team member management and invitations
+   * Set NEXT_PUBLIC_ENABLE_TEAMS=true to enable
+   */
+  teams: process.env.NEXT_PUBLIC_ENABLE_TEAMS === "true",
+
+  /**
+   * Billing - Enable subscription and billing management
+   * Set NEXT_PUBLIC_ENABLE_BILLING=true to enable
+   */
+  billing: process.env.NEXT_PUBLIC_ENABLE_BILLING === "true",
 } as const;
 
 /**
