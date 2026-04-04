@@ -1,8 +1,9 @@
 {
   "name": "saas-dashboard",
   "displayName": "SaaS Dashboard",
-  "description": "Next.js frontend template for customer-facing SaaS application dashboards. Includes authentication, data visualization, real-time updates, and admin features within the app.",
+  "description": "Next.js dashboard template for SaaS applications. Auth, data tables, settings included by default. Team management and billing available via feature flags.",
   "platform": "web",
+  "isDefault": false,
   "dependencies": {
     "requires": ["api"],
     "requiresVariant": null,
@@ -10,39 +11,32 @@
   },
   "features": {
     "included": [
-      "Customer-facing dashboard",
       "Authentication (JWT-based AuthContext)",
       "Protected routes",
-      "Data visualization (charts, metrics)",
-      "Real-time data support (WebSocket/polling)",
+      "Dashboard with stats cards",
+      "Data tables (sortable, filterable, paginated)",
+      "User settings and profile",
       "API integration (Express/FastAPI)",
-      "User profile and settings",
-      "Admin features (team management, billing)",
-      "Responsive design",
-      "React Query for data fetching"
+      "Dark mode",
+      "Responsive sidebar layout",
+      "React Query data fetching",
+      "Toast notifications"
+    ],
+    "optIn": [
+      "Team management (NEXT_PUBLIC_ENABLE_TEAMS)",
+      "Billing management (NEXT_PUBLIC_ENABLE_BILLING)"
     ],
     "excluded": [
       "CMS integration",
       "WordPress backend",
       "E-commerce functionality",
-      "Content management",
-      "Blog/articles"
+      "Content management"
     ]
   },
   "homepageType": "dashboard",
   "routes": {
-    "api": [
-      "/api/auth",
-      "/api/dashboard",
-      "/api/health"
-    ],
-    "shared": [
-      "/dashboard",
-      "/settings",
-      "/profile",
-      "/login",
-      "/register",
-      "/admin"
-    ]
+    "api": ["/api/auth", "/api/dashboard", "/api/health"],
+    "shared": ["/dashboard", "/settings", "/profile", "/login", "/register"],
+    "optIn": ["/admin/team", "/admin/billing"]
   }
 }
