@@ -1,6 +1,27 @@
 
 ---
 
+## Session: Align FastAPI recipes with patched gpp-cli init flow (2026-04-06)
+
+**Date:** 2026-04-06
+**Focus:** Sync `gpp-templates` recipe references with the fixed `gpp-cli` recipe/apply behavior after `meme-battles` exposed mismatches.
+
+### Context
+
+The SaaS FastAPI recipe still referenced `python/fastapi` and the hyphenated adapter name `nextjs-to-fastapi`. After reviewing the regenerated `meme-battles` failure and the working `tubekast` project, it was clear the recipe pack IDs and adapter IDs had to be aligned with the CLI's current naming and adapter registry.
+
+### What changed
+
+- `recipes/saas/nextjs-fastapi-postgres.yaml`
+  - switched FastAPI workspace pack from `python/fastapi` to `api/fastapi`
+  - switched adapter ID from `nextjs-to-fastapi` to `next_to_fastapi`
+- `recipes/mobile/flutter-fastapi.yaml`
+  - switched FastAPI workspace pack from `python/fastapi` to `api/fastapi`
+
+### Result
+
+`gpp-templates` recipes now match the patched `gpp-cli` behavior, so future recipe installs and recipe-based project scaffolds stay aligned instead of reproducing the same init mismatch.
+
 ## Session: Docker container naming conventions (2026-04-04)
 
 **Date:** 2026-04-04

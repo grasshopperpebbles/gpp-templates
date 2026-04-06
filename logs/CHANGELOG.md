@@ -1,6 +1,23 @@
 
 ---
 
+## [Unreleased] - 2026-04-06 - Align FastAPI recipes with current GPP init behavior
+
+**Status:** COMPLETED
+
+Updated the FastAPI-backed recipes so they match the current GPP adapter and template naming:
+
+### Files modified
+- `recipes/saas/nextjs-fastapi-postgres.yaml`
+  - changed `pack: python/fastapi` to `pack: api/fastapi`
+  - changed adapter ID from `nextjs-to-fastapi` to `next_to_fastapi`
+- `recipes/mobile/flutter-fastapi.yaml`
+  - changed `pack: python/fastapi` to `pack: api/fastapi`
+
+### Rationale
+- recipe IDs and pack references must match the active adapter registry and bundled template namespace
+- keeping `gpp-templates` aligned with `gpp-cli` prevents recipe-init drift between the two repos
+
 ## [Unreleased] - 2026-04-04 - Add container_name to backend docker-compose templates
 
 **Status:** COMPLETED

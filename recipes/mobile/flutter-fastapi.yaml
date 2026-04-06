@@ -12,7 +12,7 @@ workspaces:
 
   - id: api
     path: apps/api
-    pack: python/fastapi
+    pack: api/fastapi
     deployTarget: railway
 
   - id: web

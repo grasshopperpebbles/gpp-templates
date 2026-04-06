@@ -12,11 +12,11 @@ workspaces:
 
   - id: api
     path: apps/api
-    pack: python/fastapi
+    pack: api/fastapi
     deployTarget: railway
 
 adapters:
-  - id: nextjs-to-fastapi
+  - id: next_to_fastapi
     args:
       webId: web
       apiId: api
