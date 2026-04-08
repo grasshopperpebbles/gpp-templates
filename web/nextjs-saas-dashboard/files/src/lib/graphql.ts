@@ -1,8 +1,8 @@
 /**
  * GraphQL Client for SaaS Dashboard
- * 
+ *
  * Works with any GraphQL endpoint (FastAPI, Strapi, etc.)
- * Supports Bearer token authentication
+ * Supports Bearer token authentication.
  */
 
 const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "";
@@ -33,22 +33,12 @@ export class GraphQLClient {
    */
   setAuthToken(token: string | null) {
     this.authToken = token;
-    if (typeof window !== "undefined") {
-      if (token) {
-        localStorage.setItem("graphql_auth_token", token);
-      } else {
-        localStorage.removeItem("graphql_auth_token");
-      }
-    }
   }
 
   /**
-   * Get stored auth token from localStorage
+   * Get the in-memory auth token
    */
   getAuthToken(): string | null {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("graphql_auth_token") || this.authToken;
-    }
     return this.authToken;
   }
 

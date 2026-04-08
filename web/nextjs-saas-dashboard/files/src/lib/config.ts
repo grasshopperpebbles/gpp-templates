@@ -11,16 +11,10 @@
 
 export const features = {
   /**
-   * Authentication - Enable login/register functionality
-   * Set NEXT_PUBLIC_ENABLE_AUTH=true to enable
-   */
-  auth: process.env.NEXT_PUBLIC_ENABLE_AUTH === "true",
-
-  /**
    * API Integration - Enable API client and data fetching
-   * Automatically enabled when NEXT_PUBLIC_API_URL is set
+   * Automatically enabled when NEXT_PUBLIC_API_BASE_URL is set
    */
-  api: !!process.env.NEXT_PUBLIC_API_URL,
+  api: !!process.env.NEXT_PUBLIC_API_BASE_URL,
 
   /**
    * Search - Enable search functionality
@@ -63,7 +57,7 @@ export const features = {
  * API Configuration
  */
 export const apiConfig = {
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || "",
+  baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "",
   timeout: 30000,
   retries: 3,
 } as const;

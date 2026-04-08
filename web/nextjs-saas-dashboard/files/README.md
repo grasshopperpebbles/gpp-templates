@@ -4,8 +4,8 @@ A comprehensive Next.js template for building customer-facing SaaS application d
 
 ## Features
 
-- ✅ Authentication (JWT-based AuthContext)
-- ✅ Protected routes
+- ✅ NextAuth/Auth.js credentials session
+- ✅ Server-side protected dashboard and admin routes
 - ✅ API integration (Express/FastAPI)
 - ✅ Data visualization ready (Recharts)
 - ✅ Real-time data support (WebSocket/polling hooks)
@@ -30,6 +30,9 @@ cp env.example.txt .env.local
 3. Update `.env.local` with your API configuration:
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api/v1
+API_URL=http://api:3001/api/v1
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=replace-with-a-long-random-secret
 ```
 
 4. Run the development server:
@@ -63,17 +66,18 @@ src/
 
 ## Authentication
 
-The template includes a JWT-based authentication context (`AuthContext.tsx`). You'll need to:
+The template uses a single NextAuth credentials session flow backed by your API.
 
-1. Implement the `login` function in `contexts/AuthContext.tsx` to call your API
-2. Update `lib/api.ts` to properly handle token storage and refresh
-3. The API client automatically includes the Bearer token in requests
+1. `src/lib/auth-config.ts` calls your backend at `/auth/login`
+2. `src/contexts/AuthContext.tsx` exposes a simple `useAuth()` wrapper for app code
+3. Protected dashboard and admin segments are enforced on the server
+4. Authenticated client requests reuse the API access token from the session
 
 ## API Integration
 
 ### REST API
 
-The REST API client in `lib/api.ts` is configured to work with Express or FastAPI backends. Update the `API_BASE_URL` in your environment variables to point to your backend.
+The REST API client in `lib/api.ts` uses `NEXT_PUBLIC_API_BASE_URL`. Server-side auth callbacks can use `API_URL` when the browser-facing URL differs from the internal network URL.
 
 ### GraphQL (Optional)
 
@@ -119,7 +123,7 @@ const result = await graphqlClient.mutate(`
 
 ## Next Steps
 
-1. **Implement Authentication**: Connect the auth context to your API
+1. **Verify auth endpoints**: Confirm `/auth/login`, `/auth/register`, and `/users/me` match your backend
 2. **Customize Dashboard**: Update dashboard pages with your data and metrics
 3. **Add Charts**: Use Recharts to visualize your data
 4. **Implement Admin Features**: Add team management and billing pages

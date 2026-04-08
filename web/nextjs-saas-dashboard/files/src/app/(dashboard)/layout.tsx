@@ -1,34 +1,18 @@
-"use client";
-
-import { useAuth } from "@/contexts/AuthContext";
 import { redirect } from "next/navigation";
-import { useEffect } from "react";
+import { getServerSession } from "next-auth";
 import { Sidebar, SidebarLayout } from "@/components/layout/sidebar";
 import { features } from "@/lib/config";
+import { authOptions } from "@/lib/auth-config";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const session = await getServerSession(authOptions);
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      redirect("/login");
-    }
-  }, [isLoading, isAuthenticated]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div>Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
+  if (!session) {
+    redirect("/login");
   }
 
   const mainItems = [
@@ -37,10 +21,10 @@ export default function DashboardLayout({
   ];
 
   const adminItems = [
-    ...(features.teams
+    ...(session.user.role === "admin" && features.teams
       ? [{ href: "/admin/team", label: "Team" }]
       : []),
-    ...(features.billing
+    ...(session.user.role === "admin" && features.billing
       ? [{ href: "/admin/billing", label: "Billing" }]
       : []),
   ];

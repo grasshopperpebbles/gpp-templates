@@ -4,12 +4,13 @@ import {
   createContext,
   useContext,
   useCallback,
-  useMemo,
-  useState,
   useEffect,
+  useMemo,
   ReactNode,
 } from "react";
-import { authApi, User, ApiClientError } from "@/lib/api";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { apiClient, ApiClientError, setApiAccessToken, User } from "@/lib/api";
+import { graphqlClient } from "@/lib/graphql";
 
 interface AuthContextType {
   user: User | null;
@@ -25,82 +26,65 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, status, update } = useSession();
+  const user = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name ?? undefined,
+        role: session.user.role,
+      }
+    : null;
+  const isLoading = status === "loading";
 
-  // Check auth status on mount
   useEffect(() => {
-    checkAuth();
-  }, []);
+    setApiAccessToken(session?.accessToken ?? null);
+    graphqlClient.setAuthToken(session?.accessToken ?? null);
+  }, [session?.accessToken]);
 
-  const checkAuth = async () => {
-    setIsLoading(true);
-    try {
-      if (authApi.isAuthenticated()) {
-        const userData = await authApi.getMe();
-        setUser(userData);
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      // Token might be expired, try to refresh
-      if (error instanceof ApiClientError && error.status === 401) {
-        const refreshed = await authApi.refreshToken();
-        if (refreshed) {
-          try {
-            const userData = await authApi.getMe();
-            setUser(userData);
-          } catch {
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-  const login = useCallback(async (email: string, password: string) => {
-    await authApi.login(email, password);
-    const userData = await authApi.getMe();
-    setUser(userData);
-  }, []);
+      if (!result || result.error) {
+        throw new ApiClientError(result?.error || "Login failed");
+      }
+
+      await update();
+    },
+    [update]
+  );
 
   const logout = useCallback(async () => {
-    authApi.logout();
-    setUser(null);
+    setApiAccessToken(null);
+    await signOut({ redirect: false });
   }, []);
 
   const register = useCallback(
     async (email: string, password: string, name?: string) => {
-      await authApi.register(email, password, name);
-      const userData = await authApi.getMe();
-      setUser(userData);
+      await apiClient.post("/auth/register", { email, password, name });
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (!result || result.error) {
+        throw new ApiClientError(result?.error || "Registration failed");
+      }
+
+      await update();
     },
-    []
+    [update]
   );
 
   const refreshUser = useCallback(async () => {
-    if (authApi.isAuthenticated()) {
-      try {
-        const userData = await authApi.getMe();
-        setUser(userData);
-      } catch {
-        // If fetching user fails, token might be expired
-        const refreshed = await authApi.refreshToken();
-        if (refreshed) {
-          const userData = await authApi.getMe();
-          setUser(userData);
-        } else {
-          setUser(null);
-        }
-      }
-    }
-  }, []);
+    await update();
+  }, [update]);
 
   const value: AuthContextType = useMemo(
     () => ({

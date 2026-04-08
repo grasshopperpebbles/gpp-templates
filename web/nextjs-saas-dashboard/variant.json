@@ -11,8 +11,8 @@
   },
   "features": {
     "included": [
-      "Authentication (JWT-based AuthContext)",
-      "Protected routes",
+      "Authentication (NextAuth credentials session)",
+      "Server-protected routes",
       "Dashboard with stats cards",
       "Data tables (sortable, filterable, paginated)",
       "User settings and profile",

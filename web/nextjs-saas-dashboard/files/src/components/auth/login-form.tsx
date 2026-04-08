@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,6 +33,7 @@ interface LoginFormProps {
 
 export function LoginForm({ onSuccess, onRegisterClick }: LoginFormProps) {
   const { login } = useAuth();
+  const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -52,6 +54,7 @@ export function LoginForm({ onSuccess, onRegisterClick }: LoginFormProps) {
         variant: "success",
       });
       onSuccess?.();
+      router.push("/dashboard");
     } catch (error) {
       toast({
         title: "Login failed",
