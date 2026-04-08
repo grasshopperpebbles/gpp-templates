@@ -1,6 +1,19 @@
 
 ---
 
+## [Unreleased] - 2026-04-08 - Express + MySQL API template and Next.js SaaS recipe
+
+**Status:** COMPLETED
+
+Added **`api/express-mysql`** (Express, TypeScript, Prisma with **MySQL**) and SaaS recipe **`recipes/saas/nextjs-express-mysql.yaml`** (Next.js dashboard + Express API, **`next_to_express`** adapter). Kept in lockstep with **`gpp-cli`** bundled fallbacks and `crossRepoContract` expectations.
+
+### Files added
+- `api/express-mysql/` — template tree (`variant.json`, `files/` with Prisma schema, env examples, README)
+- `recipes/saas/nextjs-express-mysql.yaml`
+
+### Rationale
+- Same recipe and pack IDs as `gpp-cli` so offline bundle, init flows, and sibling-repo contract tests stay aligned.
+
 ## [Unreleased] - 2026-04-06 - Align FastAPI recipes with current GPP init behavior
 
 **Status:** COMPLETED

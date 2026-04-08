@@ -1,8 +1,8 @@
 services:
   # Redis broker
-  redis:
+  {{PROJECT_SLUG}}-redis:
     image: redis:7-alpine
-    container_name: ${PROJECT_SLUG:-celery}-redis
+    container_name: {{PROJECT_SLUG}}-redis
     ports:
       - "6379:6379"
     volumes:
@@ -15,13 +15,13 @@ services:
     restart: unless-stopped
 
   # Celery worker
-  worker:
+  {{PROJECT_SLUG}}-worker:
     build: .
-    container_name: ${PROJECT_SLUG:-celery}-worker
+    container_name: {{PROJECT_SLUG}}-worker
     env_file:
       - .env
     depends_on:
-      redis:
+      {{PROJECT_SLUG}}-redis:
         condition: service_healthy
     command: celery -A app.celery_app worker --loglevel=info
     # ===== OPTIONAL: Development volume mounts =====
@@ -35,26 +35,26 @@ services:
 
   # Celery Beat scheduler (for periodic tasks)
   # Uncomment if you need scheduled tasks
-  # beat:
+  # {{PROJECT_SLUG}}-beat:
   #   build: .
-  #   container_name: ${PROJECT_SLUG:-celery}-beat
+  #   container_name: {{PROJECT_SLUG}}-beat
   #   env_file:
   #     - .env
   #   depends_on:
-  #     redis:
+  #     {{PROJECT_SLUG}}-redis:
   #       condition: service_healthy
   #   command: celery -A app.celery_app beat --loglevel=info
   #   restart: unless-stopped
 
   # Flower monitoring (optional)
   # Uncomment to enable web-based task monitoring at http://localhost:5555
-  # flower:
+  # {{PROJECT_SLUG}}-flower:
   #   build: .
-  #   container_name: ${PROJECT_SLUG:-celery}-flower
+  #   container_name: {{PROJECT_SLUG}}-flower
   #   env_file:
   #     - .env
   #   depends_on:
-  #     redis:
+  #     {{PROJECT_SLUG}}-redis:
   #       condition: service_healthy
   #   command: celery -A app.celery_app flower --port=5555
   #   ports:

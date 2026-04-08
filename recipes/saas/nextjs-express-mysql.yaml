@@ -1,0 +1,26 @@
+kind: recipe
+id: nextjs-express-mysql
+version: 1.0.0
+name: Next.js + Express + MySQL
+description: Full-stack SaaS with Node.js Express API, Prisma, and MySQL (Docker)
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-saas-dashboard
+    deployTarget: vercel
+
+  - id: api
+    path: apps/api
+    pack: api/express-mysql
+    deployTarget: railway
+
+adapters:
+  - id: next_to_express
+    args:
+      webId: web
+      apiId: api
+
+installers:
+  - action: envSeed
+    args: { profile: dev }

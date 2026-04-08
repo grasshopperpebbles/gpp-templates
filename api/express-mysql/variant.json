@@ -1,0 +1,38 @@
+{
+  "name": "express-mysql",
+  "displayName": "Express API (MySQL)",
+  "description": "Node.js Express API with TypeScript, Prisma (MySQL), and the same middleware stack as the Express template. Use with Docker MySQL for local development.",
+  "platform": "api",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Express.js with TypeScript",
+      "Prisma ORM with MySQL",
+      "Comprehensive middleware stack",
+      "Security headers (Helmet)",
+      "CORS configuration",
+      "Request ID tracking",
+      "Performance logging",
+      "Zod schema validation",
+      "Error handling with request IDs",
+      "JWT authentication support",
+      "Rate limiting",
+      "Type-safe routes",
+      "Health check endpoint",
+      "Graceful shutdown"
+    ],
+    "excluded": [
+      "PostgreSQL (this variant targets MySQL)",
+      "Docker configuration in template (GPP recipe adds root docker-compose for MySQL)"
+    ]
+  },
+  "homepageType": "api",
+  "routes": {
+    "api": ["/api", "/api/v1"],
+    "shared": []
+  }
+}

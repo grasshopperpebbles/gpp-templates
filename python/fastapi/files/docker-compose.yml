@@ -1,7 +1,7 @@
 services:
-  db:
-    image: postgres:16
-    container_name: ${PROJECT_SLUG:-fastapi}-db
+  {{PROJECT_SLUG}}-db:
+    image: postgres:16-alpine
+    container_name: {{PROJECT_SLUG}}-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -18,11 +18,11 @@ services:
 
   # ===== OPTIONAL: Redis for caching and rate limiting =====
   # Uncomment to enable Redis. Then set REDIS_URL in .env:
-  #   REDIS_URL=redis://redis:6379/0
+  #   REDIS_URL=redis://{{PROJECT_SLUG}}-redis:6379/0
   #
-  # redis:
+  # {{PROJECT_SLUG}}-redis:
   #   image: redis:7-alpine
-  #   container_name: ${PROJECT_SLUG:-fastapi}-redis
+  #   container_name: {{PROJECT_SLUG}}-redis
   #   ports:
   #     - "6379:6379"
   #   volumes:
@@ -33,16 +33,16 @@ services:
   #     timeout: 3s
   #     retries: 30
 
-  api:
+  {{PROJECT_SLUG}}-api:
     build: .
-    container_name: ${PROJECT_SLUG:-fastapi}-api
+    container_name: {{PROJECT_SLUG}}-api
     env_file:
       - .env
     depends_on:
-      db:
+      {{PROJECT_SLUG}}-db:
         condition: service_healthy
       # Uncomment if using Redis:
-      # redis:
+      # {{PROJECT_SLUG}}-redis:
       #   condition: service_healthy
     ports:
       - "8000:8000"
