@@ -32,7 +32,7 @@ See [CRUD Generation Guide](#crud-generation) below for details.
 - ✅ System configuration
 - ✅ Analytics and reporting
 - ✅ API integration (Express/FastAPI)
-- ✅ Protected admin routes
+- ✅ Server-side protected admin routes
 - ✅ Responsive design
 - ✅ React Query for data fetching
 
@@ -50,7 +50,8 @@ cp env.example.txt .env.local
 
 3. Update `.env.local`:
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api/v1
+API_URL=http://api:4000/api/v1
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
 ```
@@ -175,7 +176,7 @@ Update `src/lib/auth-config.ts` to configure:
 
 ### Protecting Routes
 
-All `/admin/*` routes are protected by default. The `AuthContext` provides:
+All `/admin/*` routes are protected by server-side session checks. The `AuthContext` provides:
 
 ```typescript
 const { user, isAdmin, isLoading, login, logout } = useAuth();
@@ -189,7 +190,8 @@ const { user, isAdmin, isLoading, login, logout } = useAuth();
 
 Configure in `.env.local`:
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:4000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api/v1
+API_URL=http://api:4000/api/v1
 ```
 
 Use the API client:

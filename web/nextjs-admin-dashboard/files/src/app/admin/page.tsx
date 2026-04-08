@@ -3,34 +3,21 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
-import { redirect } from "next/navigation";
-import { useEffect } from "react";
 
 export default function AdminDashboardPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      redirect("/login");
-    }
-  }, [isLoading, isAuthenticated]);
+  const { user } = useAuth();
 
   const { data: stats, isLoading: dataLoading } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: () => apiClient.get("/admin/stats"),
-    enabled: isAuthenticated,
   });
 
-  if (isLoading || dataLoading) {
+  if (dataLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div>Loading...</div>
       </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (

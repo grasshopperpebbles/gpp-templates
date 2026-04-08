@@ -1,36 +1,23 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { redirect } from "next/navigation";
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 
 export default function UsersManagementPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      redirect("/login");
-    }
-  }, [authLoading, isAuthenticated]);
+  useAuth();
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: () => apiClient.get("/admin/users"),
-    enabled: isAuthenticated,
   });
 
-  if (authLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div>Loading...</div>
       </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (

@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,6 +45,7 @@ interface RegisterFormProps {
 
 export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
   const { register } = useAuth();
+  const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
 
   const form = useForm<RegisterFormValues>({
@@ -61,11 +63,12 @@ export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
     try {
       await register(data.email, data.password, data.name);
       toast({
-        title: "Account created!",
-        description: "Welcome to the app.",
-        variant: "success",
+        title: "Registration disabled",
+        description: "Admin accounts must be provisioned outside the dashboard.",
+        variant: "destructive",
       });
       onSuccess?.();
+      router.push("/login");
     } catch (error) {
       toast({
         title: "Registration failed",

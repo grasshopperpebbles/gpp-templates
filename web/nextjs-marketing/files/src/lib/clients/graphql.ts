@@ -1,8 +1,8 @@
 /**
  * Generic GraphQL Client
- * 
+ *
  * Works with any GraphQL endpoint (FastAPI, Strapi, WordPress, etc.)
- * Supports Bearer token authentication and custom headers
+ * Supports Bearer token authentication and custom headers.
  */
 
 import { env } from "@/lib/env";
@@ -34,23 +34,12 @@ export class GraphQLClient {
    */
   setAuthToken(token: string | null) {
     this.authToken = token;
-    // Persist to localStorage if available
-    if (typeof window !== "undefined") {
-      if (token) {
-        localStorage.setItem("graphql_auth_token", token);
-      } else {
-        localStorage.removeItem("graphql_auth_token");
-      }
-    }
   }
 
   /**
-   * Get stored auth token from localStorage
+   * Get the in-memory auth token
    */
   getAuthToken(): string | null {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("graphql_auth_token");
-    }
     return this.authToken;
   }
 
@@ -59,22 +48,12 @@ export class GraphQLClient {
    */
   setSessionToken(token: string | null) {
     this.sessionToken = token;
-    if (typeof window !== "undefined") {
-      if (token) {
-        localStorage.setItem("graphql_session_token", token);
-      } else {
-        localStorage.removeItem("graphql_session_token");
-      }
-    }
   }
 
   /**
-   * Get stored session token from localStorage
+   * Get the in-memory session token
    */
   getSessionToken(): string | null {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("graphql_session_token");
-    }
     return this.sessionToken;
   }
 

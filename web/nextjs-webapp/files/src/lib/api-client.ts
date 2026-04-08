@@ -26,7 +26,7 @@ class ApiError extends Error {
   }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 function buildUrl(
   path: string,
@@ -55,14 +55,8 @@ async function request<TResponse, TBody = unknown>(
     ...headers,
   };
 
-  // Add auth token if auth is enabled and token exists
-  if (features.auth) {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-    if (token) {
-      requestHeaders["Authorization"] = `Bearer ${token}`;
-    }
-  }
+  // Auth headers should be passed explicitly by the chosen auth/session layer.
+  // This client does not assume token storage.
 
   const response = await fetch(url, {
     method,

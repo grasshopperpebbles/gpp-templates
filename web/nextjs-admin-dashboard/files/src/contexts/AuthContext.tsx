@@ -4,12 +4,13 @@ import {
   createContext,
   useContext,
   useCallback,
-  useMemo,
-  useState,
   useEffect,
+  useMemo,
   ReactNode,
 } from "react";
-import { authApi, User, ApiClientError } from "@/lib/api";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { ApiClientError, setApiAccessToken, User } from "@/lib/api";
+import { graphqlClient } from "@/lib/graphql";
 
 interface AuthContextType {
   user: User | null;
@@ -18,106 +19,66 @@ interface AuthContextType {
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  register: (email: string, password: string, name?: string) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, status, update } = useSession();
+  const user = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name ?? undefined,
+        role: session.user.role,
+      }
+    : null;
+  const isLoading = status === "loading";
 
-  // Check auth status on mount
   useEffect(() => {
-    checkAuth();
-  }, []);
+    setApiAccessToken(session?.accessToken ?? null);
+    graphqlClient.setAuthToken(session?.accessToken ?? null);
+  }, [session?.accessToken]);
 
-  const checkAuth = async () => {
-    setIsLoading(true);
-    try {
-      if (authApi.isAuthenticated()) {
-        const userData = await authApi.getMe();
-        // Admin dashboard requires admin role
-        if (userData.role !== "admin") {
-          authApi.logout();
-          setUser(null);
-        } else {
-          setUser(userData);
-        }
-      } else {
-        setUser(null);
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (!result || result.error) {
+        throw new ApiClientError(result?.error || "Login failed");
       }
-    } catch (error) {
-      // Token might be expired, try to refresh
-      if (error instanceof ApiClientError && error.status === 401) {
-        const refreshed = await authApi.refreshToken();
-        if (refreshed) {
-          try {
-            const userData = await authApi.getMe();
-            if (userData.role === "admin") {
-              setUser(userData);
-            } else {
-              authApi.logout();
-              setUser(null);
-            }
-          } catch {
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
-      } else {
-        setUser(null);
+
+      const updated = await update();
+      const nextRole = updated?.user?.role ?? session?.user?.role;
+      if (nextRole !== "admin") {
+        setApiAccessToken(null);
+        graphqlClient.setAuthToken(null);
+        await signOut({ redirect: false });
+        throw new Error("Access denied. Admin privileges required.");
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const login = useCallback(async (email: string, password: string) => {
-    await authApi.login(email, password);
-    const userData = await authApi.getMe();
-
-    // Admin dashboard requires admin role
-    if (userData.role !== "admin") {
-      authApi.logout();
-      throw new Error("Access denied. Admin privileges required.");
-    }
-
-    setUser(userData);
-  }, []);
+    },
+    [session?.user?.role, update]
+  );
 
   const logout = useCallback(async () => {
-    authApi.logout();
-    setUser(null);
+    setApiAccessToken(null);
+    graphqlClient.setAuthToken(null);
+    await signOut({ redirect: false });
+  }, []);
+
+  const register = useCallback(async () => {
+    throw new Error("Admin self-registration is disabled.");
   }, []);
 
   const refreshUser = useCallback(async () => {
-    if (authApi.isAuthenticated()) {
-      try {
-        const userData = await authApi.getMe();
-        if (userData.role === "admin") {
-          setUser(userData);
-        } else {
-          authApi.logout();
-          setUser(null);
-        }
-      } catch {
-        const refreshed = await authApi.refreshToken();
-        if (refreshed) {
-          const userData = await authApi.getMe();
-          if (userData.role === "admin") {
-            setUser(userData);
-          } else {
-            authApi.logout();
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
-      }
-    }
-  }, []);
+    await update();
+  }, [update]);
 
   const value: AuthContextType = useMemo(
     () => ({
@@ -127,9 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: user?.role === "admin",
       login,
       logout,
+      register,
       refreshUser,
     }),
-    [user, isLoading, login, logout, refreshUser]
+    [user, isLoading, login, logout, register, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

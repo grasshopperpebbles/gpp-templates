@@ -1,7 +1,12 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL = (
+  process.env.API_URL ||
+  process.env.INTERNAL_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "http://localhost:8000/api/v1"
+).replace(/\/$/, "");
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -18,7 +23,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           // Authenticate against your API
-          const response = await fetch(`${API_URL}/api/auth/login`, {
+          const response = await fetch(`${API_URL}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -39,7 +44,7 @@ export const authOptions: NextAuthOptions = {
             email: data.user.email,
             name: data.user.name,
             // Store the API token for making authenticated API requests
-            accessToken: data.token,
+            accessToken: data.access_token ?? data.token,
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -56,6 +61,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
     error: "/login",
   },
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
       // Initial sign in - add user data to token

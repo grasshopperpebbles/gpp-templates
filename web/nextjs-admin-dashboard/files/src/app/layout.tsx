@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { getServerSession } from "next-auth";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/feedback/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { authOptions } from "@/lib/auth-config";
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? "Admin Dashboard";
 const siteDescription = process.env.NEXT_PUBLIC_SITE_DESCRIPTION ?? "Platform administration dashboard";
@@ -29,15 +31,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="en">
       <body className="antialiased">
-        <Providers>
+        <Providers session={session}>
           <TooltipProvider>
             {children}
             <Toaster />

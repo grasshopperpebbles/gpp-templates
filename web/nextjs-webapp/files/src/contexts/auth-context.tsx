@@ -66,8 +66,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Register via API first
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-      const response = await fetch(`${API_URL}/api/auth/register`, {
+      const API_URL = (
+        process.env.API_URL ||
+        process.env.INTERNAL_API_URL ||
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "http://localhost:8000/api/v1"
+      ).replace(/\/$/, "");
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, name }),

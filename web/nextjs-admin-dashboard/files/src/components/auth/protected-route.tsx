@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/auth-context";
-import { features } from "@/lib/config";
+import { useAuth } from "@/contexts/AuthContext";
 import { Spinner } from "@/components/data/loading";
 
 interface ProtectedRouteProps {
@@ -21,16 +20,10 @@ export function ProtectedRoute({
   const { isAuthenticated, isLoading } = useAuth();
 
   React.useEffect(() => {
-    if (!features.auth) return;
     if (!isLoading && !isAuthenticated) {
       router.push(redirectTo);
     }
   }, [isLoading, isAuthenticated, router, redirectTo]);
-
-  // If auth is disabled, just render children
-  if (!features.auth) {
-    return <>{children}</>;
-  }
 
   if (isLoading) {
     return (
