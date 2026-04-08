@@ -2,17 +2,16 @@
 # HEADLESS STRAPI STARTER - DOCKER COMPOSE
 #===============================================================================
 # Strapi starts via start-strapi.sh (install deps, first-start once, then develop).
-# Uses environment variables from .env. Run: cp .env.example .env && docker compose up -d
+# Uses environment variables from .env. PROJECT_SLUG must be set (gpp recipe apply / env sync).
 #===============================================================================
 
-# Fixed project name prevents volume name changes when directory is renamed
-# This ensures database volumes persist across directory renames
-name: ${PROJECT_SLUG:-strapi}
+# Fixed compose project name from PROJECT_SLUG prevents volume name churn when the repo folder moves
+name: ${PROJECT_SLUG}
 
 services:
   db:
     image: mysql:8.0
-    container_name: ${PROJECT_SLUG:-strapi}-mysql
+    container_name: ${PROJECT_SLUG}-mysql
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-strapi}
@@ -32,8 +31,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ${PROJECT_SLUG:-strapi}-strapi:latest
-    container_name: ${PROJECT_SLUG:-strapi}-strapi
+    image: ${PROJECT_SLUG}-strapi:latest
+    container_name: ${PROJECT_SLUG}-strapi
     restart: unless-stopped
     depends_on:
       db:
@@ -93,7 +92,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin:5
-    container_name: ${PROJECT_SLUG:-strapi}-phpmyadmin
+    container_name: ${PROJECT_SLUG}-phpmyadmin
     restart: unless-stopped
     depends_on:
       - db

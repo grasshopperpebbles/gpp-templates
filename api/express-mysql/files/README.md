@@ -35,7 +35,7 @@ cp env.example.txt .env
 ```
 
 Required variables:
-- `DATABASE_URL` - MySQL connection string (e.g. `mysql://user:pass@localhost:3307/dbname`)
+- `DATABASE_URL` - MySQL URL; default DB segment is `{{PROJECT_DB_SNAKE}}_api_db` after `gpp recipe apply` (project-derived, not `myapp`). Host port **3308** avoids clashing with WordPress MariaDB on **3307**.
 - `JWT_SECRET` - Secret key for JWT tokens
 - `API_PORT` - Server port (default: 3001)
 

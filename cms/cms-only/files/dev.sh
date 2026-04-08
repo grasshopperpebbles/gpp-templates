@@ -15,6 +15,10 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}🚀 Starting Local Development Environment${NC}"
 echo "=========================================="
 
+# Compose service names (match docker-compose.yml; {{GPP_APP_KEY_PREFIX}} set by GPP recipe apply)
+WP_SVC="{{GPP_APP_KEY_PREFIX}}-wordpress"
+DB_SVC="{{GPP_APP_KEY_PREFIX}}-db"
+
 # Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}❌ Docker is not running. Please start Docker first.${NC}"
@@ -51,7 +55,7 @@ echo -e "${YELLOW}   This may take a few minutes on first run...${NC}"
 # First, wait for the container to be running
 echo -e "${YELLOW}   Checking container status...${NC}"
 timeout=30
-while ! docker compose ps wordpress | grep -q "Up" && [ $timeout -gt 0 ]; do
+while ! docker compose ps "$WP_SVC" | grep -q "Up" && [ $timeout -gt 0 ]; do
     printf "."
     sleep 2
     timeout=$((timeout - 2))
@@ -72,7 +76,7 @@ while ! curl -s --connect-timeout 5 http://localhost:8080 > /dev/null && [ $time
     if [ $((attempt % 15)) -eq 0 ]; then
         echo ""
         echo -e "${YELLOW}   Still waiting... checking container status:${NC}"
-        docker compose ps wordpress --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
+        docker compose ps "$WP_SVC" --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
     fi
 done
 echo ""
@@ -86,7 +90,7 @@ if [ $timeout -le 0 ]; then
     docker compose ps
     echo ""
     echo -e "${BLUE}Recent WordPress logs:${NC}"
-    docker compose logs --tail=50 wordpress
+    docker compose logs --tail=50 "$WP_SVC"
     echo ""
     echo -e "${YELLOW}💡 Common issues and solutions:${NC}"
     echo "   1. Port 8080 already in use:"
@@ -94,11 +98,11 @@ if [ $timeout -le 0 ]; then
     echo -e "      ${GREEN}docker compose down && docker compose up -d${NC} (restart containers)"
     echo ""
     echo "   2. Database connection issues:"
-    echo -e "      ${GREEN}docker compose logs db${NC} (check database logs)"
-    echo -e "      ${GREEN}docker compose restart db${NC} (restart database)"
+    echo -e "      ${GREEN}docker compose logs \"$DB_SVC\"${NC} (check database logs)"
+    echo -e "      ${GREEN}docker compose restart \"$DB_SVC\"${NC} (restart database)"
     echo ""
     echo "   3. First-time setup taking longer:"
-    echo -e "      ${GREEN}docker compose logs -f wordpress${NC} (watch live logs)"
+    echo -e "      ${GREEN}docker compose logs -f \"$WP_SVC\"${NC} (watch live logs)"
     echo "      Wait for 'Apache/2.4.X (Debian) PHP/8.3.X configured'"
     echo ""
     echo "   4. Permission issues:"
@@ -114,7 +118,7 @@ echo -e "${GREEN}✅ WordPress is ready!${NC}"
 echo -e "${YELLOW}🔌 Installing and configuring plugins...${NC}"
 if [ -f "install-plugins.sh" ]; then
     chmod +x install-plugins.sh
-    docker compose exec wordpress bash /usr/local/bin/install-plugins.sh
+    docker compose exec "$WP_SVC" bash /usr/local/bin/install-plugins.sh
 else
     echo -e "${YELLOW}⚠️  install-plugins.sh not found, skipping plugin setup${NC}"
 fi

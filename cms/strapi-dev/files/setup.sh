@@ -11,11 +11,15 @@ ADMIN_JWT_SECRET=$(openssl rand -base64 32)
 TRANSFER_TOKEN_SALT=$(openssl rand -base64 32)
 JWT_SECRET=$(openssl rand -base64 32)
 
-# Get project slug from .env if it exists, otherwise use default
-if [ -f .env ]; then
-  PROJECT_SLUG=$(grep "^PROJECT_SLUG=" .env | cut -d'=' -f2 | tr -d '"' || echo "strapi-dev")
-else
-  PROJECT_SLUG="strapi-dev"
+# Project slug: required for Docker names (no compose default). Prefer env or existing .env.
+if [ -n "${PROJECT_SLUG:-}" ]; then
+  :
+elif [ -f .env ]; then
+  PROJECT_SLUG=$(grep "^PROJECT_SLUG=" .env | cut -d'=' -f2 | tr -d '"' | tr -d "'") || true
+fi
+if [ -z "${PROJECT_SLUG:-}" ]; then
+  echo "Error: PROJECT_SLUG is not set. Export it (e.g. export PROJECT_SLUG=myapp) or create .env with PROJECT_SLUG=... matching your GPP project name."
+  exit 1
 fi
 
 # Create .env file

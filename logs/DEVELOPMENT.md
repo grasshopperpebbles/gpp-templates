@@ -1,6 +1,29 @@
 
 ---
 
+## Session: Log verification and push (2026-04-08)
+
+**Date:** 2026-04-08  
+**Focus:** Confirm **CHANGELOG**, **DEVELOPMENT**, **TODO**, and **STRATEGY_NOTES** match the template changes; commit and **`git push`** **`origin/main`**.
+
+**Status:** COMPLETED
+
+## Session: Project slug naming — Strapi compose and strapi-dev setup (2026-04-08)
+
+**Date:** 2026-04-08  
+**Focus:** Require **`PROJECT_SLUG`** in Strapi **`docker-compose.yml`** (no `:-strapi` defaults); **`strapi-dev`** env template and **`setup.sh`** aligned with GPP slug rules; logs updated.
+
+### Context
+WordPress CMS variants already used **`${PROJECT_SLUG}`** without compose defaults. Strapi still used **`${PROJECT_SLUG:-strapi}`**, which hid missing slugs and encouraged tutorial-style identities.
+
+### What changed
+- **`cms/strapi-only`** and **`cms/strapi-dev`** compose: **`name`**, container names, Strapi image — **`${PROJECT_SLUG}`** only.
+- **`cms/strapi-dev/files/env/.env.example`**: **`PROJECT_SLUG={{PROJECT_SLUG}}`** plus comment (no hardcoded `strapi-dev`).
+- **`cms/strapi-dev/files/setup.sh`**: fail fast if **`PROJECT_SLUG`** not in environment or `.env`.
+
+### Result
+**`gpp-templates`** matches **`gpp-cli`** bundled Strapi templates for Docker naming; **CHANGELOG**, **DEVELOPMENT**, **TODO**, **STRATEGY_NOTES** record the decision.
+
 ## Session: Express + MySQL API template and Next.js SaaS recipe (2026-04-08)
 
 **Date:** 2026-04-08  
@@ -47,11 +70,11 @@ The SaaS FastAPI recipe still referenced `python/fastapi` and the hyphenated ada
 
 ### Context
 
-Five backend templates had no `container_name` set in their docker-compose.yml files. This caused Docker Desktop to show bare generic names (`redis`, `db`) that are indistinguishable across projects. The CMS and Strapi templates already used `${PROJECT_SLUG:-default}-service` naming — these five did not.
+Five backend templates had no `container_name` set in their docker-compose.yml files. This caused Docker Desktop to show bare generic names (`redis`, `db`) that are indistinguishable across projects. CMS/Strapi templates already prefixed services with **`PROJECT_SLUG`** (Strapi later tightened to **required** `${PROJECT_SLUG}` with no compose default — see 2026-04-08 session).
 
 ### What changed
 
-- Added `container_name: ${PROJECT_SLUG:-<default>}-<service>` to all active and commented-out services in:
+- Added `container_name: ${PROJECT_SLUG}-<service>` (or equivalent with required slug) to all active and commented-out services in:
   - `python/fastapi` (db, api, redis)
   - `api/go-http` (api, db)
   - `api/rust-axum` (api, db)

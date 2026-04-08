@@ -1,11 +1,17 @@
 
 ---
 
+## Docker `PROJECT_SLUG` must not use tutorial defaults on CMS/Strapi project identity (2026-04-08)
+
+**Decision:** For **WordPress CMS** and **Strapi** templates, compose **`name`**, **`container_name`** (and Strapi **image** tags derived from the slug) use **`${PROJECT_SLUG}`** with **no** default such as **`:-strapi`** or **`:-headless`**. **`PROJECT_SLUG`** is set by **`gpp init` / recipe apply** or must be provided manually.
+
+**Rationale:** Shell defaults produce duplicate container/volume names across unrelated checkouts and invite tutorial copy-paste. Strapi is now consistent with the WordPress CMS variants.
+
 ## Docker container naming convention (2026-04-04)
 
-**Decision:** All backend docker-compose templates must set `container_name: ${PROJECT_SLUG:-<default>}-<service>` on every service.
+**Decision:** All backend docker-compose templates must set `container_name: ${PROJECT_SLUG}-<service>` (or the same pattern with a **required** `PROJECT_SLUG`) on every service. Optional **`${PROJECT_SLUG:-<default>}`** is **not** used for CMS/Strapi project identity (see 2026-04-08 note above). For other backends where a tiny default is still acceptable, prefer explicit `container_name` with `${PROJECT_SLUG}` once the project defines it.
 
-**Rationale:** Without explicit container names, Docker uses bare service names (`redis`, `db`) which collide across projects and are unidentifiable in Docker Desktop. The `${PROJECT_SLUG}` env var is already used by CMS/Strapi templates. Commented-out optional services should also include the pattern so it's correct when uncommented.
+**Rationale:** Without explicit container names, Docker uses bare service names (`redis`, `db`) which collide across projects and are unidentifiable in Docker Desktop. Commented-out optional services should also include the pattern so it is correct when uncommented.
 
 ---
 

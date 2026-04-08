@@ -1,14 +1,15 @@
 #===============================================================================
 # HEADLESS WORDPRESS STARTER - DOCKER COMPOSE
 #===============================================================================
-# This file uses environment variables from .env
+# Service keys use {{GPP_APP_KEY_PREFIX}} so `gpp verify` passes (Docker Desktop
+# shows the service key). Substituted on recipe apply.
 # Run: cp .env.example .env && docker compose up -d
 #===============================================================================
 
 services:
-  db:
+  {{GPP_APP_KEY_PREFIX}}-db:
     image: mariadb:11
-    container_name: ${PROJECT_SLUG:-headless}-mariadb
+    container_name: ${PROJECT_SLUG}-mariadb
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-wordpress}
@@ -23,17 +24,17 @@ services:
     ports:
       - "${MYSQL_PORT:-3307}:3306"
 
-  wordpress:
+  {{GPP_APP_KEY_PREFIX}}-wordpress:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ${PROJECT_SLUG:-headless}-wordpress:latest
-    container_name: ${PROJECT_SLUG:-headless}-wordpress
+    image: ${PROJECT_SLUG}-wordpress:latest
+    container_name: ${PROJECT_SLUG}-wordpress
     restart: unless-stopped
     depends_on:
-      db:
+      {{GPP_APP_KEY_PREFIX}}-db:
         condition: service_started
-      redis:
+      {{GPP_APP_KEY_PREFIX}}-redis:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
@@ -42,11 +43,12 @@ services:
       retries: 5
       start_period: 90s
     environment:
-      # Database
-      WORDPRESS_DB_HOST: db:3306
+      # Database (hostname = compose service name)
+      WORDPRESS_DB_HOST: {{GPP_APP_KEY_PREFIX}}-db:3306
       WORDPRESS_DB_USER: ${MYSQL_USER:-wp}
       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-wp}
       WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-wordpress}
+      REDIS_HOST: ${REDIS_HOST:-{{GPP_APP_KEY_PREFIX}}-redis}
 
       # Pass through to install-plugins.sh
       SITE_NAME: ${SITE_NAME:-My Store}
@@ -91,7 +93,7 @@ services:
         define('WC_ABSPATH', ABSPATH . 'wp-content/plugins/woocommerce/');
 
         /* Redis Object Cache */
-        define('WP_REDIS_HOST', '${REDIS_HOST:-redis}');
+        define('WP_REDIS_HOST', '${REDIS_HOST:-{{GPP_APP_KEY_PREFIX}}-redis}');
         define('WP_REDIS_PORT', 6379);
         define('WP_REDIS_DATABASE', ${REDIS_DATABASE:-0});
         define('WP_REDIS_TIMEOUT', 1);
@@ -109,14 +111,14 @@ services:
     networks:
       - app-network
 
-  phpmyadmin:
+  {{GPP_APP_KEY_PREFIX}}-phpmyadmin:
     image: phpmyadmin:5
-    container_name: ${PROJECT_SLUG:-headless}-phpmyadmin
+    container_name: ${PROJECT_SLUG}-phpmyadmin
     restart: unless-stopped
     depends_on:
-      - db
+      - {{GPP_APP_KEY_PREFIX}}-db
     environment:
-      PMA_HOST: db
+      PMA_HOST: {{GPP_APP_KEY_PREFIX}}-db
       PMA_USER: root
       PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       UPLOAD_LIMIT: 100M
@@ -125,9 +127,9 @@ services:
     networks:
       - app-network
 
-  redis:
+  {{GPP_APP_KEY_PREFIX}}-redis:
     image: redis:7-alpine
-    container_name: ${PROJECT_SLUG:-headless}-redis
+    container_name: ${PROJECT_SLUG}-redis
     restart: unless-stopped
     command: redis-server --appendonly yes
     volumes:

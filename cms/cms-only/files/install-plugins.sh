@@ -350,7 +350,7 @@ echo "💾 Configuring Redis cache..."
 echo "============================="
 
 if wp plugin is-active redis-cache --allow-root --quiet 2>/dev/null; then
-    wp config set WP_REDIS_HOST redis --type=constant --allow-root --quiet 2>/dev/null || true
+    wp config set WP_REDIS_HOST "${REDIS_HOST:-redis}" --type=constant --allow-root --quiet 2>/dev/null || true
     wp config set WP_REDIS_PORT 6379 --type=constant --allow-root --quiet 2>/dev/null || true
     wp config set WP_REDIS_DATABASE 0 --type=constant --allow-root --quiet 2>/dev/null || true
     wp redis enable --allow-root --quiet 2>/dev/null || true

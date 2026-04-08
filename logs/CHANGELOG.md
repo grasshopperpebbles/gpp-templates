@@ -1,6 +1,27 @@
 
 ---
 
+## [Unreleased] - 2026-04-08 - Log verification and push
+
+**Status:** COMPLETED
+
+Reviewed **CHANGELOG**, **DEVELOPMENT**, **TODO**, and **STRATEGY_NOTES** for the Strapi/CMS/API template parity slice; committed and pushed to **`origin/main`**.
+
+## [Unreleased] - 2026-04-08 - Project slug naming (Strapi compose + env)
+
+**Status:** COMPLETED
+
+Aligned **Strapi** Docker templates with **WordPress CMS**: **`docker-compose.yml`** uses **`${PROJECT_SLUG}`** only for compose project **`name`**, **`container_name`**, and image tags (removed **`:-strapi`** / **`:-strapi-dev`**). **`cms/strapi-dev`** `env/.env.example` uses **`{{PROJECT_SLUG}}`** with guidance to avoid tutorial slugs; **`setup.sh`** requires **`PROJECT_SLUG`** (export or `.env`) instead of defaulting to `strapi-dev`. Sibling **`gpp-cli`** bundles the same files.
+
+### Files modified
+- `cms/strapi-only/files/docker-compose.yml`
+- `cms/strapi-dev/files/docker-compose.yml`
+- `cms/strapi-dev/files/env/.env.example`
+- `cms/strapi-dev/files/setup.sh`
+
+### Rationale
+- No generic Docker identity when **`PROJECT_SLUG`** is unset; slug comes from **`gpp init` / recipe apply**, matching the WordPress CMS variants.
+
 ## [Unreleased] - 2026-04-08 - Express + MySQL API template and Next.js SaaS recipe
 
 **Status:** COMPLETED
