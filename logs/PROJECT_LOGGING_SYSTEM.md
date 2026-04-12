@@ -22,10 +22,12 @@ This project uses a **4-log system**. Whenever you make a meaningful change, upd
 
 ## Non-negotiable rules
 
-- **Update ALL 4 logs together** (even if the change seems small).
-- When a task is "done", **run the relevant tests/validation** first and record the exact commands + results in `DEVELOPMENT.md`.
-- **Root-level logs** are for project-wide tasks, cross-platform work, and overall project decisions
-- **Platform-level logs** (in `apps/<platform>/logs/`) are for platform-specific development
+- **Update ALL 4 logs together at EVERY step** — before work, during work, after each sub-task, after completion, and at end of session. There is NO scenario where only one log is updated, even if the change seems small.
+- **MANDATORY TESTING:** When a task is "done", you MUST run the relevant tests/validation first, SHOW the test output to the user (do NOT just claim tests pass), and record the exact commands + results in `DEVELOPMENT.md`.
+- **AUTO-COMMIT:** After task completion (post-user-approval) and at end of session, automatically stage and commit all changes with a descriptive message. Do not wait to be asked.
+- **End of session** is triggered when the user explicitly says they are done (e.g., "that's all", "I'm done", "ending session", "wrapping up"). Update ALL 4 logs and auto-commit.
+- **Root-level logs** are for project-wide tasks, cross-platform work, and overall project decisions.
+- **Platform-level logs** (in `apps/<platform>/logs/`) are for platform-specific development.
 - Keep logs **project-scoped** (this is for your project, not the gpp-cli tool).
 - Archive logs when they exceed **1,000 lines** or **50KB**.
 
