@@ -1,0 +1,21 @@
+services:
+  firebase-cli:
+    profiles: ["cli"]
+    image: andreysenov/firebase-tools:13.35.1-node20
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /project
+    environment:
+      - FIREBASE_EMULATOR_HUB=0.0.0.0:4400
+    volumes:
+      - .:/project
+      - firebase-cache:/home/node/.cache/firebase
+    ports:
+      - "4000:4000"
+      - "4400:4400"
+      - "4500:4500"
+      - "8080:8080"
+      - "9099:9099"
+      - "9199:9199"
+
+volumes:
+  firebase-cache:

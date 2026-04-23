@@ -1,0 +1,14 @@
+services:
+  supabase-cli:
+    profiles: ["cli"]
+    build:
+      context: .
+      dockerfile: docker/supabase-cli.Dockerfile
+      args:
+        SUPABASE_CLI_VERSION: "1.207.9"
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /project
+    volumes:
+      - .:/project
+      - /var/run/docker.sock:/var/run/docker.sock
+    network_mode: host

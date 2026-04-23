@@ -1,0 +1,12 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl ca-certificates git \
+  && rm -rf /var/lib/apt/lists/*
+
+ARG SUPABASE_CLI_VERSION=1.207.9
+RUN curl -fsSL "https://github.com/supabase/cli/releases/download/v${SUPABASE_CLI_VERSION}/supabase_linux_amd64.tar.gz" \
+  | tar xz -C /usr/local/bin supabase
+
+WORKDIR /project
+ENTRYPOINT ["supabase"]
