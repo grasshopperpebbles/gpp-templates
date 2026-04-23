@@ -1,0 +1,22 @@
+kind: recipe
+id: nextjs-supabase
+version: 1.0.0
+name: Next.js + Supabase
+description: Full-stack SaaS with Supabase managed backend (Postgres + Auth + Storage) and Next.js dashboard frontend
+
+workspaces:
+  - id: web
+    path: apps/web
+    pack: web/nextjs-saas-dashboard
+    deployTarget: vercel
+
+adapters:
+  - id: next_to_supabase
+    args:
+      webId: web
+
+installers:
+  - action: envSeed
+    args: { profile: dev }
+  - action: nodeInstall
+    args: { workspaces: [web], packageManager: npm }
