@@ -1,0 +1,31 @@
+{
+  "name": "stripe",
+  "displayName": "Stripe Payments",
+  "description": "Multi-platform Stripe checkout and webhook scaffold (web, API, mobile, desktop, WordPress)",
+  "type": "addon",
+  "version": "0.1.0",
+  "platforms": [
+    "web",
+    "api-express",
+    "api-fastapi",
+    "mobile-expo",
+    "mobile-flutter",
+    "desktop-tauri",
+    "desktop-electron",
+    "cms-wordpress"
+  ],
+  "features": [
+    "Publishable/secret key env wiring per platform",
+    "Express and FastAPI server SDK stubs",
+    "Expo and Flutter client stubs",
+    "Tauri and Electron desktop stubs",
+    "WordPress plugin scaffold for WooCommerce-style checkout hooks"
+  ],
+  "usage": "gpp add stripe",
+  "envVars": [
+    "STRIPE_PUBLISHABLE_KEY",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET"
+  ],
+  "note": "Harvested from ngineeringos build.addon.stripe; ngos owns judgment, gpp owns files."
+}
