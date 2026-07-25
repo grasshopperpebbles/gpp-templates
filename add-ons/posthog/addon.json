@@ -1,0 +1,22 @@
+{
+  "name": "posthog",
+  "displayName": "PostHog Analytics",
+  "description": "Multi-platform PostHog product analytics scaffold (web, API, mobile Expo)",
+  "type": "addon",
+  "version": "0.1.0",
+  "platforms": ["web", "api-express", "api-fastapi", "mobile-expo"],
+  "features": [
+    "PostHog project key env wiring",
+    "posthog-node server capture stub",
+    "Python posthog client stub",
+    "Expo client key stub"
+  ],
+  "usage": "gpp add posthog",
+  "envVars": [
+    "NEXT_PUBLIC_POSTHOG_KEY",
+    "NEXT_PUBLIC_POSTHOG_HOST",
+    "POSTHOG_API_KEY",
+    "POSTHOG_HOST",
+    "EXPO_PUBLIC_POSTHOG_KEY"
+  ]
+}
