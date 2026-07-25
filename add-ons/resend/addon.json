@@ -1,0 +1,24 @@
+{
+  "name": "resend",
+  "displayName": "Resend Email",
+  "description": "Multi-platform Resend transactional email scaffold (web, API, worker)",
+  "type": "addon",
+  "version": "0.1.0",
+  "platforms": [
+    "web",
+    "api-express",
+    "api-fastapi",
+    "worker-python"
+  ],
+  "features": [
+    "RESEND_API_KEY env wiring per platform",
+    "Express and FastAPI send helpers",
+    "Python worker client stub"
+  ],
+  "usage": "gpp add resend",
+  "envVars": [
+    "RESEND_API_KEY",
+    "EMAIL_FROM"
+  ],
+  "note": "Harvested from ngineeringos build.addon.resend; distinct from auth-flows provider selection."
+}
