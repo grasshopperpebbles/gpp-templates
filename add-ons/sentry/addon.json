@@ -1,0 +1,28 @@
+{
+  "name": "sentry",
+  "displayName": "Sentry Observability",
+  "description": "Multi-platform Sentry error monitoring scaffold (web, API, mobile Expo, worker)",
+  "type": "addon",
+  "version": "0.1.0",
+  "platforms": [
+    "web",
+    "api-express",
+    "api-fastapi",
+    "mobile-expo",
+    "worker-python"
+  ],
+  "features": [
+    "SENTRY_DSN env wiring per platform",
+    "Express and FastAPI SDK init stubs",
+    "Expo client DSN stub",
+    "Python worker SDK stub"
+  ],
+  "usage": "gpp add sentry",
+  "envVars": [
+    "SENTRY_DSN",
+    "SENTRY_ENVIRONMENT",
+    "NEXT_PUBLIC_SENTRY_DSN",
+    "EXPO_PUBLIC_SENTRY_DSN"
+  ],
+  "note": "Harvested from ngineeringos build.addon.sentry; lightweight DSN wiring, not full Next.js wizard."
+}
