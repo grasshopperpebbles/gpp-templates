@@ -1,6 +1,14 @@
 
 ---
 
+## [Unreleased] - 2026-10-19 - Next packs refresh for Next 16
+
+**Status:** COMPLETED (merged 2026-10-19)
+
+- All 13 `web/nextjs-*` packs: `eslint.config.mjs` uses `eslint-config-next/core-web-vitals` + `/typescript` natively (`defineConfig`, `globalIgnores`); lint script `eslint`; `@eslint/eslintrc` dropped; eslint ^9 (landing had ^8, which broke `npm install`; devtool-site had none).
+- next, eslint-config-next, @next/mdx 16.1.0 → 16.4.2; exact react/react-dom 19.1.0 → 19.3.1.
+- Every `.nvmrc` 20 → 22 (Node 20 EOL 2026-04-30); Strapi Dockerfiles `node:22-alpine` (Strapi 5 allows <=22).
+
 ## [Unreleased] - 2026-04-08 - Log verification and push
 
 **Status:** COMPLETED

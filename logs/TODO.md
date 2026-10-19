@@ -13,6 +13,11 @@ gpp template install /path/to/gpp-templates --all
 ---
 
 **Tasks:**
+- [ ] Next packs refresh for Next 16 — COMPLETED (owner approved, merged 2026-10-19)
+  - [x] Native eslint flat config + `eslint` lint script in all 13 Next packs (FlatCompat crashed; `next lint` is gone in Next 16; landing had eslint 8)
+  - [x] next / eslint-config-next / @next/mdx 16.4.2, exact react pins 19.1.0 → 19.3.1
+  - [x] `.nvmrc` 20 → 22 everywhere; Strapi Dockerfiles `node:22-alpine`
+- [ ] Pre-existing broken Next packs (same failures before the refresh; lint now runs and shows real errors): admin-dashboard (`CardDescription` export), app-landing + webapp (`tailwindcss-animate` missing), headless-storyblok (`StoryblokClient`/`StoryblokComponent` exports), headless-strapi + headless-wp-cms (missing cart/product modules), headless-wp-ecommerce (missing `@/lib/admin-settings`, email modules), headless-wp-full + saas-dashboard (type errors), headless-sanity (build needs `projectId`), marketing (`/pagefind/pagefind.js` type before postbuild). Only nextjs-landing is fully green; devtool-site builds.
 - [x] Strapi docker-compose: require `${PROJECT_SLUG}` (remove `:-strapi` / `:-strapi-dev`); strapi-dev `setup.sh` + `env/.env.example`; sync with gpp-cli; update logs — COMPLETED (2026-04-08)
 - [x] Add container_name with ${PROJECT_SLUG} prefix to all backend docker-compose templates (python/fastapi, api/go-http, api/rust-axum, worker/celery-python, worker/rust-tokio) - COMPLETED (2026-04-04)
 - [x] SaaS dashboard: add feature flags for team/billing (off by default), create dashboard route group layout, bundle into gpp-cli - COMPLETED (2026-04-04)

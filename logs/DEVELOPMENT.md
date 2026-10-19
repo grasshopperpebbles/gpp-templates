@@ -1,6 +1,16 @@
 
 ---
 
+## Session: Next packs refresh for Next 16 (2026-10-19)
+
+**Status:** COMPLETED
+
+Trigger: `gpp init --recipe nextjs-static` (pimpmyoptions) produced an app whose `npm install` failed (eslint 8 vs eslint-config-next 16) and whose lint script was `next lint`. Companion gpp-cli branch `fix/init-next16-refresh` syncs the bundled copies.
+
+Evidence (clean `npm install`, `npm run lint`, `npm run build` per pack, in a scratch dir):
+- nextjs-landing: install ✔, lint ✔, build ✔, `npm audit --omit=dev` 0 vulnerabilities. Also end to end through `gpp init` after `gpp template install --force`.
+- Other 12: install ✔ everywhere. Builds: devtool-site ✔; the other 11 fail identically at the unchanged baseline (HEAD archived and run the same way); 16.4.2 just prints every error instead of the first. Lint at baseline crashed (`Converting circular structure to JSON` from FlatCompat, `Invalid project directory` from `next lint`, or no config); now it runs and reports real code errors (no-explicit-any, no-unescaped-entities, react-hooks set-state-in-effect, ...). Listed in TODO as a follow-up.
+
 ## Session: Log verification and push (2026-04-08)
 
 **Date:** 2026-04-08  

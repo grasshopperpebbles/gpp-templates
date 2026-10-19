@@ -1,6 +1,12 @@
 
 ---
 
+## Next packs: native eslint flat config, Node 22 (2026-10-19)
+
+**Decision:** Next packs use `eslint-config-next`'s native flat exports and the script `eslint`; no `FlatCompat`, no `next lint`. `.nvmrc` follows the active LTS (22), the same as gpp-cli `DEFAULT_NODE_VERSION`.
+
+**Rationale:** FlatCompat crashes under eslint-config-next 16, and Next 16 removed `next lint`, so lint was silently broken in every pack. Pack verification must include a clean install, lint and build; most packs don't build today, and nobody noticed because nothing checks them.
+
 ## Docker `PROJECT_SLUG` must not use tutorial defaults on CMS/Strapi project identity (2026-04-08)
 
 **Decision:** For **WordPress CMS** and **Strapi** templates, compose **`name`**, **`container_name`** (and Strapi **image** tags derived from the slug) use **`${PROJECT_SLUG}`** with **no** default such as **`:-strapi`** or **`:-headless`**. **`PROJECT_SLUG`** is set by **`gpp init` / recipe apply** or must be provided manually.
