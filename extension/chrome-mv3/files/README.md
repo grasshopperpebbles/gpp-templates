@@ -30,7 +30,7 @@ npm install
 npm run dev
 ```
 
-This starts Vite in development mode with HMR. Load the extension in Chrome:
+This starts Vite in development mode with HMR on port 5190 (not Vite's default 5173, which a SvelteKit web app in the same project uses; change `server.port` and `server.hmr.port` in `vite.config.ts` together). Load the extension in Chrome:
 
 1. Open `chrome://extensions/`
 2. Enable "Developer mode"

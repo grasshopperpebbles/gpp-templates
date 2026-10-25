@@ -7,7 +7,7 @@ export default defineConfig({
   // Prevent vite from obscuring rust errors
   clearScreen: false,
   server: {
-    port: 5173,
+    port: 1420,
     strictPort: true,
   },
   // Env variables starting with TAURI_ are exposed
