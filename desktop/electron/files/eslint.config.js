@@ -18,7 +18,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['electron/**/*.{ts,cts}', '*.config.{js,ts}'],
+    files: ['electron/**/*.{ts,cts}', 'config/**/*.ts', '*.config.{js,ts}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: { globals: globals.node },
   },

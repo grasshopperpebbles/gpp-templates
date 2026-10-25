@@ -1,79 +1,65 @@
 # FastAPI
 
-FastAPI application with SQLAlchemy, Pydantic, and comprehensive middleware.
+FastAPI application with SQLAlchemy, Pydantic, JWT auth, Redis and a Dockerfile.
 
 ## Features
 
-- ✅ **FastAPI** with Python 3.11+
+- ✅ **FastAPI** with Python 3.12
 - ✅ **SQLAlchemy** (async) for database access
 - ✅ **Pydantic** models for validation
 - ✅ **Alembic** for database migrations
-- ✅ **Comprehensive Middleware Stack:**
-  - CORS configuration
-  - Request logging
-  - Error handling
-  - JWT authentication
+- ✅ **CORS** configuration (`CORS_ORIGINS`, comma-separated)
+- ✅ **JWT authentication**: register, login, refresh and `/me`, backed by a `User` model and an initial migration
 - ✅ **Type-safe routes** with Pydantic
 - ✅ **Health check endpoint**
 - ✅ **OpenAPI/Swagger documentation** (auto-generated)
 - ✅ **Async/await support**
+- ✅ **Redis** async client (`app/core/redis.py`), reported in `/health`
+- ✅ **Dockerfile** (python:3.12-slim, non-root) and **pytest** setup
 
-## Quick Start
+## Quick Start (GPP: run the API in Docker)
 
-### 1. Create Virtual Environment
+In GPP monorepos, **backend processes run in containers** — do not install Python or use `pip install` on your host to **serve** this API. Source code lives here for editing and Git; **execution** is via Docker Compose from the **repository root** (see root `docker-compose.yml` and `gpp start api`).
 
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 2. Install Dependencies
+### 1. Start services from the monorepo root
 
 ```bash
-pip install -r requirements.txt
+cd /path/to/project-root
+docker compose up -d
 ```
 
-### 3. Set Up Environment Variables
+The API runs as the `{{PROJECT_SLUG}}-api` service, built from this folder's `Dockerfile`, next to `{{PROJECT_SLUG}}-db` (and `{{PROJECT_SLUG}}-redis` when the project uses Redis). `gpp doctor` and `.gpp/deploy.json` help confirm paths.
 
-Copy `env.example.txt` to `.env` and configure:
+### 2. Environment variables
+
+gpp writes `DATABASE_URL` (and `REDIS_URL`) into this folder's `.env` / `.env.example`; `env.example.txt` lists every setting. Inside the container, `DATABASE_URL` and `REDIS_URL` must use the **Docker network** hostnames (`{{PROJECT_SLUG}}-db`, `{{PROJECT_SLUG}}-redis`), not `localhost`; the root compose file sets them for the API service.
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string (`postgresql+psycopg://...`) |
+| `JWT_SECRET` | Secret key for JWT tokens. Startup fails outside development while it is empty or a `change-me` placeholder |
+| `ENVIRONMENT` | `production` (default when unset) or `development`/`dev`/`local`/`test`; `env.example.txt` sets `development` |
+| `REDIS_URL` | Redis connection string (empty, `REDIS_URL=`, disables Redis) |
+| `CORS_ORIGINS` | Comma-separated allowed origins |
+| `HOST` / `PORT` | Server bind address (default `0.0.0.0:8000`) |
+
+### 3. Migrations (inside the running API container)
+
+The pack ships an initial migration that creates the `users` table:
 
 ```bash
-cp env.example.txt .env
+docker compose exec {{PROJECT_SLUG}}-api alembic upgrade head
 ```
 
-Required variables:
-- `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET` - Secret key for JWT tokens
-- `HOST` - Server host (default: 0.0.0.0)
-- `PORT` - Server port (default: 8000)
+### 4. Verify
 
-### 4. Set Up Database
+- Health: `http://localhost:8000/health`
+- API: `http://localhost:8000/api/v1`
+- Docs: `/docs`, ReDoc: `/redoc`
 
-Initialize Alembic and create migrations:
+### Host-only Python (explicit exception only)
 
-```bash
-# Initialize Alembic (if not already done)
-alembic revision --autogenerate -m "Initial migration"
-
-# Run migrations
-alembic upgrade head
-```
-
-### 5. Start Development Server
-
-```bash
-# Using uvicorn directly
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# Or using the main module
-python -m app.main
-```
-
-The server will start on `http://localhost:8000`.
-
-- API: http://localhost:8000/api/v1
-- Docs: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+If your team has **explicitly** opted out of the Docker-only rule, you may use a virtualenv, `pip install -r requirements.txt`, `alembic upgrade head`, and `uvicorn app.main:app --reload` on the host. That is **not** the GPP default.
 
 ## Project Structure
 
@@ -84,20 +70,24 @@ app/
 │   ├── config.py        # Settings (Pydantic Settings)
 │   ├── deps.py          # FastAPI dependencies
 │   ├── logging.py       # Logging configuration
+│   ├── redis.py         # Async Redis client
 │   └── security.py      # Password hashing, JWT tokens
 ├── db/
 │   ├── base.py          # SQLAlchemy base and session
 │   ├── session.py       # Database session dependency
-│   └── models/          # SQLAlchemy models
+│   └── models/          # SQLAlchemy models (user.py)
 ├── api/
 │   └── v1/
 │       ├── api.py       # API v1 router
 │       └── endpoints/   # API endpoints
+│           ├── auth.py
 │           ├── health.py
 │           └── users.py
 └── schemas/
-    └── user.py          # Pydantic schemas
-alembic/                 # Alembic migrations
+    ├── auth.py          # Login/refresh/token schemas
+    └── user.py          # User schemas
+alembic/                 # Alembic migrations (versions/0001_create_users.py)
+tests/                   # pytest (health, Redis, CORS, auth)
 ```
 
 ## API Endpoints
@@ -106,7 +96,12 @@ alembic/                 # Alembic migrations
 
 ```bash
 GET /health
+# {"status": "ok", "redis": "ok" | "unavailable" | "disabled"}
 ```
+
+Always 200 while the app is up. Redis being down shows `"redis": "unavailable"`
+but does not fail the check; DB/Redis readiness is docker compose's job
+(`depends_on: condition: service_healthy`).
 
 ### API Documentation
 
@@ -114,54 +109,56 @@ GET /health
 - **ReDoc:** http://localhost:8000/redoc
 - **OpenAPI JSON:** http://localhost:8000/openapi.json
 
+### Auth
+
+```bash
+# Register (201): returns access_token, refresh_token and the user; 409 if the email exists
+POST /api/v1/auth/register
+{"email": "user@example.com", "name": "Jane Doe", "password": "securepassword"}
+
+# Login (200): returns access_token and refresh_token; 401 bad credentials, 403 disabled account
+POST /api/v1/auth/login
+{"email": "user@example.com", "password": "securepassword"}
+
+# New access token from a refresh token
+POST /api/v1/auth/refresh
+{"refresh_token": "<refresh-token>"}
+
+# Current user
+GET /api/v1/auth/me
+Authorization: Bearer <token>
+```
+
 ### Users (Requires Authentication)
 
 ```bash
 # List users
 GET /api/v1/users?skip=0&limit=10
-Authorization: Bearer <token>
 
-# Get current user
+# Get / update the current user (name, email, password)
 GET /api/v1/users/me
-Authorization: Bearer <token>
-
-# Create user
-POST /api/v1/users
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "name": "John Doe",
-  "password": "securepassword"
-}
+PATCH /api/v1/users/me
 ```
 
 ## Authentication
 
-The API uses JWT (JSON Web Tokens) for authentication.
-
-### Creating a Token
-
-You'll need to implement a login endpoint that:
-1. Validates user credentials
-2. Generates a JWT token using `app.core.security.create_access_token()`
-3. Returns the token to the client
-
-Example:
+JWT bearer tokens (`python-jose`, HS256) with bcrypt password hashing
+(`passlib`). Access tokens (`"type": "access"`) last `ACCESS_TOKEN_EXPIRE_MINUTES`,
+refresh tokens (`"type": "refresh"`) `REFRESH_TOKEN_EXPIRE_DAYS`.
+`app.core.deps.get_current_user` accepts only access tokens (a refresh token
+gets 401), resolves the token's `sub` to a `User` row and rejects disabled
+accounts (`is_active = false`, 403); `/auth/refresh` accepts only refresh tokens
+and also rejects disabled accounts. Use `get_current_user` as a dependency to
+protect routes:
 
 ```python
-from datetime import timedelta
-from app.core.security import create_access_token, verify_password
+from app.core.deps import get_current_user
+from app.db.models.user import User
 
-# After validating credentials
-access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-access_token = create_access_token(
-    data={"sub": user.email, "user_id": str(user.id)},
-    expires_delta=access_token_expires,
-)
+@router.get("/private")
+async def private(current_user: User = Depends(get_current_user)):
+    ...
 ```
-
-### Using the Token
 
 Include the token in the `Authorization` header:
 
@@ -169,12 +166,36 @@ Include the token in the `Authorization` header:
 Authorization: Bearer <your-token>
 ```
 
+Passwords (register and `PATCH /users/me`) must be 8 to 72 characters and at
+most 72 UTF-8 bytes, bcrypt's limit. Login runs bcrypt against a dummy hash
+when the email is unknown, so response times don't reveal which accounts exist.
+
+### Secret guard
+
+On startup the app refuses to run when `JWT_SECRET` is empty or still a
+`change-me` placeholder, unless `ENVIRONMENT` is `development`/`dev`/`local`/`test`
+or `DEBUG=true`. `ENVIRONMENT` defaults to `production`, so a deploy that forgets
+the secret fails with a clear error instead of signing tokens with a known key.
+
+## CORS
+
+`CORS_ORIGINS` is a comma-separated list of allowed origins. Credentials are
+**off** (`allow_credentials=False` in `app/main.py`): auth uses Bearer tokens in
+the `Authorization` header, not cookies, so browsers don't need credentialed
+CORS. A packaged Electron app (loaded from `file://`) sends `Origin: null`;
+adding `null` to `CORS_ORIGINS` is acceptable **only** while credentials stay
+off. With credentials on, allowing `null` would let any sandboxed page
+(sandboxed iframes, `data:` URLs) make credentialed calls to the API. If you
+switch to cookie auth, turn credentials on and list explicit origins only.
 ## Database Migrations
+
+`alembic/versions/0001_create_users.py` creates the `users` table. After changing
+models, generate a new revision (inside the API container in GPP projects):
 
 ### Create a Migration
 
 ```bash
-alembic revision --autogenerate -m "Add users table"
+alembic revision --autogenerate -m "Add posts table"
 ```
 
 ### Apply Migrations
@@ -193,12 +214,65 @@ alembic downgrade -1
 
 ### Running Tests
 
-```bash
-# Install test dependencies
-pip install pytest pytest-asyncio httpx
+Tests use httpx `AsyncClient` against the app in-process; Redis is faked,
+Postgres is never contacted and the auth tests run against an in-memory SQLite
+database (`aiosqlite`), so no services need to be running. Warnings fail the
+run (`pytest.ini`), apart from two known deprecations in passlib and python-jose.
 
-# Run tests
+```bash
+pip install -r requirements-dev.txt
 pytest
+```
+
+Without a local Python 3.12, run them in a container:
+
+```bash
+docker run --rm -v "$PWD:/src:ro" python:3.12 sh -c \
+  "cp -R /src /w && cd /w && pip install -q -r requirements-dev.txt && pytest"
+```
+
+Write the test first (`tests/test_*.py`), see it fail, then implement.
+Shared fixtures live in `tests/conftest.py` (`client`, `fake_redis`, `db`).
+
+## Docker
+
+The `Dockerfile` builds a production image (python:3.12-slim, runtime deps
+only, non-root user) that runs `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+and has a `HEALTHCHECK` on `/health` (Python `urllib`, no curl needed).
+
+```bash
+docker build -t {{PROJECT_SLUG}}-api .
+docker run --rm --env-file .env -p 8000:8000 {{PROJECT_SLUG}}-api
+```
+
+In a gpp project the API runs as the `{{PROJECT_SLUG}}-api` service in the root
+`docker-compose.yml`, next to `{{PROJECT_SLUG}}-db` and `{{PROJECT_SLUG}}-redis`.
+Inside compose, `.env` must point at the service names:
+
+```bash
+DATABASE_URL=postgresql+psycopg://postgres:postgres@{{PROJECT_SLUG}}-db:5432/postgres
+REDIS_URL=redis://{{PROJECT_SLUG}}-redis:6379/0
+```
+
+Migrations do not run on container start. Apply them explicitly:
+
+```bash
+docker compose exec {{PROJECT_SLUG}}-api alembic upgrade head
+```
+
+## Redis
+
+`app/core/redis.py` exposes `get_redis()` (a lazily created
+`redis.asyncio.Redis`, or `None` when `REDIS_URL` is empty), `redis_status()`
+and `close_redis()` (called on app shutdown). Use it for caching, rate limits
+or queues:
+
+```python
+from app.core.redis import get_redis
+
+redis = get_redis()
+if redis is not None:
+    await redis.set("key", "value", ex=60)
 ```
 
 ### Code Formatting
@@ -255,10 +329,8 @@ alembic upgrade head
 1. **Define your models** - Add SQLAlchemy models in `app/db/models/`
 2. **Create schemas** - Add Pydantic schemas in `app/schemas/`
 3. **Implement endpoints** - Create endpoints in `app/api/v1/endpoints/`
-4. **Set up authentication** - Implement login/register endpoints
-5. **Add Celery integration** - For background tasks (optional)
-6. **Set up Docker** - Containerize your application
-7. **Add tests** - Write tests for your endpoints
+4. **Add Celery integration** - For background tasks (optional)
+5. **Add tests** - Test-first, alongside `tests/test_health.py` and `tests/test_auth.py`
 
 ## Resources
 

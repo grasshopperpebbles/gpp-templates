@@ -1,6 +1,16 @@
 
 ---
 
+## [Unreleased] - 2026-10-25 - FastAPI pack with Docker, tests, Redis and auth; API + desktop recipe
+
+**Status:** COMPLETED
+
+- `api/fastapi`: merged with gpp-cli's bundled copy (which had auth) into one pack, identical in both repos: auth (register, login, refresh, `/auth/me`, `PATCH /users/me`), non-root Dockerfile + `.dockerignore`, Redis client (`/health` reports `redis: ok | unavailable | disabled`, never fails on it), users migration, pytest (44 tests; SQLite for auth; `requirements-dev.txt`, `pytest.ini`).
+- `api/fastapi` fixes: online alembic migrations never ran; comma-separated `CORS_ORIGINS` didn't parse; missing `bcrypt==4.0.1` / `email-validator` pins. Security: refresh tokens no longer authenticate, inactive users are refused, `allow_credentials=False`, startup fails in production with the default `JWT_SECRET`, constant-time login for unknown emails, passwords 8–72.
+- `recipes/desktop/electron-fastapi-postgres.yaml` (same as gpp-cli's bundled copy).
+- `desktop/electron`: production CSP adds `connect-src` for `VITE_API_BASE_URL` (`config/csp.ts`, tested), warns for plain `http` to a remote host; `src/lib/api.ts`; README "Calling an API".
+- Repo: root `.gitignore` for `.env` and `.DS_Store`; `python/fastapi`'s committed `.env` (admin credentials) and three `.DS_Store` files untracked. The `.env` values remain in git history.
+
 ## [Unreleased] - 2026-10-25 - Desktop and extension dev servers get their own ports
 
 **Status:** COMPLETED

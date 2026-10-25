@@ -1,7 +1,7 @@
 {
   "name": "fastapi",
   "displayName": "FastAPI",
-  "description": "Python FastAPI template with SQLAlchemy, Pydantic, comprehensive middleware (CORS, security, logging), JWT authentication, and production-ready patterns.",
+  "description": "Python FastAPI template with SQLAlchemy, Pydantic, JWT authentication (register/login/refresh), Redis, pytest setup, and a production Dockerfile.",
   "platform": "api",
   "dependencies": {
     "requires": [],
@@ -10,7 +10,7 @@
   },
   "features": {
     "included": [
-      "FastAPI with Python 3.11+",
+      "FastAPI with Python 3.12",
       "SQLAlchemy ORM (async)",
       "Pydantic models for validation",
       "Alembic migrations",
@@ -18,21 +18,28 @@
       "CORS configuration",
       "Request logging",
       "Error handling",
-      "JWT authentication support",
+      "JWT authentication (register, login, refresh, /me) with a User model and initial Alembic migration",
       "Health check endpoint",
       "OpenAPI/Swagger documentation",
-      "Async/await support"
+      "Async/await support",
+      "Dockerfile (python:3.12-slim, non-root, /health healthcheck)",
+      "pytest + httpx tests incl. auth (in-memory SQLite, no Postgres/Redis needed)",
+      "Redis async client (redis-py) reported in /health"
     ],
     "excluded": [
       "Celery integration (add separately)",
-      "Docker configuration (add separately)",
       "CI/CD pipelines (add separately)"
     ]
   },
   "homepageType": "api",
   "routes": {
-    "api": ["/api", "/api/v1"],
-    "shared": ["/docs", "/openapi.json"]
+    "api": [
+      "/api",
+      "/api/v1"
+    ],
+    "shared": [
+      "/docs",
+      "/openapi.json"
+    ]
   }
 }
-

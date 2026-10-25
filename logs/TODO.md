@@ -12,6 +12,11 @@ gpp template install /path/to/gpp-templates --all
 
 ---
 
+### Server packs (2026-10-25)
+
+- [x] `api/fastapi`: Docker, tests, Redis, auth, security fixes; identical to gpp-cli's bundled copy.
+- [ ] `api/express`, `api/express-mysql`, `api/go-http`: Dockerfile and tests the same way; compare with gpp-cli's bundled copies.
+
 ### Electron desktop pack (2026-10-25)
 
 - [x] Make `desktop/electron` install, build, lint, test, run and package (see CHANGELOG 2026-10-25).

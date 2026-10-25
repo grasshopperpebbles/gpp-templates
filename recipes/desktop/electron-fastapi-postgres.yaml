@@ -1,0 +1,25 @@
+kind: recipe
+id: electron-fastapi-postgres
+version: 1.0.0
+name: Electron + FastAPI + PostgreSQL
+description: Desktop app (Electron + React) with a Python FastAPI backend and PostgreSQL, no website
+
+workspaces:
+  - id: api
+    path: apps/api
+    pack: api/fastapi
+    deployTarget: railway
+
+  - id: desktop
+    path: apps/desktop
+    pack: desktop/electron
+
+adapters:
+  - id: electron_to_fastapi
+    args:
+      desktopId: desktop
+      apiId: api
+
+installers:
+  - action: envSeed
+    args: { profile: dev }

@@ -1,0 +1,3 @@
+# Never commit real env files or macOS metadata (templates ship env.example.txt / .env.example)
+.env
+.DS_Store
