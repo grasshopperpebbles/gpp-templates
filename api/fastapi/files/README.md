@@ -265,7 +265,9 @@ are better kept out of the runtime image; prefer packages with prebuilt wheels.
 
 In a gpp project the API runs as the `{{PROJECT_SLUG}}-api` service in the root
 `docker-compose.yml`, next to `{{PROJECT_SLUG}}-db` and `{{PROJECT_SLUG}}-redis`.
-Inside compose, `.env` must point at the service names:
+The container listens on 8000; the host port is configurable (`API_HOST_PORT`,
+default 8000, e.g. `API_HOST_PORT=18000 docker compose up -d`; the compose
+header names the variable when a project has several APIs). Inside compose, `.env` must point at the service names:
 
 ```bash
 DATABASE_URL=postgresql+psycopg://postgres:postgres@{{PROJECT_SLUG}}-db:5432/postgres
@@ -281,9 +283,12 @@ docker compose exec {{PROJECT_SLUG}}-api alembic upgrade head
 ## Redis
 
 `app/core/redis.py` exposes `get_redis()` (a lazily created
-`redis.asyncio.Redis`, or `None` when `REDIS_URL` is empty), `redis_status()`
-and `close_redis()` (called on app shutdown). Use it for caching, rate limits
-or queues:
+`redis.asyncio.Redis`, or `None` when `REDIS_URL` is empty or the `redis`
+package is not installed), `redis_status()` and `close_redis()` (called on app
+shutdown). The package is imported only when a client is first needed, so a
+project created with `services: { redis: false }` (gpp removes `redis==…` from
+`requirements.txt` and writes `REDIS_URL=`) runs unchanged and `/health`
+reports `"redis": "disabled"`. Use it for caching, rate limits or queues:
 
 ```python
 from app.core.redis import get_redis
