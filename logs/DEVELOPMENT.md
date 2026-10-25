@@ -1,6 +1,14 @@
 
 ---
 
+## Session: Electron desktop pack made robust (2026-10-25)
+
+**Status:** COMPLETED
+
+Trigger: operator asked for a robustness evaluation of Electron in gpp. Baseline in a scratch copy with pnpm 10: `build`, `build:electron`, `type-check`, `lint` and `vitest run` all failed, and `electron` had no binary (pnpm 10 blocks build scripts). By inspection the built app could not have started either (CommonJS-loaded ESM main, ESM sandboxed preload, `/assets` paths under `file://`). Compared against broadkast's `apps/broadkast-main-electron-desktop` (sender-checked IPC, channel constants with a preload test, safe URL parsing) and adopted those patterns; picturechronicles has no Electron app.
+
+Evidence after the fix, on the copy `gpp add desktop electron` writes (temp HOME, project `zorbly`): install ✔ (Electron binary present), build ✔, build:electron ✔, type-check ✔, lint ✔, vitest 7/7 ✔. A harness that loads `dist-electron/main.js` in real Electron confirmed, in production and dev (Vite server) modes: preload loads, `window.electronAPI` works, `ipcRenderer` not exposed, React renders, settings round-trip, `getPath('userData')` and the `__proto__` key are refused, CSP present in production. `electron-builder --dir` packages `zorbly.app` (ad-hoc signed locally), and the packaged app starts ("Production mode: loading from dist") with no errors once the updater is skipped without `app-update.yml`.
+
 ## Session: Next packs refresh for Next 16 (2026-10-19)
 
 **Status:** COMPLETED

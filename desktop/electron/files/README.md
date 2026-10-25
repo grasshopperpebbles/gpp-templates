@@ -1,162 +1,130 @@
-# Electron Desktop App
+# {{PROJECT_SLUG}} desktop
 
 Electron desktop application template with React, TypeScript, Vite, and standard Electron utilities.
 
 ## Features
 
-- **Electron** with React + TypeScript
-- **Vite** for fast development and building
-- **electron-store** for persistent settings storage
+- **Electron** with React + TypeScript, ES modules in the main process
+- **Vite** for the renderer (dev server with hot reload, relative-path production build)
+- **electron-store** for persistent settings
 - **electron-window-state** for window size/position persistence
-- **electron-log** for structured logging
-- **electron-builder** for packaging/distribution
-- **electron-updater** for auto-updates
+- **electron-log** for logging (main process)
+- **electron-builder** for packaging, **electron-updater** for auto-updates
 - **electron-context-menu** for context menus
-- **Security best practices** (sandbox, context isolation)
+- **Security defaults**: sandbox, context isolation, no Node in the renderer, a narrow preload API, IPC sender and argument checks, external links in the system browser, no in-app navigation, and a production Content-Security-Policy
 
 ## Quick Start
 
-### Development
-
 ```bash
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
+pnpm install   # downloads the Electron binary (allowed in package.json "pnpm.onlyBuiltDependencies")
+pnpm dev       # Vite on http://localhost:5173 + Electron
 ```
 
-This will:
-1. Start Vite dev server on port 5173
-2. Launch Electron with hot reload
+`pnpm dev` compiles the main process and preload once (`build:electron`) before starting Electron. After editing files under `electron/`, restart `pnpm dev`; renderer changes in `src/` hot-reload.
 
-### Building
+With npm instead of pnpm, use `npm install` and run the scripts with `npm run`; the scripts call `pnpm` internally, so install pnpm or edit them.
+
+### Build and run
 
 ```bash
-# Build renderer (React app)
-pnpm build
+pnpm build           # renderer -> dist/
+pnpm build:electron  # main + preload -> dist-electron/
+pnpm start           # both, then run the built app
+```
 
-# Build Electron main process
-pnpm build:electron
+### Check
 
-# Build everything
-pnpm build:all
+```bash
+pnpm type-check   # renderer and main process
+pnpm lint
+pnpm test         # vitest (electron/**/*.test.ts, src/**/*.test.ts)
 ```
 
 ### Distribution
 
 ```bash
-# Build for current platform
-pnpm dist
-
-# Build for specific platforms
-pnpm dist:mac    # macOS (DMG, ZIP)
-pnpm dist:win    # Windows (NSIS, Portable)
-pnpm dist:linux  # Linux (AppImage, DEB)
+pnpm dist         # current platform
+pnpm dist:mac     # macOS (DMG, ZIP)
+pnpm dist:win     # Windows (NSIS, portable)
+pnpm dist:linux   # Linux (AppImage, DEB)
 ```
+
+Output goes to `release/`.
 
 ## Project Structure
 
 ```
 .
 ├── electron/
-│   ├── main.ts           # Main Electron process
-│   ├── preload.ts        # Preload script (context bridge)
+│   ├── main.ts              # Main process (ESM)
+│   ├── preload.cts          # Preload, built as CommonJS (sandboxed preloads can't be ESM)
 │   └── ipc/
-│       └── settingsHandlers.ts  # IPC handlers example
+│       ├── channels.ts      # IPC channel names (repeated in preload.cts; a test checks they match)
+│       ├── validate.ts      # Sender, URL and argument checks (pure, unit tested)
+│       └── settingsHandlers.ts
 ├── src/
-│   ├── App.tsx           # Main React component
-│   ├── main.tsx          # React entry point
-│   ├── components/       # React components
-│   ├── lib/              # Utilities
-│   └── styles/           # CSS/Tailwind styles
-├── public/               # Static assets
-├── vite.config.ts        # Vite configuration
-├── tsconfig.json         # TypeScript config (renderer)
-├── tsconfig.electron.json # TypeScript config (main process)
-└── package.json
+│   ├── App.tsx
+│   ├── main.tsx
+│   ├── types/electron-api.d.ts  # window.electronAPI type, shared by preload and renderer
+│   └── styles/
+├── index.html               # Vite entry
+├── vite.config.ts           # Renderer build, production CSP, vitest config
+├── tsconfig.json            # Renderer
+├── tsconfig.electron.json   # Main + preload -> dist-electron/
+├── eslint.config.js
+└── package.json             # scripts and electron-builder "build" config
 ```
 
-## Standard Dependencies
-
-### Runtime Dependencies
-- `electron-updater` - Auto-update functionality
-- `electron-store` - Persistent settings storage
-- `electron-window-state` - Window state persistence
-- `electron-log` - Structured logging
-- `electron-context-menu` - Context menu support
-
-### Development Dependencies
-- `electron` - Electron framework
-- `electron-builder` - Packaging and distribution
-- `electron-debug` - Enhanced debugging tools
-- `electron-rebuild` - Rebuild native modules
-- `vite` - Build tool
-- `react` + `typescript` - UI framework
-
-## Usage Examples
-
-### Using electron-store (Settings)
+## Using the preload API
 
 ```typescript
-// In renderer (via IPC)
-const settings = await window.electronAPI.invoke('settings:get');
-await window.electronAPI.invoke('settings:set', 'theme', 'dark');
+// Renderer (window.electronAPI is undefined when the page runs in a plain browser)
+const version = await window.electronAPI?.getVersion();
+await window.electronAPI?.settings.set('theme', 'dark');
+const theme = await window.electronAPI?.settings.get('theme');
+const docs = await window.electronAPI?.getPath('documents');
 ```
 
-### Using electron-log
+### Adding an IPC call
+
+1. Add the channel name to `electron/ipc/channels.ts`.
+2. Handle it in the main process. Check the sender first (`isAppUrl(event.senderFrame?.url, devServerUrl)`), then validate every argument: the renderer is untrusted input.
+3. Expose it in `electron/preload.cts` with the same channel string, and add its type to `src/types/electron-api.d.ts`.
+4. `pnpm test` fails if the preload and `channels.ts` disagree.
+
+Never expose `ipcRenderer` itself, or a generic `invoke(channel, ...args)`, to the renderer.
+
+## Logging
 
 ```typescript
-// In main process
-import log from 'electron-log';
+// Main process
+import log from 'electron-log/main';
 log.info('App started');
-log.error('Error occurred', error);
 ```
 
-### Window State
-
-Window state is automatically managed by `electron-window-state`. The window will remember its size and position.
-
-### Auto-Updates
-
-Auto-updates are configured in `electron/main.ts`. In production, the app will check for updates automatically.
+Logs go to the console in dev and to the platform log folder (e.g. `~/Library/Logs/<app>/main.log`).
 
 ## Configuration
 
-### electron-builder
+### App identity
 
-Edit `package.json` `build` section to customize:
-- App ID
-- Product name
-- Icons
-- Target platforms
-- Code signing
+`package.json` sets `name`, `build.appId` and `build.productName` from the gpp project name. Change `appId` to a reverse-DNS id you own before signing. `productName` also names the settings folder (`userData`), so changing it after release moves users' settings.
 
-### Auto-Updater
+### Icons and signing
 
-Configure update server in `electron/main.ts`:
-- Set `autoUpdater.setFeedURL()` for custom update server
-- Handle update events (update-available, update-downloaded, etc.)
+Put icons in `build/` (`icon.icns`, `icon.ico`, `icon.png`); electron-builder uses the default Electron icon otherwise. macOS notarization and Windows signing need certificates; see the electron-builder docs.
 
-## Security
+### Auto-updates
 
-This template follows Electron security best practices:
-- ✅ Context isolation enabled
-- ✅ Sandbox enabled
-- ✅ Node integration disabled
-- ✅ Preload script for safe IPC
+The updater runs only in a packaged app (`app.isPackaged`) and logs failures instead of crashing. It does nothing useful until you add a `publish` entry to `build` in `package.json` (GitHub releases, S3, or a generic server).
 
-## Next Steps
+### Content-Security-Policy
 
-1. **Add IPC handlers** in `electron/ipc/` for your app's functionality
-2. **Update preload.ts** to expose your IPC methods
-3. **Customize electron-builder** config in `package.json`
-4. **Set up update server** for auto-updates (if needed)
-5. **Add your app logic** in `src/` components
+`vite.config.ts` injects the CSP into the production `index.html`. Loading remote scripts, fonts or APIs needs the matching `script-src`, `font-src` or `connect-src` source added there. Dev runs without a CSP (Vite's hot reload needs inline scripts), so Electron prints an "Insecure Content-Security-Policy" warning in dev only.
 
 ## Resources
 
-- [Electron Documentation](https://www.electronjs.org/docs)
-- [electron-builder Documentation](https://www.electron.build/)
-- [electron-store Documentation](https://github.com/sindresorhus/electron-store)
-- [Vite Documentation](https://vitejs.dev/)
+- [Electron security checklist](https://www.electronjs.org/docs/latest/tutorial/security)
+- [electron-builder](https://www.electron.build/)
+- [electron-store](https://github.com/sindresorhus/electron-store)
+- [Vite](https://vite.dev/)

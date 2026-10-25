@@ -1,6 +1,12 @@
 
 ---
 
+## Electron pack: ESM main, CommonJS preload, verified by running it (2026-10-25)
+
+**Decision:** The Electron pack keeps an ESM main process (`"type": "module"`, NodeNext) with the preload as `.cts` → `preload.cjs`, since Electron requires CommonJS for sandboxed preloads. Renderer access goes only through named preload calls whose handlers check the sender and validate arguments. App identity comes from `{{PROJECT_SLUG}}`. A desktop pack counts as working only after install, build, type-check, lint, tests, an in-Electron run and an `electron-builder` package.
+
+**Rationale:** the pack had never been run: every script failed and the app couldn't start, yet its README and variant.json claimed security best practices. ESM main matches electron-store 10 (ESM-only). broadkast's shell shows the IPC pattern holds up in a real app.
+
 ## Next packs: native eslint flat config, Node 22 (2026-10-19)
 
 **Decision:** Next packs use `eslint-config-next`'s native flat exports and the script `eslint`; no `FlatCompat`, no `next lint`. `.nvmrc` follows the active LTS (22), the same as gpp-cli `DEFAULT_NODE_VERSION`.

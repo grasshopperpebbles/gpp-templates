@@ -1,79 +1,98 @@
 {
-  "name": "desktop_app",
+  "name": "{{PROJECT_SLUG}}-desktop",
   "private": true,
   "version": "0.1.0",
-  "main": "electron/main.js",
+  "description": "Electron desktop app",
+  "type": "module",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "concurrently -k -r \"vite\" \"wait-on tcp:5173 && pnpm electron:dev\"",
-    "electron:dev": "cross-env NODE_ENV=development VITE_DEV_SERVER_URL=http://localhost:5173 NODE_OPTIONS='--import tsx' electron electron/main.ts",
+    "electron:dev": "pnpm build:electron && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .",
     "build": "vite build",
     "build:electron": "tsc -p tsconfig.electron.json",
     "build:all": "pnpm build && pnpm build:electron",
+    "start": "pnpm build:all && electron .",
     "dist": "pnpm build:all && electron-builder",
     "dist:mac": "pnpm build:all && electron-builder --mac",
     "dist:win": "pnpm build:all && electron-builder --win",
     "dist:linux": "pnpm build:all && electron-builder --linux",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint --ext .ts,.tsx src electron",
+    "type-check": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
+    "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "rebuild": "electron-rebuild -f -w"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "electron-updater": "^6.1.7",
-    "electron-store": "^10.1.0",
-    "electron-window-state": "^5.0.3",
+    "electron-context-menu": "^3.6.1",
     "electron-log": "^5.2.0",
-    "electron-context-menu": "^3.6.1"
+    "electron-store": "^10.1.0",
+    "electron-updater": "^6.1.7",
+    "electron-window-state": "^5.0.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.0.1",
+    "@eslint/js": "^9.39.1",
     "@types/node": "^22.7.4",
     "@types/react": "^18.3.8",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.22",
     "concurrently": "^9.0.1",
     "cross-env": "^7.0.3",
     "electron": "^39.2.1",
     "electron-builder": "^25.1.8",
-    "electron-debug": "^3.2.0",
-    "electron-rebuild": "^3.2.9",
-    "eslint": "^9.12.0",
+    "eslint": "^9.39.1",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-react": "^7.37.1",
     "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
     "postcss": "^8.5.6",
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.18",
-    "tsx": "^4.20.6",
     "typescript": "^5.6.2",
-    "vite": "^5.4.8",
+    "typescript-eslint": "^8.46.4",
+    "vite": "^6.4.1",
     "vitest": "^4.0.9",
     "wait-on": "^8.0.1"
   },
   "build": {
-    "appId": "com.example.desktop-app",
-    "productName": "Desktop App",
+    "appId": "com.{{PROJECT_SLUG}}.desktop",
+    "productName": "{{PROJECT_SLUG}}",
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**/*",
-      "electron/**/*",
+      "dist-electron/**/*",
       "package.json"
     ],
     "mac": {
       "category": "public.app-category.utilities",
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "win": {
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "linux": {
-      "target": ["AppImage", "deb"]
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
   }
 }

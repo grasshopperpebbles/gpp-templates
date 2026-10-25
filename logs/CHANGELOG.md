@@ -1,6 +1,16 @@
 
 ---
 
+## [Unreleased] - 2026-10-25 - Electron desktop pack builds, runs and packages
+
+**Status:** COMPLETED
+
+- `desktop/electron`: every script works on a clean install. Before, `build` (no root `index.html`), `build:electron` (TS5096), `type-check`, `lint` (ESLint 9 with `.eslintrc.cjs`, no TS parser) and `vitest` (v4 needs Vite 6) failed, pnpm 10 skipped Electron's binary download, and the built app could not start (ESM main without `"type": "module"`, ESM preload in a sandboxed window, absolute asset paths under `file://`).
+- Main + preload build to `dist-electron/` (`main.js` ESM, `preload.cjs` from `preload.cts`); `index.html` at the root; Vite `base: './'`, production CSP injected at build; `pnpm.onlyBuiltDependencies` for electron/esbuild; Vite 6; ESLint 9 flat config with typescript-eslint; `electron-rebuild` → `@electron/rebuild`; unused `electron-debug` and `tsx` dropped.
+- Hardening: IPC handlers check the sender frame and validate arguments (`getPath` allow-list, settings keys without `__proto__`/`constructor`), channel names in `electron/ipc/channels.ts` with a test against the preload, external links open in the system browser, in-app navigation blocked, single-instance lock, window shown on `ready-to-show`, dev mode only when not packaged, auto-update only when packaged with a `publish` config, startup errors logged.
+- Identity from the project: `name` `{{PROJECT_SLUG}}-desktop`, `appId` `com.{{PROJECT_SLUG}}.desktop`, `productName` `{{PROJECT_SLUG}}` (was `desktop_app` / `com.example.desktop-app` for every app).
+- README rewritten to match (its examples called a `window.electronAPI.invoke` that never existed).
+
 ## [Unreleased] - 2026-10-19 - Next packs refresh for Next 16
 
 **Status:** COMPLETED (merged 2026-10-19)
