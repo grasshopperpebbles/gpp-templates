@@ -1,6 +1,12 @@
 
 ---
 
+## Server packs: Docker, tests and Redis included; bundled copies stay identical (2026-10-25)
+
+**Decision (operator):** server packs ship a Dockerfile, a test setup and Redis wired in (operator uses Redis in most projects; recipes opt out). A pack also bundled in gpp-cli must be byte-identical to this repo's copy.
+
+**Rationale:** gpp's rule is backends in Docker and test-first work; the bundled FastAPI copy had auth and this one didn't, so results depended on the machine.
+
 ## Each dev server gets its own default port (2026-10-25)
 
 **Decision:** packs that run a dev server get a default port no other pack or gpp-cli `variantMetadata` entry uses, and gpp-cli records it in `variantMetadata` so the generated port table shows it. Electron 5180, Tauri 1420, chrome-mv3 5190.

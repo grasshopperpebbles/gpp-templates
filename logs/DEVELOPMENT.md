@@ -1,6 +1,12 @@
 
 ---
 
+## Session: FastAPI pack and API + desktop recipe (2026-10-25)
+
+**Status:** COMPLETED
+
+Companion to gpp-cli 0.9.99 (see its DEVELOPMENT.md). Evidence, all in Docker with python:3.12 (local python is 3.14): pytest 44/44; `docker compose up --build --wait` with postgres + redis + api healthy; `/health` `{"status":"ok","redis":"ok"}`; `alembic upgrade head` creates `users` and `alembic check` is clean; curl register 201 / duplicate 409 / login + `/auth/me` 200 / wrong password 401; refresh token on `/auth/me` 401; Redis stopped → `/health` 200 `redis: unavailable`; production mode with the default secret exits 3. Electron: vitest 13, builds with/without `VITE_API_BASE_URL` (CSP checked in `dist/index.html`), build:electron, type-check, lint.
+
 ## Session: Dev ports for desktop and extension packs (2026-10-25)
 
 **Status:** COMPLETED
