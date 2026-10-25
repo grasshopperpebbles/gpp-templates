@@ -11,6 +11,7 @@ import (
 
 	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/internal/api"
 	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/internal/item"
+	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/pkg/cache"
 	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/pkg/config"
 )
 
@@ -27,17 +28,31 @@ func main() {
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
 
-	logger.Info("starting server", "addr", cfg.ServerAddr)
+	logger.Info("starting server",
+		"addr", cfg.ServerAddr,
+		"database_url_set", cfg.DatabaseURL != "",
+		"redis_url_set", cfg.RedisURL != "",
+	)
 
-	// Initialize services
-	itemService := item.NewService()
+	// Cache: Redis when REDIS_URL is set and reachable, in-memory otherwise.
+	if err := cache.Init(cfg.RedisURL, logger); err != nil {
+		logger.Error("cache init failed", "error", err)
+		os.Exit(1)
+	}
+	defer cache.Close()
+
+	// Item store. The starter keeps items in memory. To use Postgres, open
+	// cfg.DatabaseURL here (database/sql + pgx, or sqlx/GORM), implement
+	// item.Store on top of it, and pass that instead.
+	var items item.Store = item.NewService()
 
 	// Create API server
 	server := api.NewServer(api.Config{
-		ItemService:  itemService,
+		Items:        items,
 		Logger:       logger,
 		ReadTimeout:  cfg.ReadTimeout,
 		WriteTimeout: cfg.WriteTimeout,
+		CORSOrigins:  cfg.CORSOrigins,
 	})
 
 	// Start server in goroutine

@@ -4,7 +4,7 @@
 *.dll
 *.so
 *.dylib
-server
+/server
 
 # Test binary
 *.test
@@ -25,6 +25,7 @@ vendor/
 # Environment
 .env
 .env.local
+tmp/
 
 # OS
 .DS_Store

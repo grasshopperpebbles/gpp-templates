@@ -14,23 +14,22 @@ import (
 )
 
 // Cache provides caching functionality with Redis (optional) or in-memory fallback.
-// Install Redis support: go get github.com/redis/go-redis/v9
+// cmd/server/main.go calls Init with REDIS_URL; an empty REDIS_URL uses memory.
 //
 // Usage:
 //     import "{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/pkg/cache"
 //
-//     // Set a value (TTL in seconds)
-//     cache.Set("user:123", userData, 3600)
+//     // Set a value
+//     cache.Set(ctx, "user:123", userData, time.Hour)
 //
 //     // Get a value
-//     user, found := cache.Get("user:123")
+//     user, found := cache.Get(ctx, "user:123")
 //
 //     // Delete a value
-//     cache.Delete("user:123")
+//     cache.Delete(ctx, "user:123")
 //
 //     // Delete all keys matching pattern (supports * wildcard)
-//     cache.DeletePattern("user:*")        // All user keys
-//     cache.DeletePattern("product:*")     // All product keys
+//     cache.DeletePattern(ctx, "user:*")        // All user keys
 
 var (
 	defaultCache Cache
@@ -246,10 +245,10 @@ func (c *RedisCache) Close() error {
 	return c.client.Close()
 }
 
-// CreateCache creates appropriate cache backend based on configuration
+// CreateCache returns a Redis cache when redisURL is set and reachable, and an
+// in-memory cache otherwise (empty URL, or Redis down at startup).
 func CreateCache(redisURL string, logger *slog.Logger) (Cache, error) {
-	// If Redis URL is set and not default, try to use Redis
-	if redisURL != "" && redisURL != "redis://localhost:6379/0" {
+	if redisURL != "" {
 		redisCache, err := NewRedisCache(redisURL, logger)
 		if err != nil {
 			logger.Warn("Redis not available, using in-memory cache", "error", err)
@@ -326,4 +325,3 @@ func Close() error {
 	}
 	return defaultCache.Close()
 }
-

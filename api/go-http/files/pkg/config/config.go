@@ -3,6 +3,7 @@ package config
 import (
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -13,8 +14,13 @@ type Config struct {
 	WriteTimeout time.Duration
 	LogLevel     slog.Level
 	LogFormat    string
-	DatabaseURL  string
-	RedisURL     string
+	// CORSOrigins comes from CORS_ORIGINS (comma-separated); empty allows any origin.
+	CORSOrigins []string
+	// DatabaseURL is read but unused by the starter: wire it into an item.Store
+	// implementation (see cmd/server/main.go). gpp's root compose sets it.
+	DatabaseURL string
+	// RedisURL selects the pkg/cache backend; empty means in-memory.
+	RedisURL string
 }
 
 // Load reads configuration from environment variables
@@ -25,9 +31,20 @@ func Load() Config {
 		WriteTimeout: getDuration("SERVER_WRITE_TIMEOUT", 30*time.Second),
 		LogLevel:     getLogLevel("LOG_LEVEL", slog.LevelInfo),
 		LogFormat:    getEnv("LOG_FORMAT", "json"),
+		CORSOrigins:  getList("CORS_ORIGINS"),
 		DatabaseURL:  getEnv("DATABASE_URL", ""),
-		RedisURL:     getEnv("REDIS_URL", "redis://localhost:6379/0"),
+		RedisURL:     getEnv("REDIS_URL", ""),
 	}
+}
+
+func getList(key string) []string {
+	var out []string
+	for _, part := range strings.Split(os.Getenv(key), ",") {
+		if p := strings.TrimSpace(part); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 func getEnv(key, defaultValue string) string {
