@@ -1,6 +1,12 @@
 
 ---
 
+## [Unreleased] - 2026-10-25 - Desktop and extension dev servers get their own ports
+
+**Status:** COMPLETED
+
+- `desktop/electron` 5180 (vite.config, `wait-on`, `VITE_DEV_SERVER_URL`, README), `desktop/tauri` 1420 (vite.config and `tauri.conf.json` devUrl; Tauri's own default), `extension/chrome-mv3` 5190 (dev server and HMR). They all used 5173, which SvelteKit and Strapi's admin keep, so a project with web + desktop couldn't run both. Each README names its port and the files to change together. gpp-cli 0.9.98 lists the ports in its port table.
+
 ## [Unreleased] - 2026-10-25 - Electron desktop pack builds, runs and packages
 
 **Status:** COMPLETED

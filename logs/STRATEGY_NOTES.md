@@ -1,6 +1,12 @@
 
 ---
 
+## Each dev server gets its own default port (2026-10-25)
+
+**Decision:** packs that run a dev server get a default port no other pack or gpp-cli `variantMetadata` entry uses, and gpp-cli records it in `variantMetadata` so the generated port table shows it. Electron 5180, Tauri 1420, chrome-mv3 5190.
+
+**Rationale:** Vite's default 5173 everywhere meant two apps in one project couldn't run together, and Electron's `strictPort` made it a hard failure.
+
 ## Electron pack: ESM main, CommonJS preload, verified by running it (2026-10-25)
 
 **Decision:** The Electron pack keeps an ESM main process (`"type": "module"`, NodeNext) with the preload as `.cts` → `preload.cjs`, since Electron requires CommonJS for sandboxed preloads. Renderer access goes only through named preload calls whose handlers check the sender and validate arguments. App identity comes from `{{PROJECT_SLUG}}`. A desktop pack counts as working only after install, build, type-check, lint, tests, an in-Electron run and an `electron-builder` package.

@@ -1,6 +1,12 @@
 
 ---
 
+## Session: Dev ports for desktop and extension packs (2026-10-25)
+
+**Status:** COMPLETED
+
+Every Vite-based pack used 5173. Checked every port in gpp-cli `variantMetadata` and the packs (3000, 3001, 5432, 6379, 8000, 3307, 3308, 9091, 9092, 1337, 1338, 8081, 5173) before choosing 5180 / 1420 / 5190. Evidence: Electron scratch copy install, build, build:electron, type-check, lint, vitest 7/7; Vite answered on 5180 and `wait-on` resolved. Tauri configs agree (Rust not built). gpp-cli review of the branch found the ports consistent everywhere.
+
 ## Session: Electron desktop pack made robust (2026-10-25)
 
 **Status:** COMPLETED
