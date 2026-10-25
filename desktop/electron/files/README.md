@@ -118,7 +118,7 @@ const res = await fetch(`${apiBaseUrl}/health`);
 
 - **Build time:** Vite inlines the value, so set the production URL (in `.env`, `.env.production`, or the shell) before `pnpm build` / `pnpm dist`.
 - **CSP:** `pnpm build` adds the URL's origin to the production `connect-src` (`config/csp.ts`). Without `VITE_API_BASE_URL` the policy stays `default-src 'self'`, which blocks every network call.
-- **CORS:** the API must allow the renderer's origin: `http://localhost:5180` in dev, and `null` in the packaged app (it loads from `file://`). For the gpp FastAPI pack, in the API's `.env`: `CORS_ORIGINS=["http://localhost:5180","null"]` (a JSON list).
+- **CORS:** the API must allow the renderer's origin: `http://localhost:5180` in dev, and `null` in the packaged app (it loads from `file://`). For the gpp FastAPI pack, in the API's `.env` (comma-separated): `CORS_ORIGINS=http://localhost:5180,null`.
 
 ## Logging
 
