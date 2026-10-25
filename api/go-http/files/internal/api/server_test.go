@@ -1,12 +1,16 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/internal/item"
 )
@@ -85,8 +89,12 @@ func TestCreateItem(t *testing.T) {
 		{name: "name is trimmed", body: `{"name":"  Widget  "}`, wantStatus: http.StatusCreated, wantName: "Widget", wantStatusField: "active"},
 		{name: "missing name", body: `{"description":"x"}`, wantStatus: http.StatusBadRequest, wantError: "name is required"},
 		{name: "blank name", body: `{"name":"   "}`, wantStatus: http.StatusBadRequest, wantError: "name is required"},
-		{name: "malformed JSON", body: `{"name":`, wantStatus: http.StatusBadRequest, wantError: "invalid request body"},
-		{name: "wrong type", body: `{"name":42}`, wantStatus: http.StatusBadRequest, wantError: "invalid request body"},
+		{name: "malformed JSON", body: `{"name":`, wantStatus: http.StatusBadRequest, wantError: "invalid JSON body"},
+		{name: "wrong type", body: `{"name":42}`, wantStatus: http.StatusBadRequest, wantError: "invalid JSON body"},
+		{name: "unknown field", body: `{"name":"Widget","colour":"red"}`, wantStatus: http.StatusBadRequest, wantError: "invalid JSON body"},
+		{name: "trailing data", body: `{"name":"Widget"} {"name":"again"}`, wantStatus: http.StatusBadRequest, wantError: "invalid JSON body"},
+		{name: "trailing garbage", body: `{"name":"Widget"}x`, wantStatus: http.StatusBadRequest, wantError: "invalid JSON body"},
+		{name: "empty body", body: ``, wantStatus: http.StatusBadRequest, wantError: "invalid JSON body"},
 		{name: "too large", body: `{"name":"` + strings.Repeat("a", maxBodyBytes) + `"}`, wantStatus: http.StatusRequestEntityTooLarge, wantError: "too large"},
 	}
 
@@ -308,5 +316,133 @@ func TestServerOverHTTP(t *testing.T) {
 	}
 	if got.ID == "" || got.Name != "over the wire" || got.CreatedAt.IsZero() {
 		t.Errorf("decoded item = %+v", got)
+	}
+}
+
+// TestDecodeErrorsAreStable checks that bad bodies get a fixed message, never
+// the decoder's error text (which leaks field names and offsets).
+func TestDecodeErrorsAreStable(t *testing.T) {
+	bodies := map[string]string{
+		"malformed":     `{"name":`,
+		"wrong type":    `{"name":42}`,
+		"unknown field": `{"name":"x","secret_field":1}`,
+		"trailing data": `{"name":"x"}{}`,
+	}
+	for name, b := range bodies {
+		t.Run(name, func(t *testing.T) {
+			h, store := newTestHandler(t)
+			for _, method := range []string{http.MethodPost, http.MethodPut} {
+				path := "/api/v1/items"
+				if method == http.MethodPut {
+					path += "/" + store.Create(item.CreateRequest{Name: "seed"}).ID
+				}
+				rec := do(t, h, method, path, b)
+				if rec.Code != http.StatusBadRequest {
+					t.Fatalf("%s status = %d, want 400 (body %q)", method, rec.Code, rec.Body.String())
+				}
+				if got := decode(t, rec)["error"]; got != "invalid JSON body" {
+					t.Errorf("%s error = %q, want %q", method, got, "invalid JSON body")
+				}
+			}
+		})
+	}
+}
+
+// TestServerTimeouts checks NewServer builds the http.Server with timeouts,
+// including ReadHeaderTimeout (slowloris), and defaults zero values.
+func TestServerTimeouts(t *testing.T) {
+	s := NewServer(Config{Items: item.NewService()})
+	if s.server == nil {
+		t.Fatal("NewServer did not build the http.Server")
+	}
+	for name, d := range map[string]time.Duration{
+		"ReadHeaderTimeout": s.server.ReadHeaderTimeout,
+		"ReadTimeout":       s.server.ReadTimeout,
+		"WriteTimeout":      s.server.WriteTimeout,
+		"IdleTimeout":       s.server.IdleTimeout,
+	} {
+		if d <= 0 {
+			t.Errorf("%s = %v, want > 0", name, d)
+		}
+	}
+
+	s = NewServer(Config{Items: item.NewService(), ReadTimeout: 3 * time.Second, WriteTimeout: 4 * time.Second})
+	if s.server.ReadTimeout != 3*time.Second || s.server.WriteTimeout != 4*time.Second {
+		t.Errorf("configured timeouts not applied: read %v write %v", s.server.ReadTimeout, s.server.WriteTimeout)
+	}
+}
+
+// freeAddr returns a loopback address with a port that was free a moment ago.
+func freeAddr(t *testing.T) string {
+	t.Helper()
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	addr := ln.Addr().String()
+	ln.Close()
+	return addr
+}
+
+// TestStartShutdown serves real requests, then shuts down while Start runs on
+// another goroutine, as main does. Run with -race.
+func TestStartShutdown(t *testing.T) {
+	s := NewServer(Config{Items: item.NewService()})
+	addr := freeAddr(t)
+
+	errc := make(chan error, 1)
+	go func() { errc <- s.Start(addr) }()
+
+	var resp *http.Response
+	var err error
+	for deadline := time.Now().Add(5 * time.Second); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+		if resp, err = http.Get("http://" + addr + "/health"); err == nil {
+			break
+		}
+	}
+	if err != nil {
+		t.Fatalf("server never came up: %v", err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("/health status = %d, want 200", resp.StatusCode)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := s.Shutdown(ctx); err != nil {
+		t.Fatalf("Shutdown: %v", err)
+	}
+	select {
+	case err := <-errc:
+		if !errors.Is(err, http.ErrServerClosed) {
+			t.Fatalf("Start returned %v, want http.ErrServerClosed", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Start did not return after Shutdown")
+	}
+}
+
+// TestShutdownRacesStart calls Shutdown at the same moment Start begins: the
+// race detector flags any unsynchronised access to the http.Server.
+func TestShutdownRacesStart(t *testing.T) {
+	for i := 0; i < 20; i++ {
+		s := NewServer(Config{Items: item.NewService()})
+		errc := make(chan error, 1)
+		go func() { errc <- s.Start("127.0.0.1:0") }()
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if err := s.Shutdown(ctx); err != nil {
+			t.Fatalf("Shutdown: %v", err)
+		}
+		cancel()
+		select {
+		case err := <-errc:
+			if err != nil && !errors.Is(err, http.ErrServerClosed) {
+				t.Fatalf("Start returned %v", err)
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("Start kept running after Shutdown")
+		}
 	}
 }

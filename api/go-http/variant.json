@@ -23,7 +23,7 @@
       "Request logging middleware",
       "Example CRUD endpoints behind an item.Store interface (in memory; database seam)",
       "Redis cache via REDIS_URL with in-memory fallback",
-      "Dockerfile (golang:1.26-alpine build, static binary on alpine:3.22, non-root, wget /health healthcheck)",
+      "Dockerfile (golang:1.26-alpine build, static binary on alpine:3.22, non-root, healthcheck via `server -healthcheck` on the SERVER_ADDR port)",
       "Table-driven httptest tests, go test -race (make test / make test-docker)",
       "Makefile with common targets"
     ],

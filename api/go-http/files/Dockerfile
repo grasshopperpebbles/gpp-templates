@@ -18,8 +18,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/server 
 # Runtime stage
 FROM alpine:3.22
 
-# ca-certificates for outbound TLS, tzdata for time zones. busybox wget (part
-# of alpine) runs the healthcheck.
+# ca-certificates for outbound TLS, tzdata for time zones.
 RUN apk add --no-cache ca-certificates tzdata \
     && adduser -D -H -u 10001 -g '' appuser
 
@@ -32,7 +31,9 @@ USER 10001:10001
 ENV SERVER_ADDR=:8080
 EXPOSE 8080
 
+# The binary probes /health on whatever port SERVER_ADDR names, so changing
+# SERVER_ADDR does not break the healthcheck (update EXPOSE/port mappings too).
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -q --spider http://localhost:8080/health || exit 1
+    CMD ["/app/server", "-healthcheck"]
 
 CMD ["/app/server"]

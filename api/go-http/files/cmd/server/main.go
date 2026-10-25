@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -16,8 +18,24 @@ import (
 )
 
 func main() {
-	// Initialize structured logging
+	healthcheck := flag.Bool("healthcheck", false, "probe /health on SERVER_ADDR and exit 0 if healthy (container HEALTHCHECK)")
+	flag.Parse()
+
 	cfg := config.Load()
+
+	if *healthcheck {
+		url, err := healthURL(cfg.ServerAddr)
+		if err == nil {
+			err = probe(url)
+		}
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "healthcheck:", err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	// Initialize structured logging
 
 	var handler slog.Handler
 	if cfg.LogFormat == "json" {

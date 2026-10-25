@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -15,6 +16,18 @@ import (
 
 // maxBodyBytes caps JSON request bodies; larger bodies get 413.
 const maxBodyBytes = 1 << 20
+
+// Timeouts used when Config leaves them zero.
+const (
+	defaultReadHeaderTimeout = 5 * time.Second
+	defaultReadTimeout       = 10 * time.Second
+	defaultWriteTimeout      = 30 * time.Second
+	defaultIdleTimeout       = 60 * time.Second
+)
+
+// errInvalidJSON is the only decode error clients see; decoder details stay in
+// the server log.
+const errInvalidJSON = "invalid JSON body"
 
 // Config holds server configuration
 type Config struct {
@@ -42,11 +55,29 @@ func NewServer(cfg Config) *Server {
 	if logger == nil {
 		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
-	return &Server{
+	s := &Server{
 		items:  cfg.Items,
 		logger: logger,
 		config: cfg,
 	}
+	// Built once here so Start and Shutdown, which run on different
+	// goroutines, only read s.server and never race on assigning it.
+	s.server = &http.Server{
+		Handler:           s.Routes(),
+		ReadHeaderTimeout: defaultReadHeaderTimeout,
+		ReadTimeout:       orDefault(cfg.ReadTimeout, defaultReadTimeout),
+		WriteTimeout:      orDefault(cfg.WriteTimeout, defaultWriteTimeout),
+		IdleTimeout:       defaultIdleTimeout,
+		ErrorLog:          slog.NewLogLogger(logger.Handler(), slog.LevelWarn),
+	}
+	return s
+}
+
+func orDefault(d, def time.Duration) time.Duration {
+	if d > 0 {
+		return d
+	}
+	return def
 }
 
 // Routes returns the HTTP handler with all routes configured
@@ -67,25 +98,20 @@ func (s *Server) Routes() http.Handler {
 	return s.withMiddleware(mux)
 }
 
-// Start starts the HTTP server
+// Start listens on addr and serves until Shutdown, then returns
+// http.ErrServerClosed. Safe to call Shutdown concurrently, even before Start
+// has begun listening (Start then returns http.ErrServerClosed at once).
 func (s *Server) Start(addr string) error {
-	s.server = &http.Server{
-		Addr:         addr,
-		Handler:      s.Routes(),
-		ReadTimeout:  s.config.ReadTimeout,
-		WriteTimeout: s.config.WriteTimeout,
-		IdleTimeout:  60 * time.Second,
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
 	}
-
-	return s.server.ListenAndServe()
+	return s.server.Serve(ln)
 }
 
-// Shutdown gracefully shuts down the server
+// Shutdown gracefully shuts down the server.
 func (s *Server) Shutdown(ctx context.Context) error {
-	if s.server != nil {
-		return s.server.Shutdown(ctx)
-	}
-	return nil
+	return s.server.Shutdown(ctx)
 }
 
 // Middleware
@@ -252,20 +278,36 @@ func (s *Server) handleDeleteItem(w http.ResponseWriter, r *http.Request) {
 
 // Helper methods
 
-// decodeJSON reads one JSON object from the body into dst. On failure it writes
-// a 400 (or 413 for an oversized body) and returns false.
+// decodeJSON reads exactly one JSON object from the body into dst, rejecting
+// unknown fields and trailing data. On failure it writes a 400 with a fixed
+// message (or 413 for a body over maxBodyBytes) and returns false.
 func (s *Server) decodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) bool {
 	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
-	if err := json.NewDecoder(r.Body).Decode(dst); err != nil {
-		var tooLarge *http.MaxBytesError
-		if errors.As(err, &tooLarge) {
-			s.jsonError(w, "request body too large", http.StatusRequestEntityTooLarge)
-			return false
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+
+	err := dec.Decode(dst)
+	if err == nil {
+		// Anything after the object, even another valid object, is an error.
+		if _, tokErr := dec.Token(); !errors.Is(tokErr, io.EOF) {
+			err = errors.New("trailing data after JSON object")
+			if tokErr != nil {
+				err = tokErr
+			}
 		}
-		s.jsonError(w, "invalid request body: "+err.Error(), http.StatusBadRequest)
+	}
+	if err == nil {
+		return true
+	}
+
+	var tooLarge *http.MaxBytesError
+	if errors.As(err, &tooLarge) {
+		s.jsonError(w, "request body too large", http.StatusRequestEntityTooLarge)
 		return false
 	}
-	return true
+	s.logger.Debug("rejected JSON body", "path", r.URL.Path, "error", err)
+	s.jsonError(w, errInvalidJSON, http.StatusBadRequest)
+	return false
 }
 
 func (s *Server) jsonResponse(w http.ResponseWriter, data interface{}, status int) {

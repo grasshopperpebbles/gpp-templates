@@ -12,7 +12,7 @@ Dockerfile and table-driven `httptest` tests.
 - **CORS** (`CORS_ORIGINS`, comma-separated) and request logging middleware
 - **Redis** cache (`pkg/cache`) when `REDIS_URL` is set, in-memory otherwise
 - **Dockerfile**: `golang:1.26-alpine` build, static binary on `alpine:3.22`,
-  non-root (UID 10001), `wget` healthcheck on `/health`
+  non-root (UID 10001), healthcheck via `server -healthcheck` (probes `/health` on the `SERVER_ADDR` port)
 - **Tests**: `go test -race ./...` over the HTTP layer, the store and config
 
 ## Quick Start (GPP: run the API in Docker)
@@ -53,7 +53,7 @@ Docker network hostnames (`{{PROJECT_SLUG}}-db`, `{{PROJECT_SLUG}}-redis`); in
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `SERVER_ADDR` | `:8080` | Listen address. Keep `:8080` under compose (port mapping and healthcheck use it) |
+| `SERVER_ADDR` | `:8080` | Listen address. The image healthcheck follows it; under compose keep `:8080` or change the port mapping and compose healthcheck with it |
 | `SERVER_READ_TIMEOUT` / `SERVER_WRITE_TIMEOUT` | `10s` / `30s` | Go durations |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
 | `LOG_FORMAT` | `json` | `json` or `text` |
