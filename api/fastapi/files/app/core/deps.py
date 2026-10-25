@@ -1,10 +1,10 @@
 """FastAPI dependencies."""
 from __future__ import annotations
 
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from jose import JWTError, jwt
 
 from app.core.config import settings
 from app.db.models.user import User
@@ -20,8 +20,13 @@ async def get_current_user(
     """Get current authenticated user from JWT token."""
     try:
         token = credentials.credentials
+        # PyJWT only checks exp when it is present; "require" rejects tokens
+        # that leave out exp, sub or type (MissingRequiredClaimError -> 401).
         payload = jwt.decode(
-            token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+            token,
+            settings.JWT_SECRET,
+            algorithms=[settings.JWT_ALGORITHM],
+            options={"require": ["exp", "sub", "type"]},
         )
         user_id: str | None = payload.get("sub")
         # Refresh tokens (and tokens without a type) must not authenticate requests.
@@ -42,7 +47,7 @@ async def get_current_user(
                 detail="Account is disabled",
             )
         return user
-    except JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",

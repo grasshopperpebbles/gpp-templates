@@ -29,7 +29,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 
     # Auth/JWT
-    JWT_SECRET: str = "change-me-in-production"
+    # Placeholder (refused outside dev). PyJWT warns on HS256 keys under 32 bytes.
+    JWT_SECRET: str = "change-me-in-production-use-a-strong-secret-key"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30

@@ -1,16 +1,18 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-sqlalchemy[asyncio]==2.0.23
-asyncpg==0.29.0
-psycopg[binary]==3.1.18
-alembic==1.12.1
-pydantic==2.5.0
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+sqlalchemy[asyncio]==2.1.6
+asyncpg==0.32.0
+psycopg[binary]==3.3.6
+alembic==1.20.1
+pydantic==2.14.1
 # app/schemas use EmailStr
 email-validator==2.3.0
-pydantic-settings==2.1.0
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-# passlib 1.7.4 breaks with bcrypt>=4.1 (hashing raises ValueError); keep pinned.
-bcrypt==4.0.1
-python-multipart==0.0.6
+pydantic-settings==2.16.1
+# JWT (HS256). PyJWT replaces python-jose: actively maintained, what FastAPI's
+# docs use, and no ecdsa/rsa/pyasn1 dependency chain.
+PyJWT==2.15.1
+# Password hashing via bcrypt directly (passlib is unmaintained and breaks
+# with bcrypt>=4.1). Existing $2a$/$2b$/$2y$ hashes keep verifying.
+bcrypt==5.0.0
+python-multipart==0.0.32
 redis==8.1.0
