@@ -15,6 +15,7 @@ gpp template install /path/to/gpp-templates --all
 ### FastAPI pack (2026-10-26)
 
 - [x] Tests independent of the project's `.env`; dependencies current; PyJWT and bcrypt.
+- [x] Redis client loads the package lazily, so a Redis opt-out can drop it.
 
 ### Server packs (2026-10-25)
 
