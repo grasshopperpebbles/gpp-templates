@@ -2,3 +2,5 @@
 pytest==9.1.1
 pytest-asyncio==1.4.0
 httpx==0.28.1
+# tests/test_auth.py runs against in-memory SQLite instead of Postgres
+aiosqlite==0.22.1
