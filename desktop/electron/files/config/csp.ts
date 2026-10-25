@@ -24,3 +24,26 @@ export function buildContentSecurityPolicy(apiBaseUrl?: string): string {
   }
   return `${BASE_POLICY}; connect-src 'self' ${origin}`;
 }
+
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+
+/**
+ * A build-time warning when `apiBaseUrl` is plain http:// to a host other than this machine:
+ * the packaged app would send tokens and data unencrypted. The URL is still allowed (e.g. a
+ * LAN test server); invalid URLs are left to buildContentSecurityPolicy to reject.
+ */
+export function insecureApiUrlWarning(apiBaseUrl?: string): string | undefined {
+  const value = apiBaseUrl?.trim();
+  if (!value) return undefined;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return undefined;
+  }
+  if (url.protocol !== 'http:' || LOOPBACK_HOSTS.has(url.hostname)) return undefined;
+  return (
+    `VITE_API_BASE_URL uses plain http to ${url.origin}: the built app will send requests ` +
+    '(including auth tokens) unencrypted. Use an https:// API URL for production builds.'
+  );
+}

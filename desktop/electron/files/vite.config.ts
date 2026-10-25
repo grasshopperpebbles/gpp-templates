@@ -2,13 +2,18 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
-import { buildContentSecurityPolicy } from './config/csp';
+import { buildContentSecurityPolicy, insecureApiUrlWarning } from './config/csp';
 
 // Production CSP. Dev skips it because Vite's HMR client needs inline scripts and a websocket.
-// VITE_API_BASE_URL (from .env or the shell), when set, adds the API origin to connect-src.
+// VITE_API_BASE_URL (from .env or the shell), when set, adds the API origin to connect-src;
+// a plain http:// URL to another host is allowed but warned about.
 const contentSecurityPolicy = (apiBaseUrl: string | undefined): Plugin => ({
   name: 'content-security-policy',
   apply: 'build',
+  buildStart() {
+    const warning = insecureApiUrlWarning(apiBaseUrl);
+    if (warning) this.warn(warning);
+  },
   transformIndexHtml: () => [
     {
       tag: 'meta',
