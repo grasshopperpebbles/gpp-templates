@@ -1,6 +1,12 @@
 
 ---
 
+## Session: FastAPI pack current and .env-independent (2026-10-26)
+
+**Status:** COMPLETED
+
+Companion to gpp-cli 0.9.102. Versions checked with `pip index versions` in python:3.12. pytest 58/58 with `-W error` with no `.env`, with gpp's generated `.env`, and with a hostile `.env` + env vars; compose (postgres, redis, api) healthy; `alembic upgrade head` + `alembic check` clean; register/login/`/auth/me` OK, refresh token on `/auth/me` 401, tokens without `exp`/`sub` 401; production with the default secret refuses to start.
+
 ## Session: Drift with gpp-cli's bundled packs resolved (2026-10-26)
 
 **Status:** COMPLETED

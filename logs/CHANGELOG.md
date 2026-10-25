@@ -1,6 +1,12 @@
 
 ---
 
+## [Unreleased] - 2026-10-26 - FastAPI pack: tests isolated from .env, current dependencies
+
+**Status:** COMPLETED
+
+- `api/fastapi` (identical to gpp-cli's bundled copy): tests build their own settings and ignore any `.env` (a fresh `electron-fastapi-postgres` scaffold failed 1 test because the recipe writes the desktop's CORS origins there); all dependencies at current releases (fastapi 0.162, starlette 1.10, pydantic 2.14, pydantic-settings 2.16, SQLAlchemy 2.1.6, uvicorn 0.54, alembic 1.20, asyncpg 0.32, psycopg 3.3); python-jose → PyJWT 2.15, passlib → bcrypt 5 directly (existing `$2a$/$2b$/$2y$` hashes verify); JWTs require `exp`, `sub` and `type`; README/Dockerfile note on adding system packages (ffmpeg example).
+
 ## [Unreleased] - 2026-10-26 - Packs synced with gpp-cli's bundled copies
 
 **Status:** COMPLETED
