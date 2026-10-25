@@ -15,7 +15,8 @@ gpp template install /path/to/gpp-templates --all
 ### Server packs (2026-10-25)
 
 - [x] `api/fastapi`: Docker, tests, Redis, auth, security fixes; identical to gpp-cli's bundled copy.
-- [ ] `api/express`, `api/express-mysql`, `api/go-http`: Dockerfile and tests the same way; compare with gpp-cli's bundled copies.
+- [x] `api/express`, `api/express-mysql`, `api/go-http`: Dockerfile, tests, security fixes; Express copies equal gpp-cli's bundled ones.
+- [ ] Express: user list/view and `POST /users` are open to any logged-in user; no refresh-token rotation. Go: no data layer yet.
 
 ### Electron desktop pack (2026-10-25)
 
