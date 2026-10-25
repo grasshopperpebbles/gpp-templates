@@ -24,7 +24,8 @@ async def get_current_user(
             token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
         )
         user_id: str | None = payload.get("sub")
-        if user_id is None:
+        # Refresh tokens (and tokens without a type) must not authenticate requests.
+        if user_id is None or payload.get("type") != "access":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
@@ -34,6 +35,11 @@ async def get_current_user(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found",
+            )
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account is disabled",
             )
         return user
     except JWTError:

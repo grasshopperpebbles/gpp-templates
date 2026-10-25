@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_router
-from app.core.config import settings
+from app.core.config import check_secret_for_production, settings
 from app.core.logging import setup_logging
 from app.core.redis import close_redis, redis_status
 
@@ -17,6 +17,7 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    check_secret_for_production()
     yield
     await close_redis()
 
@@ -36,7 +37,11 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    allow_credentials=True,
+    # Auth is Bearer tokens in the Authorization header, not cookies, so no
+    # credentialed CORS. Keep it False if CORS_ORIGINS ever includes "null"
+    # (a packaged Electron app sends Origin: null): with credentials, any
+    # sandboxed page could make credentialed calls. See README "CORS".
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

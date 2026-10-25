@@ -11,7 +11,7 @@ _client: Redis | None = None
 def get_redis() -> Redis | None:
     """Return the shared client, or None when REDIS_URL is empty (Redis disabled)."""
     global _client
-    if not settings.REDIS_URL:
+    if not settings.REDIS_URL.strip():
         return None
     if _client is None:
         _client = Redis.from_url(

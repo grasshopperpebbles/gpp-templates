@@ -37,8 +37,9 @@ gpp writes `DATABASE_URL` (and `REDIS_URL`) into this folder's `.env` / `.env.ex
 | Variable | Purpose |
 | --- | --- |
 | `DATABASE_URL` | PostgreSQL connection string (`postgresql+psycopg://...`) |
-| `JWT_SECRET` | Secret key for JWT tokens (change it) |
-| `REDIS_URL` | Redis connection string (empty disables Redis) |
+| `JWT_SECRET` | Secret key for JWT tokens. Startup fails outside development while it is empty or a `change-me` placeholder |
+| `ENVIRONMENT` | `production` (default when unset) or `development`/`dev`/`local`/`test`; `env.example.txt` sets `development` |
+| `REDIS_URL` | Redis connection string (empty, `REDIS_URL=`, disables Redis) |
 | `CORS_ORIGINS` | Comma-separated allowed origins |
 | `HOST` / `PORT` | Server bind address (default `0.0.0.0:8000`) |
 
@@ -142,10 +143,13 @@ PATCH /api/v1/users/me
 ## Authentication
 
 JWT bearer tokens (`python-jose`, HS256) with bcrypt password hashing
-(`passlib`). Access tokens last `ACCESS_TOKEN_EXPIRE_MINUTES`, refresh tokens
-(`"type": "refresh"`) `REFRESH_TOKEN_EXPIRE_DAYS`. `app.core.deps.get_current_user`
-resolves the token's `sub` to a `User` row; use it as a dependency to protect
-routes:
+(`passlib`). Access tokens (`"type": "access"`) last `ACCESS_TOKEN_EXPIRE_MINUTES`,
+refresh tokens (`"type": "refresh"`) `REFRESH_TOKEN_EXPIRE_DAYS`.
+`app.core.deps.get_current_user` accepts only access tokens (a refresh token
+gets 401), resolves the token's `sub` to a `User` row and rejects disabled
+accounts (`is_active = false`, 403); `/auth/refresh` accepts only refresh tokens
+and also rejects disabled accounts. Use `get_current_user` as a dependency to
+protect routes:
 
 ```python
 from app.core.deps import get_current_user
@@ -161,6 +165,28 @@ Include the token in the `Authorization` header:
 ```
 Authorization: Bearer <your-token>
 ```
+
+Passwords (register and `PATCH /users/me`) must be 8 to 72 characters and at
+most 72 UTF-8 bytes, bcrypt's limit. Login runs bcrypt against a dummy hash
+when the email is unknown, so response times don't reveal which accounts exist.
+
+### Secret guard
+
+On startup the app refuses to run when `JWT_SECRET` is empty or still a
+`change-me` placeholder, unless `ENVIRONMENT` is `development`/`dev`/`local`/`test`
+or `DEBUG=true`. `ENVIRONMENT` defaults to `production`, so a deploy that forgets
+the secret fails with a clear error instead of signing tokens with a known key.
+
+## CORS
+
+`CORS_ORIGINS` is a comma-separated list of allowed origins. Credentials are
+**off** (`allow_credentials=False` in `app/main.py`): auth uses Bearer tokens in
+the `Authorization` header, not cookies, so browsers don't need credentialed
+CORS. A packaged Electron app (loaded from `file://`) sends `Origin: null`;
+adding `null` to `CORS_ORIGINS` is acceptable **only** while credentials stay
+off. With credentials on, allowing `null` would let any sandboxed page
+(sandboxed iframes, `data:` URLs) make credentialed calls to the API. If you
+switch to cookie auth, turn credentials on and list explicit origins only.
 ## Database Migrations
 
 `alembic/versions/0001_create_users.py` creates the `users` table. After changing
