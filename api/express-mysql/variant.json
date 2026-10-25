@@ -1,7 +1,7 @@
 {
   "name": "express-mysql",
   "displayName": "Express API (MySQL)",
-  "description": "Node.js Express API with TypeScript, Prisma (MySQL), and the same middleware stack as the Express template. Use with Docker MySQL for local development.",
+  "description": "Node.js Express API with TypeScript, Prisma (MySQL), JWT authentication (register/login/refresh), the same middleware stack as the Express template, Vitest + Supertest tests and a production Dockerfile. Use with Docker MySQL for local development.",
   "platform": "api",
   "dependencies": {
     "requires": [],
@@ -11,7 +11,7 @@
   "features": {
     "included": [
       "Express.js with TypeScript",
-      "Prisma ORM with MySQL",
+      "Prisma ORM with MySQL and an initial migration",
       "Comprehensive middleware stack",
       "Security headers (Helmet)",
       "CORS configuration",
@@ -19,20 +19,25 @@
       "Performance logging",
       "Zod schema validation",
       "Error handling with request IDs",
-      "JWT authentication support",
-      "Rate limiting",
+      "JWT authentication (register, login, refresh, /me; refresh tokens can't authenticate)",
       "Type-safe routes",
-      "Health check endpoint",
-      "Graceful shutdown"
+      "Health check endpoint (reports Redis status)",
+      "Graceful shutdown",
+      "Dockerfile (node:22-slim multi-stage, non-root, production deps only, /health healthcheck)",
+      "Vitest + Supertest tests incl. auth (in-memory Prisma fake, no database/Redis needed)",
+      "Redis client (node-redis), optional via REDIS_URL (gpp's MySQL compose has no Redis service)"
     ],
     "excluded": [
       "PostgreSQL (this variant targets MySQL)",
-      "Docker configuration in template (GPP recipe adds root docker-compose for MySQL)"
+      "CI/CD pipelines (add separately)"
     ]
   },
   "homepageType": "api",
   "routes": {
-    "api": ["/api", "/api/v1"],
+    "api": [
+      "/api",
+      "/api/v1"
+    ],
     "shared": []
   }
 }

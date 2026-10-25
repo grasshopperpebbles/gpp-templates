@@ -2,88 +2,23 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load .env file
+// Load .env file (in Docker, compose's env_file/environment set the same variables)
 const envPath = path.join(process.cwd(), '.env');
 dotenv.config({ path: envPath });
 
 // Now import everything else
-import express, { Express } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
 import prisma from './lib/prisma.js';
+import { closeRedis } from './lib/redis.js';
+import { createApp } from './app.js';
 
-// Middleware imports
-import { requestIdMiddleware, errorHandler, notFoundHandler } from './middleware/error-handler.middleware.js';
-import { requestLogger } from './middleware/request-logger.middleware.js';
-
-// Route imports
-import healthRoutes from './routes/health.routes.js';
-import v1Routes from './routes/v1/index.js';
-
-const app: Express = express();
+const app = createApp();
 const PORT = process.env.API_PORT || 3001;
-
-// ============================================================================
-// MIDDLEWARE STACK (Applied in Order)
-// ============================================================================
-
-// 1. Security headers (Helmet)
-app.use(helmet({
-  contentSecurityPolicy: false, // Disable for API (not serving HTML)
-  crossOriginEmbedderPolicy: false, // Allow embedding
-}));
-
-// 2. Request ID generation (for tracking and debugging)
-app.use(requestIdMiddleware);
-
-// 3. Request logger (performance monitoring)
-app.use(requestLogger);
-
-// 4. CORS configuration
-const corsOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
-  : '*';
-
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? corsOrigins
-    : '*', // Development - allow all origins
-  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
-  exposedHeaders: ['X-Request-ID'],
-  credentials: false,
-}));
-
-// 5. Body parsing with size limits
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// ============================================================================
-// ROUTE MOUNTING
-// ============================================================================
-
-// Health check (no authentication)
-app.use('/health', healthRoutes);
-
-// API v1 routes
-app.use('/api/v1', v1Routes);
-
-// ============================================================================
-// ERROR HANDLING (Must be LAST)
-// ============================================================================
-
-// 404 handler - catches all unmatched routes
-app.use(notFoundHandler);
-
-// Global error handler - catches all errors from routes
-app.use(errorHandler);
 
 // ============================================================================
 // SERVER STARTUP
 // ============================================================================
 
-// Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('🚀 Express API Server Running');
   console.log('');
@@ -112,17 +47,15 @@ app.listen(PORT, () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
+// Graceful shutdown (docker stop sends SIGTERM)
+async function shutdown() {
   console.log('\n\n🛑 Shutting down gracefully...');
-  await prisma.$disconnect();
+  server.close();
+  await Promise.allSettled([prisma.$disconnect(), closeRedis()]);
   process.exit(0);
-});
+}
 
-process.on('SIGTERM', async () => {
-  console.log('\n\n🛑 Shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
-});
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 export default app;

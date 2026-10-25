@@ -5,11 +5,10 @@ import prisma from '../../lib/prisma.js';
 import { validate } from '../../middleware/validation.middleware.js';
 import { asyncHandler, ApiError } from '../../middleware/error-handler.middleware.js';
 import { loginSchema, registerSchema, refreshTokenSchema } from '../../schemas/index.js';
-import { authenticate } from '../../middleware/auth.middleware.js';
+import { authenticate, getJwtSecret } from '../../middleware/auth.middleware.js';
 
 const router: Router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production';
 const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '1h') as SignOptions['expiresIn'];
 const REFRESH_TOKEN_EXPIRES_IN = (process.env.REFRESH_TOKEN_EXPIRES_IN || '30d') as SignOptions['expiresIn'];
 
@@ -51,11 +50,11 @@ router.post(
     });
 
     // Generate tokens
-    const accessToken = jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, {
+    const accessToken = jwt.sign({ sub: user.id, email: user.email }, getJwtSecret(), {
       expiresIn: JWT_EXPIRES_IN,
     });
 
-    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, JWT_SECRET, {
+    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, getJwtSecret(), {
       expiresIn: REFRESH_TOKEN_EXPIRES_IN,
     });
 
@@ -97,11 +96,11 @@ router.post(
     }
 
     // Generate tokens
-    const accessToken = jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, {
+    const accessToken = jwt.sign({ sub: user.id, email: user.email }, getJwtSecret(), {
       expiresIn: JWT_EXPIRES_IN,
     });
 
-    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, JWT_SECRET, {
+    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, getJwtSecret(), {
       expiresIn: REFRESH_TOKEN_EXPIRES_IN,
     });
 
@@ -128,7 +127,7 @@ router.post(
 
     try {
       // Verify refresh token
-      const payload = jwt.verify(refresh_token, JWT_SECRET) as { sub: string; type: string };
+      const payload = jwt.verify(refresh_token, getJwtSecret()) as { sub: string; type: string };
 
       if (payload.type !== 'refresh') {
         throw new ApiError(401, 'Invalid refresh token');
@@ -144,7 +143,7 @@ router.post(
       }
 
       // Generate new access token
-      const accessToken = jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, {
+      const accessToken = jwt.sign({ sub: user.id, email: user.email }, getJwtSecret(), {
         expiresIn: JWT_EXPIRES_IN,
       });
 
@@ -170,7 +169,7 @@ router.get(
   '/me',
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
-    const userId = (req as any).auth?.userId || (req as any).auth?.sub;
+    const userId = req.auth?.userId;
 
     if (!userId) {
       throw new ApiError(401, 'Not authenticated');

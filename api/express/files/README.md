@@ -1,11 +1,12 @@
 # Express API
 
-Express API server with TypeScript, Prisma, and comprehensive middleware.
+Express API server with TypeScript, Prisma (PostgreSQL), JWT auth, an optional Redis client, a
+production Dockerfile and a Vitest + Supertest test suite.
 
 ## Features
 
 - ✅ **Express.js** with TypeScript
-- ✅ **Prisma ORM** for database access
+- ✅ **Prisma ORM** with **PostgreSQL** (`provider = "postgresql"`) and an initial migration
 - ✅ **Comprehensive Middleware Stack:**
   - Security headers (Helmet)
   - CORS configuration
@@ -13,74 +14,104 @@ Express API server with TypeScript, Prisma, and comprehensive middleware.
   - Performance logging
   - Zod schema validation
   - Error handling with request IDs
-  - JWT authentication
+  - JWT authentication (register, login, refresh, `/me`)
 - ✅ **Type-safe routes** with TypeScript
-- ✅ **Health check endpoint**
+- ✅ **Health check endpoint** (`GET /health`, reports Redis status)
+- ✅ **Redis** client (`src/lib/redis.ts`), optional via `REDIS_URL`
+- ✅ **Dockerfile** (node:22-slim, multi-stage, non-root, production deps only, healthcheck)
+- ✅ **Vitest + Supertest** tests (in-memory Prisma fake, no database needed)
 - ✅ **Graceful shutdown**
 
-## Quick Start
+## Quick Start (GPP: run the API in Docker)
 
-### 1. Install Dependencies
+**GPP default:** run this API **in Docker** from the monorepo root; do not use `npm install` on
+the host to **serve** the API. Edit source here; use containers for runtime. Next.js
+(`apps/web`) runs on the host, not in Docker.
 
-```bash
-npm install
-```
-
-### 2. Set Up Environment Variables
-
-Copy `env.example.txt` to `.env` and configure:
+### 1. Start services from the monorepo root
 
 ```bash
-cp env.example.txt .env
+cd /path/to/project-root
+docker compose up -d
 ```
 
-Required variables:
-- `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET` - Secret key for JWT tokens
-- `API_PORT` - Server port (default: 3001)
+The API runs as the `{{PROJECT_SLUG}}-api` service, built from this folder's `Dockerfile`,
+next to `{{PROJECT_SLUG}}-db` (PostgreSQL 16) and `{{PROJECT_SLUG}}-redis` (Redis 7).
 
-### 3. Set Up Prisma
+### 2. Environment variables
 
-If you haven't already, initialize Prisma:
+gpp writes `DATABASE_URL` (and `REDIS_URL`) into this folder's `.env` and copies the other
+keys from `env.example.txt` / `.env.example`. Inside the container, URLs must use the **Docker
+network** hostnames, not `localhost`; the root compose file sets them for the API service.
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL URL. gpp writes a `localhost:5432` URL into `.env` for host tools; the root compose file overrides it for the container with `postgresql://…@{{PROJECT_SLUG}}-db:5432/…` |
+| `REDIS_URL` | Redis URL. gpp writes it into `.env` and the root compose file sets `redis://{{PROJECT_SLUG}}-redis:6379/0` for the container. Empty or unset disables Redis |
+| `JWT_SECRET` | Secret for signing JWTs. **Required when `NODE_ENV=production`** (requests needing it fail with 500 otherwise); outside production a dev-only fallback is used |
+| `JWT_EXPIRES_IN` / `REFRESH_TOKEN_EXPIRES_IN` | Token lifetimes (default `1h` / `30d`) |
+| `NODE_ENV` | `development` (from `env.example.txt`) or `production` (the image default). Production restricts CORS to `CORS_ORIGINS` |
+| `CORS_ORIGINS` | Comma-separated allowed origins (production) |
+| `API_PORT` | Server port (default `3001`) |
+
+### 3. Apply migrations
+
+Migrations do not run on container start. Apply them explicitly:
 
 ```bash
-npx prisma init
+docker compose exec {{PROJECT_SLUG}}-api npx prisma migrate deploy
 ```
 
-Create your schema in `prisma/schema.prisma`, then:
+The pack ships an initial migration (`prisma/migrations/*_init`, the `users` table). Commit
+`prisma/migrations/`. To change the schema, edit `prisma/schema.prisma` and create a new
+migration against a database that is reachable from where you run it, e.g. on the host with the
+`localhost` `DATABASE_URL` from `.env`:
 
 ```bash
-npx prisma generate
-npx prisma migrate dev
+npx prisma migrate dev --name add_posts
 ```
 
-### 4. Start Development Server
+then rebuild the image (`docker compose up -d --build`) and run `migrate deploy` again.
+
+### 4. Verify
 
 ```bash
-npm run dev
+curl http://localhost:3001/health
 ```
 
-The server will start on `http://localhost:3001` (or your configured port).
+### Host-only exception
+
+If your team has **explicitly** opted out of the Docker-only rule, `npm install`,
+`npx prisma migrate deploy` and `npm run dev` work on the host with the `localhost` URLs in
+`.env`. That is **not** the GPP default.
 
 ## Project Structure
 
 ```
 src/
-├── server.ts              # Main Express server
+├── app.ts                 # createApp(): middleware + routes, no listen (used by tests)
+├── server.ts              # Loads .env, starts the HTTP server, graceful shutdown
 ├── lib/
-│   └── prisma.ts         # Prisma client instance
+│   ├── prisma.ts          # Prisma client instance
+│   └── redis.ts           # Optional Redis client (REDIS_URL)
 ├── middleware/
-│   ├── auth.middleware.ts           # JWT authentication
-│   ├── error-handler.middleware.ts   # Error handling
-│   ├── request-logger.middleware.ts  # Request logging
+│   ├── auth.middleware.ts           # JWT authentication, getJwtSecret()
+│   ├── error-handler.middleware.ts  # Error handling
+│   ├── request-logger.middleware.ts # Request logging
 │   └── validation.middleware.ts     # Zod validation
 ├── routes/
 │   ├── health.routes.ts   # Health check
 │   └── v1/
-│       ├── index.ts      # API v1 router
+│       ├── index.ts         # API v1 router
+│       ├── auth.routes.ts   # Register, login, refresh, me
 │       └── users.routes.ts  # Example user routes
 └── schemas/
-    └── index.ts          # Zod validation schemas
+    └── index.ts           # Zod validation schemas
+prisma/
+├── schema.prisma
+└── migrations/            # Initial migration (commit new ones)
+tests/                     # Vitest + Supertest (health, auth, users)
+Dockerfile
 ```
 
 ## API Endpoints
@@ -89,70 +120,31 @@ src/
 
 ```bash
 GET /health
+# {"status": "ok", "timestamp": "...", "uptime": 1.23, "redis": "ok" | "unavailable" | "disabled"}
 ```
+
+Always 200 while the app is up. Redis being down shows `"redis": "unavailable"` but does not
+fail the check; DB/Redis readiness is docker compose's job (`depends_on: condition: service_healthy`).
+
+### Auth
+
+```bash
+POST /api/v1/auth/register   # { "email", "password" (8+ chars), "name" } -> 201, user + tokens
+POST /api/v1/auth/login      # { "email", "password" } -> access_token + refresh_token
+POST /api/v1/auth/refresh    # { "refresh_token" } -> new access_token
+GET  /api/v1/auth/me         # Authorization: Bearer <access_token>
+```
+
+Refresh tokens are only accepted by `/auth/refresh`; using one as a bearer token returns 401.
 
 ### Users (Requires Authentication)
 
 ```bash
-# List users
-GET /api/v1/users?page=1&limit=10
-
-# Get user by ID
-GET /api/v1/users/:id
-
-# Create user
-POST /api/v1/users
-Content-Type: application/json
-Authorization: Bearer <token>
-
-{
-  "email": "user@example.com",
-  "name": "John Doe",
-  "password": "securepassword"
-}
-
-# Update user
-PATCH /api/v1/users/:id
-Authorization: Bearer <token>
-
-{
-  "name": "Jane Doe"
-}
-
-# Delete user
+GET    /api/v1/users?page=1&limit=10   # limit 1-100
+GET    /api/v1/users/:id               # ids are Prisma cuid() strings
+POST   /api/v1/users                   # { "email", "name", "password" }
+PATCH  /api/v1/users/:id               # { "name"?, "email"? }
 DELETE /api/v1/users/:id
-Authorization: Bearer <token>
-```
-
-## Authentication
-
-The API uses JWT (JSON Web Tokens) for authentication.
-
-### Getting a Token
-
-You'll need to implement a login endpoint that:
-1. Validates user credentials
-2. Generates a JWT token using `jsonwebtoken`
-3. Returns the token to the client
-
-Example:
-
-```typescript
-import jwt from 'jsonwebtoken';
-
-const token = jwt.sign(
-  { userId: user.id, email: user.email },
-  process.env.JWT_SECRET!,
-  { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-);
-```
-
-### Using the Token
-
-Include the token in the `Authorization` header:
-
-```
-Authorization: Bearer <your-token>
 ```
 
 ## Middleware
@@ -190,42 +182,84 @@ router.post('/users',
 
 ### Request Logging
 
-All requests are automatically logged with:
-- HTTP method and status code
-- Response time
-- Request path
+All requests (except `/health`) are logged with method, status code, response time and path.
 
-Performance indicators:
-- ⚡ Fast (< 100ms)
-- ✓ Normal (100-500ms)
-- • Moderate (500-2000ms)
-- ⏱️ Slow (2000-5000ms)
-- 🐌 Very Slow (> 5000ms)
+## Testing
+
+Tests use Supertest against `createApp()` in-process. `tests/setup.ts` replaces
+`src/lib/prisma.ts` with an in-memory fake (`tests/fakePrisma.ts`) and `REDIS_URL` is empty, so no
+database or Redis needs to be running.
+
+```bash
+npm install
+npm test
+```
+
+Without a local Node 22, run them in a container:
+
+```bash
+docker run --rm -v "$PWD:/src:ro" node:22 sh -c \
+  "cp -R /src /w && cd /w && rm -rf node_modules && npm install && npm test"
+```
+
+When you add a model or a Prisma method the routes use, extend `tests/fakePrisma.ts`.
+Write the test first (`tests/*.test.ts`), see it fail, then implement.
+
+## Docker
+
+The `Dockerfile` builds a production image: node:22-slim, multi-stage (deps + `prisma generate` +
+`tsc` in a build stage), only production dependencies in the final stage, the non-root `node`
+user, `CMD ["node", "dist/server.js"]` and a `HEALTHCHECK` on `/health` (Node's `fetch`, no curl
+needed). The Prisma CLI is a runtime dependency so `prisma migrate deploy` works in the container.
+Tests, `.env` files and devDependencies are not in the image (`.dockerignore`).
+
+```bash
+docker build -t {{PROJECT_SLUG}}-api .
+docker run --rm --env-file .env -p 3001:3001 {{PROJECT_SLUG}}-api
+```
+
+Add a `package-lock.json` (run `npm install` once and commit it) and the image uses `npm ci`.
+
+## Redis
+
+`src/lib/redis.ts` exposes `getRedis()` (a shared [node-redis](https://github.com/redis/node-redis)
+client created on first use, or `null` when `REDIS_URL` is empty), `redisStatus()` and
+`closeRedis()` (called on shutdown). gpp's root compose file runs Redis 7 and passes
+`REDIS_URL` to this API.
+
+```typescript
+import { getRedis } from '../lib/redis.js';
+
+const redis = getRedis();
+if (redis) await redis.set('key', 'value', { EX: 60 });
+```
+
+The client reconnects in the background and fails commands fast while Redis is down (no offline
+queue), so treat it as a cache, not a source of truth.
 
 ## Development
 
 ### Scripts
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build TypeScript to JavaScript
-- `npm start` - Start production server
-- `npm test` - Run tests
-- `npm run lint` - Lint code
+- `npm run dev` - Development server with hot reload (tsx)
+- `npm run build` - `prisma generate` + compile TypeScript to `dist/`
+- `npm start` - Run the compiled server (`node dist/server.js`)
+- `npm test` - Run the Vitest suite once (`npm run test:watch` to watch)
 - `npm run type-check` - Type check without building
+- `npm run db:deploy` - Apply migrations (`prisma migrate deploy`)
+- `npm run db:migrate` - Create a migration (`prisma migrate dev`)
 
 ### Adding New Routes
 
 1. Create route file in `src/routes/v1/`
 2. Import and mount in `src/routes/v1/index.ts`
 3. Add validation schemas in `src/schemas/index.ts`
-
-Example:
+4. Add tests in `tests/`
 
 ```typescript
 // src/routes/v1/posts.routes.ts
 import { Router } from 'express';
 import { authenticate } from '../../middleware/auth.middleware.js';
-import { validate } from '../../middleware/validation.middleware.js';
 import { asyncHandler } from '../../middleware/error-handler.middleware.js';
 
 const router = Router();
@@ -239,74 +273,25 @@ export default router;
 
 ## Production Deployment
 
-### Environment Variables
-
-Set these in your production environment:
-
-- `NODE_ENV=production`
-- `DATABASE_URL` - Production database
-- `JWT_SECRET` - Strong secret key
-- `CORS_ORIGINS` - Comma-separated allowed origins
-- `API_PORT` - Server port
-
-### Build
-
-```bash
-npm run build
-npm start
-```
-
-### Database Migrations
-
-```bash
-npx prisma migrate deploy
-```
-
-## Testing
-
-Example test using Jest and Supertest:
-
-```typescript
-import request from 'supertest';
-import app from '../src/server';
-
-describe('GET /health', () => {
-  it('should return 200', async () => {
-    const res = await request(app).get('/health');
-    expect(res.status).toBe(200);
-    expect(res.body.status).toBe('ok');
-  });
-});
-```
-
-## Next Steps
-
-1. **Set up Prisma schema** - Define your database models
-2. **Implement authentication** - Add login/register endpoints
-3. **Add your routes** - Create routes for your application
-4. **Add validation schemas** - Define Zod schemas for your data
-5. **Set up Docker** - Containerize your application
-6. **Add tests** - Write tests for your endpoints
+Set `NODE_ENV=production`, `DATABASE_URL`, a strong `JWT_SECRET`, `CORS_ORIGINS` and
+`API_PORT`, plus `REDIS_URL` if you use Redis. Build the image from this folder's `Dockerfile` and run
+`npx prisma migrate deploy` (in the container) as a release step.
 
 ## Troubleshooting
 
 ### Database Connection Issues
 
-- Verify `DATABASE_URL` is correct
-- Ensure database is running
-- Check Prisma client is generated: `npx prisma generate`
+- Verify `DATABASE_URL`: inside Docker it must use the compose service name, not `localhost`
+- Ensure the database container is healthy: `docker compose ps`
+- Missing tables: run `docker compose exec {{PROJECT_SLUG}}-api npx prisma migrate deploy`
 
 ### Port Already in Use
 
-Change `API_PORT` in `.env` or kill the process using the port.
-
-### TypeScript Errors
-
-Run `npm run type-check` to see all TypeScript errors.
+Change `API_PORT` in `.env` (and the compose port mapping) or stop the process using the port.
 
 ## Resources
 
 - [Express.js Documentation](https://expressjs.com/)
 - [Prisma Documentation](https://www.prisma.io/docs)
 - [Zod Documentation](https://zod.dev/)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+- [Vitest Documentation](https://vitest.dev/)

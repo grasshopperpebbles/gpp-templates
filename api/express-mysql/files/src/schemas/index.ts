@@ -23,9 +23,9 @@ export const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
-// ID parameter schema
+// ID parameter schema (User ids are Prisma cuid() strings, see prisma/schema.prisma)
 export const idParamSchema = z.object({
-  id: z.string().uuid('Invalid ID format'),
+  id: z.string().cuid('Invalid ID format'),
 });
 
 // Auth schemas

@@ -14,6 +14,23 @@ declare global {
   }
 }
 
+const DEV_JWT_SECRET = 'dev-secret-change-in-production';
+
+/**
+ * The JWT signing secret. Outside production a missing JWT_SECRET falls back to a
+ * dev-only value; in production (NODE_ENV=production) it must be set, so a deploy
+ * that forgets it fails loudly instead of signing tokens with a known key.
+ */
+export function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === 'production') {
+    console.error('JWT_SECRET is not set in environment variables');
+    throw new ApiError(500, 'Server configuration error');
+  }
+  return DEV_JWT_SECRET;
+}
+
 /**
  * JWT Authentication middleware
  * Expects Authorization header: "Bearer <token>"
@@ -27,20 +44,11 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
     }
 
     const token = authHeader.substring(7); // Remove "Bearer " prefix
-    const secret = process.env.JWT_SECRET;
+    const secret = getJwtSecret();
 
-    if (!secret) {
-      console.error('JWT_SECRET is not set in environment variables');
-      throw new ApiError(500, 'Server configuration error');
-    }
-
+    let decoded: any;
     try {
-      const decoded = jwt.verify(token, secret) as any;
-      req.auth = {
-        userId: decoded.userId || decoded.id,
-        ...decoded,
-      };
-      next();
+      decoded = jwt.verify(token, secret);
     } catch (error: any) {
       if (error.name === 'TokenExpiredError') {
         throw new ApiError(401, 'Token has expired');
@@ -50,6 +58,17 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
       }
       throw error;
     }
+
+    // Refresh tokens only work on POST /auth/refresh, never as an access token.
+    if (typeof decoded !== 'object' || decoded.type === 'refresh') {
+      throw new ApiError(401, 'Invalid token');
+    }
+
+    req.auth = {
+      ...decoded,
+      userId: decoded.sub || decoded.userId || decoded.id,
+    };
+    next();
   } catch (error) {
     next(error);
   }
@@ -68,18 +87,15 @@ export function optionalAuthenticate(req: Request, _res: Response, next: NextFun
     }
 
     const token = authHeader.substring(7);
-    const secret = process.env.JWT_SECRET;
-
-    if (!secret) {
-      return next(); // Continue without authentication
-    }
 
     try {
-      const decoded = jwt.verify(token, secret) as any;
-      req.auth = {
-        userId: decoded.userId || decoded.id,
-        ...decoded,
-      };
+      const decoded = jwt.verify(token, getJwtSecret()) as any;
+      if (typeof decoded === 'object' && decoded.type !== 'refresh') {
+        req.auth = {
+          ...decoded,
+          userId: decoded.sub || decoded.userId || decoded.id,
+        };
+      }
     } catch {
       // Invalid token, but continue without authentication
     }
