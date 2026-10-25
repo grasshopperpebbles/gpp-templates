@@ -1,10 +1,12 @@
 /// <reference types="vitest/config" />
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
+import { buildContentSecurityPolicy } from './config/csp';
 
 // Production CSP. Dev skips it because Vite's HMR client needs inline scripts and a websocket.
-const contentSecurityPolicy = (): Plugin => ({
+// VITE_API_BASE_URL (from .env or the shell), when set, adds the API origin to connect-src.
+const contentSecurityPolicy = (apiBaseUrl: string | undefined): Plugin => ({
   name: 'content-security-policy',
   apply: 'build',
   transformIndexHtml: () => [
@@ -12,15 +14,15 @@ const contentSecurityPolicy = (): Plugin => ({
       tag: 'meta',
       attrs: {
         'http-equiv': 'Content-Security-Policy',
-        content: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:",
+        content: buildContentSecurityPolicy(apiBaseUrl),
       },
       injectTo: 'head-prepend',
     },
   ],
 });
 
-export default defineConfig({
-  plugins: [react(), contentSecurityPolicy()],
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), contentSecurityPolicy(loadEnv(mode, process.cwd(), 'VITE_').VITE_API_BASE_URL)],
   // Relative asset URLs so dist/index.html works when Electron loads it from file://
   base: './',
   resolve: {
@@ -37,6 +39,6 @@ export default defineConfig({
     sourcemap: true,
   },
   test: {
-    include: ['src/**/*.test.{ts,tsx}', 'electron/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'electron/**/*.test.ts', 'config/**/*.test.ts'],
   },
-});
+}));

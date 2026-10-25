@@ -39,7 +39,7 @@ pnpm start           # both, then run the built app
 ```bash
 pnpm type-check   # renderer and main process
 pnpm lint
-pnpm test         # vitest (electron/**/*.test.ts, src/**/*.test.ts)
+pnpm test         # vitest (electron/**/*.test.ts, src/**/*.test.ts, config/**/*.test.ts)
 ```
 
 ### Distribution
@@ -67,8 +67,12 @@ Output goes to `release/`.
 ├── src/
 │   ├── App.tsx
 │   ├── main.tsx
-│   ├── types/electron-api.d.ts  # window.electronAPI type, shared by preload and renderer
+│   ├── lib/api.ts           # apiBaseUrl from VITE_API_BASE_URL
+│   ├── types/
+│   │   ├── electron-api.d.ts  # window.electronAPI type, shared by preload and renderer
+│   │   └── vite-env.d.ts      # import.meta.env typing (VITE_API_BASE_URL)
 │   └── styles/
+├── config/csp.ts            # Production Content-Security-Policy (pure, unit tested)
 ├── index.html               # Vite entry
 ├── vite.config.ts           # Renderer build, production CSP, vitest config
 ├── tsconfig.json            # Renderer
@@ -96,6 +100,26 @@ const docs = await window.electronAPI?.getPath('documents');
 
 Never expose `ipcRenderer` itself, or a generic `invoke(channel, ...args)`, to the renderer.
 
+## Calling an API
+
+Set the backend URL in `.env` (the gpp `electron-fastapi-postgres` recipe writes it for you):
+
+```bash
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+Read it from `src/lib/api.ts` (`undefined` when unset):
+
+```typescript
+import { apiBaseUrl } from '@/lib/api';
+
+const res = await fetch(`${apiBaseUrl}/health`);
+```
+
+- **Build time:** Vite inlines the value, so set the production URL (in `.env`, `.env.production`, or the shell) before `pnpm build` / `pnpm dist`.
+- **CSP:** `pnpm build` adds the URL's origin to the production `connect-src` (`config/csp.ts`). Without `VITE_API_BASE_URL` the policy stays `default-src 'self'`, which blocks every network call.
+- **CORS:** the API must allow the renderer's origin: `http://localhost:5180` in dev, and `null` in the packaged app (it loads from `file://`). For the gpp FastAPI pack, in the API's `.env`: `CORS_ORIGINS=["http://localhost:5180","null"]` (a JSON list).
+
 ## Logging
 
 ```typescript
@@ -122,7 +146,7 @@ The updater runs only in a packaged app (`app.isPackaged`) and logs failures ins
 
 ### Content-Security-Policy
 
-`vite.config.ts` injects the CSP into the production `index.html`. Loading remote scripts, fonts or APIs needs the matching `script-src`, `font-src` or `connect-src` source added there. Dev runs without a CSP (Vite's hot reload needs inline scripts), so Electron prints an "Insecure Content-Security-Policy" warning in dev only.
+`vite.config.ts` injects the CSP (built by `config/csp.ts`) into the production `index.html`. `VITE_API_BASE_URL` adds its origin to `connect-src` (see [Calling an API](#calling-an-api)); loading remote scripts or fonts needs the matching `script-src` or `font-src` source added in `config/csp.ts`. Dev runs without a CSP (Vite's hot reload needs inline scripts), so Electron prints an "Insecure Content-Security-Policy" warning in dev only.
 
 ## Resources
 

@@ -16,7 +16,7 @@
     "dist:mac": "pnpm build:all && electron-builder --mac",
     "dist:win": "pnpm build:all && electron-builder --win",
     "dist:linux": "pnpm build:all && electron-builder --linux",
-    "type-check": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
+    "type-check": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.node.json --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest",
