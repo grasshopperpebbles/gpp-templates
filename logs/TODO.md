@@ -12,6 +12,13 @@ gpp template install /path/to/gpp-templates --all
 
 ---
 
+### Electron desktop pack (2026-10-25)
+
+- [x] Make `desktop/electron` install, build, lint, test, run and package (see CHANGELOG 2026-10-25).
+- [ ] Ship default icons in `build/` and document a `publish` example for auto-updates.
+- [ ] `desktop/tauri` has not had the same check; run it the same way.
+- [ ] Dev restarts Electron by hand after main-process edits; consider `tsc --watch` + a restart helper (or electron-vite) if that gets in the way.
+
 **Tasks:**
 - [ ] Next packs refresh for Next 16 — COMPLETED (owner approved, merged 2026-10-19)
   - [x] Native eslint flat config + `eslint` lint script in all 13 Next packs (FlatCompat crashed; `next lint` is gone in Next 16; landing had eslint 8)

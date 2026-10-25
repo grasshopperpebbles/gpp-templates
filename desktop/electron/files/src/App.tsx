@@ -4,8 +4,8 @@ function App() {
   const [version, setVersion] = useState<string>('');
 
   useEffect(() => {
-    // Get app version from Electron
-    window.electronAPI.getVersion().then(setVersion);
+    // Get app version from Electron (absent when the page runs in a plain browser)
+    window.electronAPI?.getVersion().then(setVersion);
   }, []);
 
   return (

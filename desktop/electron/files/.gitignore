@@ -10,9 +10,8 @@ playwright-report/
 
 # Production
 dist/
+dist-electron/
 release/
-electron/*.js
-electron/*.js.map
 
 # Logs
 logs
@@ -42,4 +41,3 @@ lerna-debug.log*
 
 # Electron
 out/
-dist-electron/
