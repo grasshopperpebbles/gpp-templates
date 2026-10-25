@@ -96,8 +96,12 @@ async def refresh(
 ):
     """Refresh an access token using a refresh token."""
     try:
+        # Tokens without exp, sub or type are rejected (see app.core.deps).
         payload = jwt.decode(
-            body.refresh_token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+            body.refresh_token,
+            settings.JWT_SECRET,
+            algorithms=[settings.JWT_ALGORITHM],
+            options={"require": ["exp", "sub", "type"]},
         )
         user_id: str | None = payload.get("sub")
         token_type: str | None = payload.get("type")

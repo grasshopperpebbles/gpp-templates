@@ -143,6 +143,38 @@ async def test_me_rejects_token_without_type(client, db):
     assert resp.status_code == 401
 
 
+def signed(claims: dict) -> str:
+    return jwt.encode(claims, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+
+async def test_me_rejects_token_without_exp(client, db):
+    user_id = (await register(client)).json()["user"]["id"]
+    token = signed({"sub": user_id, "type": "access"})
+    resp = await client.get("/api/v1/auth/me", headers=bearer(token))
+    assert resp.status_code == 401
+
+
+async def test_me_rejects_token_without_sub(client, db):
+    await register(client)
+    token = signed({"type": "access", "exp": 4102444800})
+    resp = await client.get("/api/v1/auth/me", headers=bearer(token))
+    assert resp.status_code == 401
+
+
+async def test_refresh_rejects_token_without_exp(client, db):
+    user_id = (await register(client)).json()["user"]["id"]
+    token = signed({"sub": user_id, "type": "refresh"})
+    resp = await client.post("/api/v1/auth/refresh", json={"refresh_token": token})
+    assert resp.status_code == 401
+
+
+async def test_refresh_rejects_token_without_sub(client, db):
+    await register(client)
+    token = signed({"type": "refresh", "exp": 4102444800})
+    resp = await client.post("/api/v1/auth/refresh", json={"refresh_token": token})
+    assert resp.status_code == 401
+
+
 async def disable(db, email: str = EMAIL) -> None:
     async with db() as session:
         await session.execute(update(User).where(User.email == email).values(is_active=False))
