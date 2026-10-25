@@ -1,6 +1,13 @@
 
 ---
 
+## [Unreleased] - 2026-10-26 - Express and Go packs: Docker, tests, security fixes
+
+**Status:** COMPLETED
+
+- `api/express` (now Postgres, was SQLite) and `api/express-mysql`: node:22-slim multi-stage non-root Dockerfile, Prisma migration shipped, CommonJS build, Vitest + Supertest (58 tests each), optional Redis in `/health`. Security: owner-only user PATCH/DELETE, refresh tokens can't authenticate, startup refuses placeholder/short `JWT_SECRET` in production, constant-time login, no 5xx detail outside development, lowercased emails (max 191), passwords 8–72, deleted users lose access, 100 KB body limit. Identical to gpp-cli's bundled copies.
+- `api/go-http`: builds again (`go.sum` shipped), Go 1.26 / Alpine 3.22, static non-root binary with a `-healthcheck` flag, httptest tests with `-race`, Start/Shutdown and store races fixed, strict JSON decoding, Redis cache with memory fallback, pack-level `docker-compose.yml` removed (gpp's root compose runs it).
+
 ## [Unreleased] - 2026-10-25 - FastAPI pack with Docker, tests, Redis and auth; API + desktop recipe
 
 **Status:** COMPLETED

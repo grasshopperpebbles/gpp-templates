@@ -3,24 +3,47 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"io"
 	"log/slog"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/internal/item"
 )
 
+// maxBodyBytes caps JSON request bodies; larger bodies get 413.
+const maxBodyBytes = 1 << 20
+
+// Timeouts used when Config leaves them zero.
+const (
+	defaultReadHeaderTimeout = 5 * time.Second
+	defaultReadTimeout       = 10 * time.Second
+	defaultWriteTimeout      = 30 * time.Second
+	defaultIdleTimeout       = 60 * time.Second
+)
+
+// errInvalidJSON is the only decode error clients see; decoder details stay in
+// the server log.
+const errInvalidJSON = "invalid JSON body"
+
 // Config holds server configuration
 type Config struct {
-	ItemService  *item.Service
+	// Items is the item store. item.NewService() is in memory; swap in a
+	// database-backed item.Store here.
+	Items        item.Store
 	Logger       *slog.Logger
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
+	// CORSOrigins lists the allowed browser origins. Empty or "*" allows any.
+	CORSOrigins []string
 }
 
 // Server handles HTTP requests
 type Server struct {
-	items  *item.Service
+	items  item.Store
 	logger *slog.Logger
 	server *http.Server
 	config Config
@@ -28,11 +51,33 @@ type Server struct {
 
 // NewServer creates a new API server
 func NewServer(cfg Config) *Server {
-	return &Server{
-		items:  cfg.ItemService,
-		logger: cfg.Logger,
+	logger := cfg.Logger
+	if logger == nil {
+		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
+	}
+	s := &Server{
+		items:  cfg.Items,
+		logger: logger,
 		config: cfg,
 	}
+	// Built once here so Start and Shutdown, which run on different
+	// goroutines, only read s.server and never race on assigning it.
+	s.server = &http.Server{
+		Handler:           s.Routes(),
+		ReadHeaderTimeout: defaultReadHeaderTimeout,
+		ReadTimeout:       orDefault(cfg.ReadTimeout, defaultReadTimeout),
+		WriteTimeout:      orDefault(cfg.WriteTimeout, defaultWriteTimeout),
+		IdleTimeout:       defaultIdleTimeout,
+		ErrorLog:          slog.NewLogLogger(logger.Handler(), slog.LevelWarn),
+	}
+	return s
+}
+
+func orDefault(d, def time.Duration) time.Duration {
+	if d > 0 {
+		return d
+	}
+	return def
 }
 
 // Routes returns the HTTP handler with all routes configured
@@ -53,25 +98,20 @@ func (s *Server) Routes() http.Handler {
 	return s.withMiddleware(mux)
 }
 
-// Start starts the HTTP server
+// Start listens on addr and serves until Shutdown, then returns
+// http.ErrServerClosed. Safe to call Shutdown concurrently, even before Start
+// has begun listening (Start then returns http.ErrServerClosed at once).
 func (s *Server) Start(addr string) error {
-	s.server = &http.Server{
-		Addr:         addr,
-		Handler:      s.Routes(),
-		ReadTimeout:  s.config.ReadTimeout,
-		WriteTimeout: s.config.WriteTimeout,
-		IdleTimeout:  60 * time.Second,
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
 	}
-
-	return s.server.ListenAndServe()
+	return s.server.Serve(ln)
 }
 
-// Shutdown gracefully shuts down the server
+// Shutdown gracefully shuts down the server.
 func (s *Server) Shutdown(ctx context.Context) error {
-	if s.server != nil {
-		return s.server.Shutdown(ctx)
-	}
-	return nil
+	return s.server.Shutdown(ctx)
 }
 
 // Middleware
@@ -80,18 +120,16 @@ func (s *Server) withMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
-		// CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		s.setCORSHeaders(w, r)
 
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
+		// Preflight: answer before routing so every path accepts OPTIONS.
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
 		// Wrap response writer to capture status
-		wrapped := &responseWriter{ResponseWriter: w, status: 200}
+		wrapped := &responseWriter{ResponseWriter: w, status: http.StatusOK}
 
 		next.ServeHTTP(wrapped, r)
 
@@ -102,6 +140,36 @@ func (s *Server) withMiddleware(next http.Handler) http.Handler {
 			"duration_ms", time.Since(start).Milliseconds(),
 		)
 	})
+}
+
+// setCORSHeaders allows any origin when CORSOrigins is empty or contains "*";
+// otherwise it echoes the request's Origin only when it is listed.
+func (s *Server) setCORSHeaders(w http.ResponseWriter, r *http.Request) {
+	h := w.Header()
+	origin := r.Header.Get("Origin")
+	allowAll := len(s.config.CORSOrigins) == 0
+	allowed := false
+	for _, o := range s.config.CORSOrigins {
+		if o == "*" {
+			allowAll = true
+		}
+		if origin != "" && o == origin {
+			allowed = true
+		}
+	}
+
+	switch {
+	case allowAll:
+		h.Set("Access-Control-Allow-Origin", "*")
+	case allowed:
+		h.Set("Access-Control-Allow-Origin", origin)
+		h.Add("Vary", "Origin")
+	default:
+		h.Add("Vary", "Origin")
+		return
+	}
+	h.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	h.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 }
 
 type responseWriter struct {
@@ -133,11 +201,11 @@ func (s *Server) handleListItems(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleCreateItem(w http.ResponseWriter, r *http.Request) {
 	var req item.CreateRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		s.jsonError(w, "invalid request body: "+err.Error(), http.StatusBadRequest)
+	if !s.decodeJSON(w, r, &req) {
 		return
 	}
 
+	req.Name = strings.TrimSpace(req.Name)
 	if req.Name == "" {
 		s.jsonError(w, "name is required", http.StatusBadRequest)
 		return
@@ -171,9 +239,17 @@ func (s *Server) handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req item.UpdateRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		s.jsonError(w, "invalid request body: "+err.Error(), http.StatusBadRequest)
+	if !s.decodeJSON(w, r, &req) {
 		return
+	}
+
+	if req.Name != nil {
+		name := strings.TrimSpace(*req.Name)
+		if name == "" {
+			s.jsonError(w, "name must not be empty", http.StatusBadRequest)
+			return
+		}
+		req.Name = &name
 	}
 
 	updated, found := s.items.Update(id, req)
@@ -201,6 +277,38 @@ func (s *Server) handleDeleteItem(w http.ResponseWriter, r *http.Request) {
 }
 
 // Helper methods
+
+// decodeJSON reads exactly one JSON object from the body into dst, rejecting
+// unknown fields and trailing data. On failure it writes a 400 with a fixed
+// message (or 413 for a body over maxBodyBytes) and returns false.
+func (s *Server) decodeJSON(w http.ResponseWriter, r *http.Request, dst interface{}) bool {
+	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+
+	err := dec.Decode(dst)
+	if err == nil {
+		// Anything after the object, even another valid object, is an error.
+		if _, tokErr := dec.Token(); !errors.Is(tokErr, io.EOF) {
+			err = errors.New("trailing data after JSON object")
+			if tokErr != nil {
+				err = tokErr
+			}
+		}
+	}
+	if err == nil {
+		return true
+	}
+
+	var tooLarge *http.MaxBytesError
+	if errors.As(err, &tooLarge) {
+		s.jsonError(w, "request body too large", http.StatusRequestEntityTooLarge)
+		return false
+	}
+	s.logger.Debug("rejected JSON body", "path", r.URL.Path, "error", err)
+	s.jsonError(w, errInvalidJSON, http.StatusBadRequest)
+	return false
+}
 
 func (s *Server) jsonResponse(w http.ResponseWriter, data interface{}, status int) {
 	w.Header().Set("Content-Type", "application/json")

@@ -1,44 +1,39 @@
-# Build stage
-FROM golang:1.22-alpine AS builder
+# syntax=docker/dockerfile:1
 
-WORKDIR /app
+# Build stage. Keep the Go minor version in step with the `go` line in go.mod.
+FROM golang:1.26-alpine AS builder
 
-# Install git for fetching dependencies
-RUN apk add --no-cache git
+WORKDIR /src
 
-# Copy go mod files
-COPY go.mod go.sum* ./
+# Dependencies first so they cache across source changes. go.sum is committed
+# and verified; the build fails if a module does not match it.
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
 
-# Download dependencies
-RUN go mod download
-
-# Copy source code
 COPY . .
 
-# Build the binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server ./cmd/server
+# Static, stripped binary (no cgo, so no libc dependency in the runtime image).
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/server ./cmd/server
 
 # Runtime stage
-FROM alpine:3.19
+FROM alpine:3.22
+
+# ca-certificates for outbound TLS, tzdata for time zones.
+RUN apk add --no-cache ca-certificates tzdata \
+    && adduser -D -H -u 10001 -g '' appuser
 
 WORKDIR /app
+COPY --from=builder /out/server /app/server
 
-# Install ca-certificates for HTTPS requests
-RUN apk --no-cache add ca-certificates tzdata
+# Numeric UID so orchestrators can verify runAsNonRoot.
+USER 10001:10001
 
-# Copy binary from builder
-COPY --from=builder /app/server .
-
-# Create non-root user
-RUN adduser -D -g '' appuser
-USER appuser
-
-# Expose port
+ENV SERVER_ADDR=:8080
 EXPOSE 8080
 
-# Health check
+# The binary probes /health on whatever port SERVER_ADDR names, so changing
+# SERVER_ADDR does not break the healthcheck (update EXPOSE/port mappings too).
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+    CMD ["/app/server", "-healthcheck"]
 
-# Run the binary
-CMD ["./server"]
+CMD ["/app/server"]

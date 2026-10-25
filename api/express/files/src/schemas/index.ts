@@ -5,16 +5,36 @@ import { z } from 'zod';
  * Add your own schemas here
  */
 
+// Emails are trimmed and lowercased before they reach the database, so `A@X.com` and
+// `a@x.com` are one account on PostgreSQL (case-sensitive) and MySQL alike.
+// 191 = the VARCHAR(191) column Prisma uses for MySQL utf8mb4 unique indexes.
+const email = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(191, 'Email must be at most 191 characters')
+  .email('Invalid email address');
+
+// bcrypt only uses the first 72 bytes of a password, so longer ones are rejected
+// instead of being silently truncated (multi-byte characters count as several bytes).
+const PASSWORD_MAX_BYTES = 72;
+const withinBcryptLimit = (value: string) => Buffer.byteLength(value, 'utf8') <= PASSWORD_MAX_BYTES;
+const password = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(PASSWORD_MAX_BYTES, `Password must be at most ${PASSWORD_MAX_BYTES} characters`)
+  .refine(withinBcryptLimit, `Password must be at most ${PASSWORD_MAX_BYTES} bytes (UTF-8)`);
+
 // User schemas
 export const createUserSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email,
   name: z.string().min(1, 'Name is required').max(100),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password,
 });
 
 export const updateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  email: z.string().email().optional(),
+  email: email.optional(),
 });
 
 // Pagination schema
@@ -23,20 +43,24 @@ export const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
-// ID parameter schema
+// ID parameter schema (User ids are Prisma cuid() strings, see prisma/schema.prisma)
 export const idParamSchema = z.object({
-  id: z.string().uuid('Invalid ID format'),
+  id: z.string().cuid('Invalid ID format'),
 });
 
 // Auth schemas
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
+  email,
+  password: z
+    .string()
+    .min(1, 'Password is required')
+    .max(PASSWORD_MAX_BYTES)
+    .refine(withinBcryptLimit, `Password must be at most ${PASSWORD_MAX_BYTES} bytes (UTF-8)`),
 });
 
 export const registerSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email,
+  password,
   name: z.string().min(1, 'Name is required').max(100),
 });
 

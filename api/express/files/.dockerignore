@@ -1,0 +1,14 @@
+.env
+.env.*
+node_modules
+dist
+coverage
+.git
+.gitignore
+.DS_Store
+*.log
+tests
+vitest.config.ts
+docker-compose*.yml
+Dockerfile
+.dockerignore

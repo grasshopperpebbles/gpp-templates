@@ -6,9 +6,8 @@ generator client {
 }
 
 datasource db {
-  // SQLite for development, PostgreSQL for production
-  // Change provider and DATABASE_URL in .env for production
-  provider = "sqlite"
+  // PostgreSQL (GPP's root docker-compose runs postgres:16 as <slug>-db)
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

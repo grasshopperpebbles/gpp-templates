@@ -1,6 +1,12 @@
 
 ---
 
+## Session: Express and Go packs (2026-10-26)
+
+**Status:** COMPLETED
+
+Companion to gpp-cli 0.9.100. Evidence: Express 58/58 per pack (host and node:22); images against Postgres and MySQL with migrate deploy, A→B 403, placeholder secret exits 1; the arm64 openssl-3.0.x Prisma engine is in the image; Go gofmt/vet/`go test -race` clean in golang:1.26, images healthy on :8080 and :9090, unknown JSON field 400, 2 MiB body 413. Real recipe applies (nextjs-express-mysql, nextjs-go-postgres) healthy.
+
 ## Session: FastAPI pack and API + desktop recipe (2026-10-25)
 
 **Status:** COMPLETED

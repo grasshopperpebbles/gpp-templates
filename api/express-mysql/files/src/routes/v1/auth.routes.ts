@@ -1,17 +1,22 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import prisma from '../../lib/prisma.js';
 import { validate } from '../../middleware/validation.middleware.js';
 import { asyncHandler, ApiError } from '../../middleware/error-handler.middleware.js';
 import { loginSchema, registerSchema, refreshTokenSchema } from '../../schemas/index.js';
-import { authenticate } from '../../middleware/auth.middleware.js';
+import { authenticate, getJwtSecret } from '../../middleware/auth.middleware.js';
 
 const router: Router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production';
 const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '1h') as SignOptions['expiresIn'];
 const REFRESH_TOKEN_EXPIRES_IN = (process.env.REFRESH_TOKEN_EXPIRES_IN || '30d') as SignOptions['expiresIn'];
+export const BCRYPT_ROUNDS = 10;
+
+// Login compares against this when the email is unknown, so a missing account costs the
+// same bcrypt work as a wrong password and response times don't reveal which emails exist.
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync(randomBytes(16).toString('hex'), BCRYPT_ROUNDS);
 
 /**
  * POST /api/v1/auth/register
@@ -33,7 +38,7 @@ router.post(
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     // Create user
     const user = await prisma.user.create({
@@ -51,11 +56,11 @@ router.post(
     });
 
     // Generate tokens
-    const accessToken = jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, {
+    const accessToken = jwt.sign({ sub: user.id, email: user.email }, getJwtSecret(), {
       expiresIn: JWT_EXPIRES_IN,
     });
 
-    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, JWT_SECRET, {
+    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, getJwtSecret(), {
       expiresIn: REFRESH_TOKEN_EXPIRES_IN,
     });
 
@@ -86,22 +91,18 @@ router.post(
       where: { email },
     });
 
-    if (!user || !user.password) {
-      throw new ApiError(401, 'Invalid email or password');
-    }
-
-    // Verify password
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
+    // Always run one bcrypt comparison (against a dummy hash when there is no account)
+    const validPassword = await bcrypt.compare(password, user?.password ?? DUMMY_PASSWORD_HASH);
+    if (!user || !user.password || !validPassword) {
       throw new ApiError(401, 'Invalid email or password');
     }
 
     // Generate tokens
-    const accessToken = jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, {
+    const accessToken = jwt.sign({ sub: user.id, email: user.email }, getJwtSecret(), {
       expiresIn: JWT_EXPIRES_IN,
     });
 
-    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, JWT_SECRET, {
+    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, getJwtSecret(), {
       expiresIn: REFRESH_TOKEN_EXPIRES_IN,
     });
 
@@ -128,7 +129,7 @@ router.post(
 
     try {
       // Verify refresh token
-      const payload = jwt.verify(refresh_token, JWT_SECRET) as { sub: string; type: string };
+      const payload = jwt.verify(refresh_token, getJwtSecret()) as { sub: string; type: string };
 
       if (payload.type !== 'refresh') {
         throw new ApiError(401, 'Invalid refresh token');
@@ -144,7 +145,7 @@ router.post(
       }
 
       // Generate new access token
-      const accessToken = jwt.sign({ sub: user.id, email: user.email }, JWT_SECRET, {
+      const accessToken = jwt.sign({ sub: user.id, email: user.email }, getJwtSecret(), {
         expiresIn: JWT_EXPIRES_IN,
       });
 
@@ -170,7 +171,7 @@ router.get(
   '/me',
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
-    const userId = (req as any).auth?.userId || (req as any).auth?.sub;
+    const userId = req.auth?.userId;
 
     if (!userId) {
       throw new ApiError(401, 'Not authenticated');

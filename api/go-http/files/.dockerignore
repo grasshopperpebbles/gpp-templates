@@ -1,0 +1,19 @@
+# Keep the build context small and secrets out of the image.
+.git
+.gitignore
+.dockerignore
+.env
+.env.*
+!.env.example
+Dockerfile
+tmp/
+bin/
+dist/
+vendor/
+server
+*.test
+*.out
+coverage.html
+.idea/
+.vscode/
+.DS_Store

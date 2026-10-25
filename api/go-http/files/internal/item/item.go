@@ -1,6 +1,7 @@
 package item
 
 import (
+	"sort"
 	"sync"
 	"time"
 
@@ -34,8 +35,24 @@ type UpdateRequest struct {
 	Metadata    map[string]string `json:"metadata,omitempty"`
 }
 
-// Service provides item CRUD operations
-// In production, replace with database-backed implementation
+// Store is the persistence seam the HTTP layer depends on. Service is the
+// in-memory implementation; a database-backed type (for example one built on
+// DATABASE_URL with database/sql or pgx) only has to satisfy this interface
+// and be passed to api.NewServer in cmd/server/main.go.
+//
+// Implementations return copies, so callers can encode or modify them without
+// holding the store's lock.
+type Store interface {
+	List() []Item
+	Get(id string) (Item, bool)
+	Create(req CreateRequest) Item
+	Update(id string, req UpdateRequest) (Item, bool)
+	Delete(id string) bool
+}
+
+var _ Store = (*Service)(nil)
+
+// Service is an in-memory Store. Data is lost on restart.
 type Service struct {
 	mu    sync.RWMutex
 	items map[string]*Item
@@ -48,8 +65,20 @@ func NewService() *Service {
 	}
 }
 
+// clone returns a copy of it that shares no memory with the stored item.
+func clone(it *Item) Item {
+	c := *it
+	if it.Metadata != nil {
+		c.Metadata = make(map[string]string, len(it.Metadata))
+		for k, v := range it.Metadata {
+			c.Metadata[k] = v
+		}
+	}
+	return c
+}
+
 // Create creates a new item
-func (s *Service) Create(req CreateRequest) *Item {
+func (s *Service) Create(req CreateRequest) Item {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -70,38 +99,47 @@ func (s *Service) Create(req CreateRequest) *Item {
 	}
 
 	s.items[item.ID] = item
-	return item
+	return clone(item)
 }
 
 // Get retrieves an item by ID
-func (s *Service) Get(id string) (*Item, bool) {
+func (s *Service) Get(id string) (Item, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	item, found := s.items[id]
-	return item, found
+	if !found {
+		return Item{}, false
+	}
+	return clone(item), true
 }
 
-// List returns all items
-func (s *Service) List() []*Item {
+// List returns all items, oldest first
+func (s *Service) List() []Item {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	items := make([]*Item, 0, len(s.items))
+	items := make([]Item, 0, len(s.items))
 	for _, item := range s.items {
-		items = append(items, item)
+		items = append(items, clone(item))
 	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].CreatedAt.Equal(items[j].CreatedAt) {
+			return items[i].ID < items[j].ID
+		}
+		return items[i].CreatedAt.Before(items[j].CreatedAt)
+	})
 	return items
 }
 
 // Update updates an existing item
-func (s *Service) Update(id string, req UpdateRequest) (*Item, bool) {
+func (s *Service) Update(id string, req UpdateRequest) (Item, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	item, found := s.items[id]
 	if !found {
-		return nil, false
+		return Item{}, false
 	}
 
 	if req.Name != nil {
@@ -118,7 +156,7 @@ func (s *Service) Update(id string, req UpdateRequest) (*Item, bool) {
 	}
 	item.UpdatedAt = time.Now()
 
-	return item, true
+	return clone(item), true
 }
 
 // Delete removes an item by ID

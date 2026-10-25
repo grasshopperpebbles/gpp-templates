@@ -1,37 +1,45 @@
 {
   "name": "go-http",
   "displayName": "Go HTTP API",
-  "description": "Go REST API template using standard library net/http with Go 1.22+ routing. Production-ready with structured logging, graceful shutdown, and Docker support.",
+  "description": "Go REST API on the standard library net/http (Go 1.26 routing) with slog logging, graceful shutdown, an item.Store seam for a database, optional Redis cache, httptest tests and a static non-root Docker image.",
   "platform": "api",
   "runtime": "go",
   "dependencies": {
     "requires": [],
     "requiresVariant": null,
-    "optional": ["database/postgres", "database/mysql"]
+    "optional": [
+      "database/postgres"
+    ]
   },
   "features": {
     "included": [
-      "Go 1.22 standard library routing",
+      "Go 1.26 standard library routing",
       "Zero external framework dependencies",
       "Structured logging (slog)",
       "Graceful shutdown",
-      "Environment configuration",
-      "Health check endpoint",
-      "CORS middleware",
+      "Environment configuration (SERVER_ADDR, CORS_ORIGINS, DATABASE_URL, REDIS_URL, LOG_LEVEL, LOG_FORMAT)",
+      "Health check endpoint (/health)",
+      "CORS middleware (CORS_ORIGINS)",
       "Request logging middleware",
-      "Docker + docker-compose",
-      "Multi-stage Dockerfile",
-      "Makefile with common targets",
-      "Example CRUD endpoints"
+      "Example CRUD endpoints behind an item.Store interface (in memory; database seam)",
+      "Redis cache via REDIS_URL with in-memory fallback",
+      "Dockerfile (golang:1.26-alpine build, static binary on alpine:3.22, non-root, healthcheck via `server -healthcheck` on the SERVER_ADDR port)",
+      "Table-driven httptest tests, go test -race (make test / make test-docker)",
+      "Makefile with common targets"
     ],
     "excluded": [
-      "Database ORM (add GORM or sqlx separately)",
+      "Database driver, data layer and migrations (DATABASE_URL is read; implement item.Store, e.g. with pgx)",
       "Authentication (add separately)",
-      "OpenAPI/Swagger docs (add swaggo separately)"
+      "OpenAPI/Swagger docs (add swaggo separately)",
+      "Pack-level docker-compose.yml (gpp's root compose runs the API, database and Redis)"
     ]
   },
   "homepageType": "api",
   "routes": {
+    "api": [
+      "/api",
+      "/api/v1"
+    ],
     "shared": []
   }
 }
