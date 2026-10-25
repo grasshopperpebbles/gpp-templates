@@ -1,6 +1,13 @@
 
 ---
 
+## [Unreleased] - 2026-10-26 - Packs synced with gpp-cli's bundled copies
+
+**Status:** COMPLETED
+
+- gpp-cli 0.9.101 checks that every pack it bundles equals this repo's copy (`npm run check:packs`). Synced from gpp-cli: add-ons firebase and supabase (Next 16 `proxy.ts` replaces `middleware.ts`), stripe (no secrets in desktop apps; `desktop-electron/lib/stripe.ts` removed), rate-limit (`api-express/rateLimit.ts`), auth-flows reset-password Suspense fix, video/remotion type fix, web/nextjs-devtool-site's API-in-Docker note.
+- cms/strapi-dev: removed leftover `TEST_*.md` and `USAGE.md`; cms/strapi-only: removed `PLUGINS.md`/`PLUGINS_SUMMARY.md` and rewrote the README, which advertised about 10 plugins while the pack ships GraphQL and users-permissions.
+
 ## [Unreleased] - 2026-10-26 - Express and Go packs: Docker, tests, security fixes
 
 **Status:** COMPLETED

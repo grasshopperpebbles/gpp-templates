@@ -1,6 +1,21 @@
 
 ---
 
+## Session: Drift with gpp-cli's bundled packs resolved (2026-10-26)
+
+**Status:** COMPLETED
+
+| Pack | Direction | Why |
+|---|---|---|
+| add-ons/firebase, supabase | gpp-cli → here | Next 16 `proxy.ts`; all web packs are on next 16.4.2 |
+| add-ons/stripe | gpp-cli → here | 2026-10-25 no-secrets-in-desktop fix |
+| add-ons/rate-limit | gpp-cli → here | `rateLimit.ts` used by `rate-limit.ts` |
+| add-ons/auth-flows | both | reset-password fix → here; `addon.json` + desktop-tauri → gpp-cli |
+| video/remotion, web/nextjs-devtool-site | gpp-cli → here | newer fixes there |
+| cms/strapi-dev, strapi-only | here → gpp-cli (README) | session-note files deleted; strapi-only README rewritten |
+
+Smoke: a `nextjs-supabase` scaffold lints (0 errors) and builds on Next 16.4.2 with `src/proxy.ts`.
+
 ## Session: Express and Go packs (2026-10-26)
 
 **Status:** COMPLETED

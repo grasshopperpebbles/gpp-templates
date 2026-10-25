@@ -1,6 +1,12 @@
 
 ---
 
+## Change a bundled pack in both repos (2026-10-26)
+
+**Decision:** packs that gpp-cli also bundles are changed in both repos in the same session; gpp-cli's `npm run check:packs` fails on any difference.
+
+**Rationale:** 11 shared packs had drifted, including a security fix only in gpp-cli's copy.
+
 ## Server packs: Docker, tests and Redis included; bundled copies stay identical (2026-10-25)
 
 **Decision (operator):** server packs ship a Dockerfile, a test setup and Redis wired in (operator uses Redis in most projects; recipes opt out). A pack also bundled in gpp-cli must be byte-identical to this repo's copy.
