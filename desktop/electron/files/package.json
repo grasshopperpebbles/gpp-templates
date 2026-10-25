@@ -6,8 +6,8 @@
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
-    "dev": "concurrently -k -r \"vite\" \"wait-on tcp:5173 && pnpm electron:dev\"",
-    "electron:dev": "pnpm build:electron && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .",
+    "dev": "concurrently -k -r \"vite\" \"wait-on tcp:5180 && pnpm electron:dev\"",
+    "electron:dev": "pnpm build:electron && cross-env VITE_DEV_SERVER_URL=http://localhost:5180 electron .",
     "build": "vite build",
     "build:electron": "tsc -p tsconfig.electron.json",
     "build:all": "pnpm build && pnpm build:electron",

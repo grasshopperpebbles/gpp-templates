@@ -21,6 +21,8 @@ pnpm tauri:dev
 pnpm tauri:build
 ```
 
+The Vite dev server runs on port 1420 (Tauri's convention, not Vite's default 5173, which a SvelteKit web app in the same project uses). To change it, edit `server.port` in `vite.config.ts` and `build.devUrl` in `src-tauri/tauri.conf.json` together.
+
 ## Features
 
 - **File Operations**: Read, write, and list files/directories

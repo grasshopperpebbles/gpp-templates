@@ -13,10 +13,10 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    port: 5173,
+    port: 5190,
     strictPort: true,
     hmr: {
-      port: 5173,
+      port: 5190,
     },
   },
 });

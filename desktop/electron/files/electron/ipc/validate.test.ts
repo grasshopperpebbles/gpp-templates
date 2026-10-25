@@ -3,10 +3,10 @@ import { externalHttpUrl, isAllowedPathName, isAppUrl, isValidSettingsKey } from
 
 describe('isAppUrl', () => {
   it('accepts only the dev server origin in development', () => {
-    expect(isAppUrl('http://localhost:5173/', 'http://localhost:5173')).toBe(true);
-    expect(isAppUrl('http://localhost:5173/settings', 'http://localhost:5173')).toBe(true);
-    expect(isAppUrl('https://example.com/', 'http://localhost:5173')).toBe(false);
-    expect(isAppUrl('file:///app/dist/index.html', 'http://localhost:5173')).toBe(false);
+    expect(isAppUrl('http://localhost:5180/', 'http://localhost:5180')).toBe(true);
+    expect(isAppUrl('http://localhost:5180/settings', 'http://localhost:5180')).toBe(true);
+    expect(isAppUrl('https://example.com/', 'http://localhost:5180')).toBe(false);
+    expect(isAppUrl('file:///app/dist/index.html', 'http://localhost:5180')).toBe(false);
   });
 
   it('accepts only bundled files in production', () => {
@@ -16,7 +16,7 @@ describe('isAppUrl', () => {
   });
 
   it('returns false for malformed URLs instead of throwing', () => {
-    expect(isAppUrl('not a url', 'http://localhost:5173')).toBe(false);
+    expect(isAppUrl('not a url', 'http://localhost:5180')).toBe(false);
     expect(isAppUrl('not a url', undefined)).toBe(false);
   });
 });

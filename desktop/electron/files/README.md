@@ -17,8 +17,10 @@ Electron desktop application template with React, TypeScript, Vite, and standard
 
 ```bash
 pnpm install   # downloads the Electron binary (allowed in package.json "pnpm.onlyBuiltDependencies")
-pnpm dev       # Vite on http://localhost:5173 + Electron
+pnpm dev       # Vite on http://localhost:5180 + Electron
 ```
+
+The dev server uses port 5180 (not Vite's default 5173, which a SvelteKit web app in the same project uses). To change it, edit `server.port` in `vite.config.ts` and the two `5180`s in the `dev` and `electron:dev` scripts in `package.json`.
 
 `pnpm dev` compiles the main process and preload once (`build:electron`) before starting Electron. After editing files under `electron/`, restart `pnpm dev`; renderer changes in `src/` hot-reload.
 
