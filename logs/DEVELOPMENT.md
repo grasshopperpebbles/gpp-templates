@@ -1,6 +1,12 @@
 
 ---
 
+## Session: FastAPI Redis optional (2026-10-26)
+
+**Status:** COMPLETED
+
+pytest 62/62 `-W error` (python:3.12), incl. the package-missing case; a real opt-out scaffold came up healthy without redis installed. Companion to gpp-cli 0.9.103.
+
 ## Session: FastAPI pack current and .env-independent (2026-10-26)
 
 **Status:** COMPLETED

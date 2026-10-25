@@ -1,6 +1,12 @@
 
 ---
 
+## [Unreleased] - 2026-10-26 - FastAPI pack: Redis is optional at the package level
+
+**Status:** COMPLETED
+
+- `api/fastapi`: `app/core/redis.py` imports `redis.asyncio` only when first used, so the app runs without the package (gpp-cli 0.9.103 removes it from `requirements.txt` when a recipe opts out of Redis); `/health` reports `disabled`. 4 new tests. Identical to gpp-cli's bundled copy.
+
 ## [Unreleased] - 2026-10-26 - FastAPI pack: tests isolated from .env, current dependencies
 
 **Status:** COMPLETED
