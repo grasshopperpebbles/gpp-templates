@@ -1,10 +1,14 @@
+import React from "react";
 import { Composition } from "remotion";
-import { CountryComparison } from "./compositions/CountryComparison";
+import {
+  CountryComparison,
+  type CountryComparisonProps,
+} from "./compositions/CountryComparison";
 
 export const RemotionRoot: React.FC = () => {
   return (
     <>
-      <Composition
+      <Composition<CountryComparisonProps>
         id="CountryComparison"
         component={CountryComparison}
         durationInFrames={180}

@@ -22,7 +22,7 @@
       "lib/firebase/db.ts": "lib/firebase/db.ts",
       "lib/firebase/storage.ts": "lib/firebase/storage.ts",
       "lib/firebase/middleware.ts": "lib/firebase/middleware.ts",
-      "middleware.ts": "middleware.ts",
+      "proxy.ts": "proxy.ts",
       ".env.firebase.example": ".env.firebase.example"
     }
   },
@@ -43,7 +43,7 @@
       "3. Copy your web app config to .env.local (NEXT_PUBLIC_* vars)",
       "4. Generate a service account key for Admin SDK (FIREBASE_* private vars)",
       "5. Run 'npm install' to install dependencies",
-      "6. Configure protected routes in middleware.ts as needed"
+      "6. Configure protected routes in proxy.ts as needed"
     ],
     "usage": [
       "Client SDK: import { auth, db, storage } from '@/lib/firebase/client'",

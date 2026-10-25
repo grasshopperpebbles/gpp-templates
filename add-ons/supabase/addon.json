@@ -18,7 +18,7 @@
       "lib/supabase/client.ts": "lib/supabase/client.ts",
       "lib/supabase/server.ts": "lib/supabase/server.ts",
       "lib/supabase/middleware.ts": "lib/supabase/middleware.ts",
-      "middleware.ts": "middleware.ts"
+      "proxy.ts": "proxy.ts"
     }
   },
   "envVars": [
