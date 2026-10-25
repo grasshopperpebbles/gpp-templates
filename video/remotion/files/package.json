@@ -11,11 +11,11 @@
     "upgrade": "npx remotion upgrade"
   },
   "dependencies": {
-    "@remotion/cli": "^4.0.0",
-    "@remotion/player": "^4.0.0",
+    "@remotion/cli": "^4.0.445",
+    "@remotion/player": "^4.0.445",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "remotion": "^4.0.0"
+    "remotion": "^4.0.445"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

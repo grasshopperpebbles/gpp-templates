@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { firebaseMiddleware } from "@/lib/firebase/middleware";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   return firebaseMiddleware(request, {
     // Customize protected routes as needed
     // protectedRoutes: ["/dashboard", "/account", "/settings"],

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 
@@ -18,7 +19,9 @@ export default function ResetPasswordPage() {
             Enter your new password below.
           </p>
         </div>
-        <ResetPasswordForm />
+        <Suspense fallback={<div className="text-center text-sm text-muted-foreground">Loading...</div>}>
+          <ResetPasswordForm />
+        </Suspense>
       </div>
     </div>
   );

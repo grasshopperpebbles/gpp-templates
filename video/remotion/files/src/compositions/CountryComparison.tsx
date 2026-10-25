@@ -13,7 +13,7 @@ interface CountryItem {
   flag: string;
 }
 
-interface CountryComparisonProps {
+export interface CountryComparisonProps {
   title: string;
   items: CountryItem[];
 }
