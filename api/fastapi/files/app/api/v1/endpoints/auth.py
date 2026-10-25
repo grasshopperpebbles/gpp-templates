@@ -1,6 +1,7 @@
 """Auth endpoints (register, login, refresh, me)."""
 from __future__ import annotations
 
+import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -94,8 +95,6 @@ async def refresh(
     db: AsyncSession = Depends(get_db),
 ):
     """Refresh an access token using a refresh token."""
-    from jose import JWTError, jwt
-
     try:
         payload = jwt.decode(
             body.refresh_token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
@@ -130,7 +129,7 @@ async def refresh(
             access_token=access_token,
             token_type="bearer",
         )
-    except JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired refresh token",

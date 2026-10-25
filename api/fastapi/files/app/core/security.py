@@ -5,27 +5,36 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
+import jwt
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# bcrypt only uses the first 72 bytes and bcrypt>=5 raises on longer input;
+# app.schemas.user.Password already caps new passwords at 72 bytes.
+BCRYPT_MAX_BYTES = 72
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against a hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a password against a bcrypt hash ($2a$/$2b$/$2y$, e.g. ones
+    written earlier by passlib). False for over-long input or a malformed hash."""
+    password = plain_password.encode("utf-8")
+    if len(password) > BCRYPT_MAX_BYTES:
+        return False
+    try:
+        return bcrypt.checkpw(password, hashed_password.encode("utf-8"))
+    except ValueError:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password."""
-    return pwd_context.hash(password)
+    """Hash a password with bcrypt (a $2b$ hash, 12 rounds)."""
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("ascii")
 
 
 # bcrypt hash of a random throwaway password. Login verifies against it when the
 # email is unknown, so the response time doesn't reveal which accounts exist.
-DUMMY_PASSWORD_HASH = pwd_context.hash(secrets.token_urlsafe(16))
+DUMMY_PASSWORD_HASH = get_password_hash(secrets.token_urlsafe(16))
 
 
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
@@ -42,7 +51,6 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
         to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
     )
     return encoded_jwt
-
 
 
 def create_refresh_token(user_id: str) -> str:

@@ -44,4 +44,4 @@ async def test_unreachable_redis_reports_unavailable(monkeypatch):
 )
 def test_cors_origins_parsed_from_comma_separated_env(monkeypatch, raw, expected):
     monkeypatch.setenv("CORS_ORIGINS", raw)
-    assert Settings().cors_origins == expected
+    assert Settings(_env_file=None).cors_origins == expected

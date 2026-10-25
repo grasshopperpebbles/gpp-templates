@@ -142,8 +142,8 @@ PATCH /api/v1/users/me
 
 ## Authentication
 
-JWT bearer tokens (`python-jose`, HS256) with bcrypt password hashing
-(`passlib`). Access tokens (`"type": "access"`) last `ACCESS_TOKEN_EXPIRE_MINUTES`,
+JWT bearer tokens (`PyJWT`, HS256) with bcrypt password hashing (the
+`bcrypt` library; `$2a$`/`$2b$`/`$2y$` hashes from passlib still verify). Access tokens (`"type": "access"`) last `ACCESS_TOKEN_EXPIRE_MINUTES`,
 refresh tokens (`"type": "refresh"`) `REFRESH_TOKEN_EXPIRE_DAYS`.
 `app.core.deps.get_current_user` accepts only access tokens (a refresh token
 gets 401), resolves the token's `sub` to a `User` row and rejects disabled
@@ -216,8 +216,11 @@ alembic downgrade -1
 
 Tests use httpx `AsyncClient` against the app in-process; Redis is faked,
 Postgres is never contacted and the auth tests run against an in-memory SQLite
-database (`aiosqlite`), so no services need to be running. Warnings fail the
-run (`pytest.ini`), apart from two known deprecations in passlib and python-jose.
+database (`aiosqlite`), so no services need to be running. Any warning fails
+the run (`pytest.ini`). Tests ignore this folder's `.env` and the environment:
+`tests/conftest.py` builds the app's settings from its own `TEST_SETTINGS` and
+removes every setting from the environment for each test, so the suite passes
+the same way on a laptop, in CI and inside the API container.
 
 ```bash
 pip install -r requirements-dev.txt
@@ -244,6 +247,21 @@ and has a `HEALTHCHECK` on `/health` (Python `urllib`, no curl needed).
 docker build -t {{PROJECT_SLUG}}-api .
 docker run --rm --env-file .env -p 8000:8000 {{PROJECT_SLUG}}-api
 ```
+
+### Adding system packages
+
+The image installs no OS packages beyond `python:3.12-slim`. If the app needs
+one (e.g. `ffmpeg`), add it to the `Dockerfile` before `COPY requirements.txt`,
+cleaning the apt lists in the same layer:
+
+```dockerfile
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+Packages that only build Python wheels (e.g. `build-essential`, `libpq-dev`)
+are better kept out of the runtime image; prefer packages with prebuilt wheels.
 
 In a gpp project the API runs as the `{{PROJECT_SLUG}}-api` service in the root
 `docker-compose.yml`, next to `{{PROJECT_SLUG}}-db` and `{{PROJECT_SLUG}}-redis`.

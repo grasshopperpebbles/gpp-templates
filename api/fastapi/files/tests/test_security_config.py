@@ -48,18 +48,29 @@ async def test_startup_fails_with_default_secret_in_production(monkeypatch):
             pass
 
 
-async def test_cors_does_not_allow_credentials(client):
-    resp = await client.options(
+def preflight(client, origin: str):
+    return client.options(
         "/api/v1/auth/me",
         headers={
-            "Origin": "http://localhost:3000",
+            "Origin": origin,
             "Access-Control-Request-Method": "GET",
             "Access-Control-Request-Headers": "authorization",
         },
     )
+
+
+async def test_cors_does_not_allow_credentials(client):
+    # http://localhost:3000 is in CORS_ORIGINS via tests/conftest.py TEST_SETTINGS.
+    resp = await preflight(client, "http://localhost:3000")
     assert resp.status_code == 200
     assert resp.headers["access-control-allow-origin"] == "http://localhost:3000"
     assert "access-control-allow-credentials" not in resp.headers
+
+
+async def test_cors_rejects_unlisted_origin(client):
+    resp = await preflight(client, "http://evil.example")
+    assert resp.status_code == 400
+    assert "access-control-allow-origin" not in resp.headers
 
 
 def test_empty_redis_url_in_env_file_disables_redis(tmp_path, monkeypatch):

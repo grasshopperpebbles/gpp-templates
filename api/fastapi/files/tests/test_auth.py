@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import jwt
 import pytest
-from jose import jwt
 from sqlalchemy import select, update
 
 from app.api.v1.endpoints import auth as auth_endpoints
 from app.core.config import settings
-from app.core.security import create_access_token, verify_password
+from app.core.security import create_access_token, get_password_hash, verify_password
 from app.db.models import User
 
 EMAIL = "alice@example.com"
@@ -196,3 +196,43 @@ async def test_update_me_rejects_bad_password_length(client, db, password):
     token = (await register(client)).json()["access_token"]
     resp = await client.patch("/api/v1/users/me", headers=bearer(token), json={"password": password})
     assert resp.status_code == 422
+
+
+# Hashes of PASSWORD written by passlib 1.7.4 (the pack's previous hasher), so
+# accounts created before the switch to the bcrypt library still log in.
+PASSLIB_HASHES = [
+    "$2b$12$NyQhcaVjtT5wWQXOjSuarOy6NEeRGBRnZ5wdKHomuz9/P65xEdXUK",
+    "$2a$12$5zkcJN/GUOS35pFToD2GbOozZS2tXkqR9XP/m2bCba6e77E8Ccoae",
+    "$2y$12$bcEFgkgEm.9eMumHlC9pmuKDISYBHQq3EPNOS0J04d8ByPIUDyl.i",
+]
+
+
+@pytest.mark.parametrize("hashed", PASSLIB_HASHES)
+def test_existing_passlib_hashes_still_verify(hashed):
+    assert verify_password(PASSWORD, hashed)
+    assert not verify_password("wrong password", hashed)
+
+
+def test_new_hashes_are_bcrypt_2b():
+    hashed = get_password_hash(PASSWORD)
+    assert hashed.startswith("$2b$12$")
+    assert verify_password(PASSWORD, hashed)
+
+
+@pytest.mark.parametrize("hashed", ["", "not-a-hash", "$2b$12$short"])
+def test_verify_password_rejects_malformed_hash(hashed):
+    assert verify_password(PASSWORD, hashed) is False
+
+
+async def test_login_with_over_72_byte_password_is_401(client, db):
+    await register(client)
+    resp = await client.post("/api/v1/auth/login", json={"email": EMAIL, "password": "x" * 100})
+    assert resp.status_code == 401
+
+
+async def test_passlib_era_account_can_log_in(client, db):
+    async with db() as session:
+        session.add(User(email=EMAIL, name="Old", hashed_password=PASSLIB_HASHES[0]))
+        await session.commit()
+    resp = await client.post("/api/v1/auth/login", json={"email": EMAIL, "password": PASSWORD})
+    assert resp.status_code == 200
