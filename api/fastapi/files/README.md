@@ -4,7 +4,7 @@ FastAPI application with SQLAlchemy, Pydantic, and comprehensive middleware.
 
 ## Features
 
-- ✅ **FastAPI** with Python 3.11+
+- ✅ **FastAPI** with Python 3.12
 - ✅ **SQLAlchemy** (async) for database access
 - ✅ **Pydantic** models for validation
 - ✅ **Alembic** for database migrations
@@ -17,6 +17,8 @@ FastAPI application with SQLAlchemy, Pydantic, and comprehensive middleware.
 - ✅ **Health check endpoint**
 - ✅ **OpenAPI/Swagger documentation** (auto-generated)
 - ✅ **Async/await support**
+- ✅ **Redis** async client (`app/core/redis.py`), reported in `/health`
+- ✅ **Dockerfile** (python:3.12-slim, non-root) and **pytest** setup
 
 ## Quick Start
 
@@ -46,6 +48,7 @@ Required variables:
 - `JWT_SECRET` - Secret key for JWT tokens
 - `HOST` - Server host (default: 0.0.0.0)
 - `PORT` - Server port (default: 8000)
+- `REDIS_URL` - Redis connection string (default `redis://localhost:6379/0`; empty disables Redis)
 
 ### 4. Set Up Database
 
@@ -84,6 +87,7 @@ app/
 │   ├── config.py        # Settings (Pydantic Settings)
 │   ├── deps.py          # FastAPI dependencies
 │   ├── logging.py       # Logging configuration
+│   ├── redis.py         # Async Redis client
 │   └── security.py      # Password hashing, JWT tokens
 ├── db/
 │   ├── base.py          # SQLAlchemy base and session
@@ -106,7 +110,12 @@ alembic/                 # Alembic migrations
 
 ```bash
 GET /health
+# {"status": "ok", "redis": "ok" | "unavailable" | "disabled"}
 ```
+
+Always 200 while the app is up. Redis being down shows `"redis": "unavailable"`
+but does not fail the check; DB/Redis readiness is docker compose's job
+(`depends_on: condition: service_healthy`).
 
 ### API Documentation
 
@@ -193,12 +202,63 @@ alembic downgrade -1
 
 ### Running Tests
 
-```bash
-# Install test dependencies
-pip install pytest pytest-asyncio httpx
+Tests use httpx `AsyncClient` against the app in-process; Redis is faked and
+Postgres is never contacted, so no services need to be running.
 
-# Run tests
+```bash
+pip install -r requirements-dev.txt
 pytest
+```
+
+Without a local Python 3.12, run them in a container:
+
+```bash
+docker run --rm -v "$PWD:/src:ro" python:3.12 sh -c \
+  "cp -R /src /w && cd /w && pip install -q -r requirements-dev.txt && pytest"
+```
+
+Write the test first (`tests/test_*.py`), see it fail, then implement.
+Shared fixtures live in `tests/conftest.py` (`client`, `fake_redis`).
+
+## Docker
+
+The `Dockerfile` builds a production image (python:3.12-slim, runtime deps
+only, non-root user) that runs `uvicorn app.main:app --host 0.0.0.0 --port 8000`
+and has a `HEALTHCHECK` on `/health` (Python `urllib`, no curl needed).
+
+```bash
+docker build -t {{PROJECT_SLUG}}-api .
+docker run --rm --env-file .env -p 8000:8000 {{PROJECT_SLUG}}-api
+```
+
+In a gpp project the API runs as the `{{PROJECT_SLUG}}-api` service in the root
+`docker-compose.yml`, next to `{{PROJECT_SLUG}}-db` and `{{PROJECT_SLUG}}-redis`.
+Inside compose, `.env` must point at the service names:
+
+```bash
+DATABASE_URL=postgresql+psycopg://postgres:postgres@{{PROJECT_SLUG}}-db:5432/postgres
+REDIS_URL=redis://{{PROJECT_SLUG}}-redis:6379/0
+```
+
+Migrations do not run on container start. Apply them explicitly:
+
+```bash
+docker compose exec {{PROJECT_SLUG}}-api alembic upgrade head
+```
+
+## Redis
+
+`app/core/redis.py` exposes `get_redis()` (a lazily created
+`redis.asyncio.Redis`, or `None` when `REDIS_URL` is empty), `redis_status()`
+and `close_redis()` (called on app shutdown). Use it for caching, rate limits
+or queues:
+
+```python
+from app.core.redis import get_redis
+
+redis = get_redis()
+if redis is not None:
+    await redis.set("key", "value", ex=60)
 ```
 
 ### Code Formatting
@@ -257,8 +317,7 @@ alembic upgrade head
 3. **Implement endpoints** - Create endpoints in `app/api/v1/endpoints/`
 4. **Set up authentication** - Implement login/register endpoints
 5. **Add Celery integration** - For background tasks (optional)
-6. **Set up Docker** - Containerize your application
-7. **Add tests** - Write tests for your endpoints
+6. **Add tests** - Test-first, alongside `tests/test_health.py`
 
 ## Resources
 

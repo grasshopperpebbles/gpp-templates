@@ -28,11 +28,16 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
-    # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+    # CORS: comma-separated origins (e.g. "http://localhost:3000,http://localhost:3001")
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001"
 
-    # Redis (optional, for caching/queue)
-    REDIS_URL: str | None = None
+    # Redis: empty string disables it. In Docker use redis://<slug>-redis:6379/0
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        """CORS_ORIGINS split into a list."""
+        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
 
 settings = Settings()

@@ -1,18 +1,29 @@
 """FastAPI application entry point."""
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.logging import setup_logging
+from app.core.redis import close_redis, redis_status
 
 # Setup logging
 setup_logging()
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    yield
+    await close_redis()
+
+
 # Create FastAPI app
 app = FastAPI(
+    lifespan=lifespan,
     title="API",
     description="FastAPI application",
     version="1.0.0",
@@ -24,7 +35,7 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,8 +47,9 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "ok"}
+    """Liveness check. Redis state is reported but never fails the check;
+    DB/Redis readiness is handled by docker compose depends_on."""
+    return {"status": "ok", "redis": await redis_status()}
 
 
 if __name__ == "__main__":
