@@ -48,11 +48,17 @@ network** hostnames, not `localhost`; the root compose file sets them for the AP
 | --- | --- |
 | `DATABASE_URL` | MySQL URL. gpp writes a `localhost:3308` URL (database `{{PROJECT_DB_SNAKE}}_api_db`) into `.env` for host tools; the root compose file overrides it for the container with `mysql://…@<api-folder>-mysql:3306/…` |
 | `REDIS_URL` | Optional Redis URL. gpp's compose file has no Redis service for MySQL projects, so it is unset (Redis "disabled") unless you add one |
-| `JWT_SECRET` | Secret for signing JWTs. **Required when `NODE_ENV=production`** (requests needing it fail with 500 otherwise); outside production a dev-only fallback is used |
-| `JWT_EXPIRES_IN` / `REFRESH_TOKEN_EXPIRES_IN` | Token lifetimes (default `1h` / `30d`) |
-| `NODE_ENV` | `development` (from `env.example.txt`) or `production` (the image default). Production restricts CORS to `CORS_ORIGINS` |
+| `JWT_SECRET` | Secret for signing JWTs. With `NODE_ENV=production` the server **exits at startup** unless it is set, is not a placeholder (the shipped value, or anything containing `change-me`/`changeme`) and is at least 32 characters (`openssl rand -hex 32`); outside production a dev-only fallback is used |
+| `JWT_EXPIRES_IN` / `REFRESH_TOKEN_EXPIRES_IN` | Access / refresh token lifetimes (default `1h` / `30d`) |
+| `NODE_ENV` | `development` (from `env.example.txt`) or `production` (the image default). Production restricts CORS to `CORS_ORIGINS`, hides 5xx error messages and enforces the `JWT_SECRET` check |
 | `CORS_ORIGINS` | Comma-separated allowed origins (production) |
 | `API_PORT` | Server port (default `3001`) |
+
+> **`NODE_ENV` in compose:** the seeded `.env` sets `NODE_ENV=development`, and compose passes
+> `.env` to the container, so it **overrides the image's `NODE_ENV=production` default**. In
+> development mode CORS allows `*`, error responses include stack traces and details, and the
+> `JWT_SECRET` check is skipped. For a production deployment set `NODE_ENV=production` (and a
+> real `JWT_SECRET`) in the environment the container actually gets.
 
 ### 3. Apply migrations
 
@@ -110,7 +116,7 @@ src/
 prisma/
 ├── schema.prisma
 └── migrations/            # Initial migration (commit new ones)
-tests/                     # Vitest + Supertest (health, auth, users)
+tests/                     # Vitest + Supertest (health, auth, users, errors, config)
 Dockerfile
 ```
 
@@ -135,7 +141,19 @@ POST /api/v1/auth/refresh    # { "refresh_token" } -> new access_token
 GET  /api/v1/auth/me         # Authorization: Bearer <access_token>
 ```
 
-Refresh tokens are only accepted by `/auth/refresh`; using one as a bearer token returns 401.
+- Emails are trimmed and lowercased (`A@X.com` and `a@x.com` are one account), at most 191
+  characters (the MySQL `VARCHAR(191)` unique index).
+- Passwords are 8 to 72 characters and at most 72 UTF-8 bytes (bcrypt's input limit).
+- Login runs a bcrypt comparison even for an unknown email, so response times do not reveal
+  which accounts exist.
+- Refresh tokens are only accepted by `/auth/refresh`; using one as a bearer token returns 401.
+- `authenticate` loads the user on every request, so a deleted user's access token stops
+  working immediately, and `/auth/refresh` rejects a deleted user's refresh token.
+
+**Known limitation:** refresh tokens are stateless JWTs. They are not rotated on use and cannot
+be revoked individually before they expire (`REFRESH_TOKEN_EXPIRES_IN`, default 30 days); only
+deleting the user or changing `JWT_SECRET` (which logs everyone out) invalidates them. Add a
+token table (or a per-user token version) if you need logout-everywhere or rotation.
 
 ### Users (Requires Authentication)
 
@@ -143,15 +161,22 @@ Refresh tokens are only accepted by `/auth/refresh`; using one as a bearer token
 GET    /api/v1/users?page=1&limit=10   # limit 1-100
 GET    /api/v1/users/:id               # ids are Prisma cuid() strings
 POST   /api/v1/users                   # { "email", "name", "password" }
-PATCH  /api/v1/users/:id               # { "name"?, "email"? }
-DELETE /api/v1/users/:id
+PATCH  /api/v1/users/:id               # { "name"?, "email"? }; only your own id, else 403
+DELETE /api/v1/users/:id               # only your own id, else 403
 ```
+
+Any authenticated user can list and read users and create new ones; `PATCH`/`DELETE` only
+work on the caller's own account (`req.auth.userId === :id`, otherwise 403 before any lookup).
+Add your own roles if some users should manage others.
 
 ## Middleware
 
 ### Error Handling
 
-All errors are automatically caught and formatted:
+All errors are automatically caught and formatted. Outside `NODE_ENV=development`, 5xx
+responses carry a generic message (the real error and stack are logged with the request id),
+and malformed JSON is a 400 (`Malformed JSON in request body`). JSON and form bodies are
+limited to 100kb (`src/app.ts`; raise it on a route that needs more):
 
 ```json
 {
@@ -273,7 +298,9 @@ export default router;
 
 ## Production Deployment
 
-Set `NODE_ENV=production`, `DATABASE_URL`, a strong `JWT_SECRET`, `CORS_ORIGINS` and
+Set `NODE_ENV=production` (the seeded `.env` says `development`, which overrides the image
+default inside compose), `DATABASE_URL`, a strong `JWT_SECRET` (32+ random characters; the
+server exits at startup otherwise), `CORS_ORIGINS` and
 `API_PORT`. Build the image from this folder's `Dockerfile` and run
 `npx prisma migrate deploy` (in the container) as a release step.
 

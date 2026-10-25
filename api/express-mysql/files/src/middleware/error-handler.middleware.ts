@@ -117,6 +117,19 @@ function getFriendlyMessage(statusCode: number): string {
   return messages[statusCode] || 'An unexpected error occurred';
 }
 
+// `type` values set by body-parser (express.json / express.urlencoded) on its errors.
+const BODY_PARSER_ERROR_TYPES = new Set([
+  'entity.parse.failed',
+  'entity.too.large',
+  'entity.verify.failed',
+  'encoding.unsupported',
+  'charset.unsupported',
+  'request.aborted',
+  'request.size.invalid',
+  'stream.encoding.set',
+  'parameters.too.many',
+]);
+
 /**
  * Error handler middleware - should be mounted LAST after all routes
  */
@@ -131,8 +144,18 @@ export function errorHandler(
   let message = 'An unexpected error occurred';
   let details: any = undefined;
 
+  // Body-parser errors (malformed JSON, body too large, bad encoding): a clean 4xx
+  // without the parser's internal message.
+  if (BODY_PARSER_ERROR_TYPES.has(error?.type)) {
+    statusCode = typeof error.status === 'number' ? error.status : 400;
+    message = error.type === 'entity.parse.failed'
+      ? 'Malformed JSON in request body'
+      : error.type === 'entity.too.large'
+        ? 'Request body is too large'
+        : getFriendlyMessage(statusCode);
+  }
   // Handle ApiError (custom errors)
-  if (error instanceof ApiError) {
+  else if (error instanceof ApiError) {
     statusCode = error.statusCode;
     message = error.message;
     details = error.details;
@@ -165,7 +188,7 @@ export function errorHandler(
     message = error.message;
   }
 
-  // Log error details internally (with full stack trace)
+  // Log error details internally (with full stack trace and the original message)
   const errorLog = {
     requestId: req.requestId,
     timestamp: new Date().toISOString(),
@@ -173,7 +196,8 @@ export function errorHandler(
     path: req.path,
     statusCode,
     message,
-    stack: error.stack,
+    error: error?.message,
+    stack: error?.stack,
     // Don't log sensitive data
     headers: {
       'user-agent': req.headers['user-agent'],
@@ -187,6 +211,14 @@ export function errorHandler(
     console.warn('⚠️  Client Error:', errorLog);
   }
 
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
+  // 5xx messages can carry internals (SQL, hostnames, file paths): outside development
+  // the client gets a generic message and the detail stays in the log above.
+  if (statusCode >= 500 && !isDevelopment) {
+    message = getFriendlyMessage(statusCode);
+  }
+
   // Build response
   const response: any = {
     success: false,
@@ -198,12 +230,12 @@ export function errorHandler(
   };
 
   // Include details in development
-  if (process.env.NODE_ENV === 'development' && details) {
+  if (isDevelopment && details) {
     response.error.details = details;
   }
 
   // Include stack trace in development
-  if (process.env.NODE_ENV === 'development' && error.stack) {
+  if (isDevelopment && error?.stack) {
     response.error.stack = error.stack.split('\n').slice(0, 5);
   }
 

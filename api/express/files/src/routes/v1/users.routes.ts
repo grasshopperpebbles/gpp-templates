@@ -1,12 +1,24 @@
 import { Router, Request, Response } from 'express';
+import bcrypt from 'bcrypt';
 import prisma from '../../lib/prisma.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
 import { validate, validateMultiple } from '../../middleware/validation.middleware.js';
 import { asyncHandler } from '../../middleware/error-handler.middleware.js';
 import { createUserSchema, updateUserSchema, paginationSchema, idParamSchema } from '../../schemas/index.js';
 import { ApiError } from '../../middleware/error-handler.middleware.js';
+import { BCRYPT_ROUNDS } from './auth.routes.js';
 
 const router: Router = Router();
+
+/**
+ * Only the user themself may change or delete their account. Runs before any lookup, so
+ * another user's id gets 403 whether or not it exists (ids can't be probed).
+ */
+function assertSelf(req: Request, id: string): void {
+  if (req.auth?.userId !== id) {
+    throw new ApiError(403, 'You can only modify your own account');
+  }
+}
 
 /**
  * GET /api/v1/users
@@ -101,9 +113,7 @@ router.post(
       throw new ApiError(409, 'User with this email already exists');
     }
 
-    // Hash password before saving (bcrypt is already imported in package.json)
-    const bcrypt = await import('bcrypt');
-    const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     const user = await prisma.user.create({
       data: {
@@ -128,7 +138,7 @@ router.post(
 
 /**
  * PATCH /api/v1/users/:id
- * Update user
+ * Update your own user (403 for anyone else's id)
  */
 router.patch(
   '/:id',
@@ -139,6 +149,7 @@ router.patch(
   }),
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
+    assertSelf(req, id);
     const updateData = req.body;
 
     // Check if user exists
@@ -170,7 +181,7 @@ router.patch(
 
 /**
  * DELETE /api/v1/users/:id
- * Delete user
+ * Delete your own user (403 for anyone else's id)
  */
 router.delete(
   '/:id',
@@ -178,6 +189,7 @@ router.delete(
   validate(idParamSchema, 'params'),
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
+    assertSelf(req, id);
 
     const user = await prisma.user.findUnique({
       where: { id },

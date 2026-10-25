@@ -1,8 +1,18 @@
 import { randomBytes } from 'crypto';
+import { Prisma } from '@prisma/client';
 
 /**
  * In-memory stand-in for the Prisma client (only what the routes use), so tests
  * run without a database. tests/setup.ts swaps it in for src/lib/prisma.ts.
+ *
+ * It is deliberately strict, so bugs show up here instead of against a real database:
+ * - errors are real Prisma error classes (P2002 unique violation, P2025 not found,
+ *   PrismaClientValidationError for unknown fields), so the error handler maps them
+ *   exactly as it would in production;
+ * - `email` is unique case-insensitively on create AND update (the MySQL collation
+ *   behaves this way; on PostgreSQL the zod schemas lowercase emails so both agree);
+ * - `findUnique({ where: { email } })` matches exactly (like PostgreSQL), so a route
+ *   that forgets to normalize an email fails its test.
  */
 interface UserRow {
   id: string;
@@ -16,22 +26,52 @@ interface UserRow {
 type Select = Partial<Record<keyof UserRow, boolean>>;
 type Where = { id?: string; email?: string };
 
+const COLUMNS: (keyof UserRow)[] = ['id', 'email', 'name', 'password', 'createdAt', 'updatedAt'];
+const WRITABLE: (keyof UserRow)[] = ['email', 'name', 'password'];
+const clientVersion = Prisma.prismaVersion.client;
+
 const users = new Map<string, UserRow>();
+
+function validationError(message: string): Error {
+  return new Prisma.PrismaClientValidationError(message, { clientVersion });
+}
+
+function checkKeys(kind: string, keys: string[], allowed: readonly string[]): void {
+  const unknown = keys.filter((key) => !allowed.includes(key));
+  if (unknown.length) throw validationError(`Unknown argument in ${kind}: ${unknown.join(', ')}`);
+}
 
 function pick(user: UserRow, select?: Select) {
   if (!select) return { ...user };
-  return Object.fromEntries(
-    Object.entries(user).filter(([key]) => select[key as keyof UserRow])
-  );
+  checkKeys('select', Object.keys(select), COLUMNS);
+  return Object.fromEntries(Object.entries(user).filter(([key]) => select[key as keyof UserRow]));
 }
 
 function find(where: Where): UserRow | undefined {
-  if (where.id) return users.get(where.id);
-  return [...users.values()].find((u) => u.email === where.email);
+  checkKeys('where', Object.keys(where), ['id', 'email']);
+  if (where.id !== undefined) return users.get(where.id);
+  if (where.email !== undefined) return [...users.values()].find((u) => u.email === where.email);
+  throw validationError('findUnique needs a unique field in where');
 }
 
 function notFound(): Error {
-  return Object.assign(new Error('Record to update not found.'), { code: 'P2025' });
+  return new Prisma.PrismaClientKnownRequestError('Record to update or delete does not exist.', {
+    code: 'P2025',
+    clientVersion,
+  });
+}
+
+function assertEmailFree(email: string, exceptId?: string): void {
+  const taken = [...users.values()].some(
+    (u) => u.id !== exceptId && u.email.toLowerCase() === email.toLowerCase()
+  );
+  if (taken) {
+    throw new Prisma.PrismaClientKnownRequestError('Unique constraint failed on the fields: (`email`)', {
+      code: 'P2002',
+      clientVersion,
+      meta: { target: ['email'] },
+    });
+  }
 }
 
 export const fakePrisma = {
@@ -48,6 +88,9 @@ export const fakePrisma = {
       return users.size;
     },
     async create({ data, select }: { data: Partial<UserRow> & { email: string }; select?: Select }) {
+      checkKeys('data', Object.keys(data), WRITABLE);
+      if (typeof data.email !== 'string') throw validationError('Argument `email` is missing.');
+      assertEmailFree(data.email);
       const now = new Date();
       const user: UserRow = {
         id: `c${randomBytes(12).toString('hex')}`, // cuid-shaped
@@ -61,9 +104,12 @@ export const fakePrisma = {
       return pick(user, select);
     },
     async update({ where, data, select }: { where: Where; data: Partial<UserRow>; select?: Select }) {
+      checkKeys('data', Object.keys(data), WRITABLE);
       const user = find(where);
       if (!user) throw notFound();
-      Object.assign(user, data, { updatedAt: new Date() });
+      if (data.email !== undefined) assertEmailFree(data.email, user.id);
+      const changes = Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined));
+      Object.assign(user, changes, { updatedAt: new Date() });
       return pick(user, select);
     },
     async delete({ where }: { where: Where }) {

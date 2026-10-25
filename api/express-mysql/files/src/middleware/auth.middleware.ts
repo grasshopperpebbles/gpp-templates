@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import prisma from '../lib/prisma.js';
 import { ApiError } from './error-handler.middleware.js';
 
 // Extend Express Request interface
@@ -15,27 +16,66 @@ declare global {
 }
 
 const DEV_JWT_SECRET = 'dev-secret-change-in-production';
+const MIN_PRODUCTION_SECRET_LENGTH = 32;
+const KNOWN_PLACEHOLDERS = [
+  'change-me-in-production-use-a-long-random-string', // .env.example / env.example.txt
+  'your-secret-key-change-in-production', // older env.example.txt
+  DEV_JWT_SECRET,
+];
+
+/**
+ * Why `secret` is not acceptable as JWT_SECRET for `nodeEnv`, or null when it is.
+ * Outside production anything goes (a missing secret falls back to a dev-only value).
+ * In production the secret must be set, must not be a known placeholder (or contain
+ * "change-me"/"changeme") and must be at least 32 characters.
+ */
+export function jwtSecretProblem(secret: string | undefined, nodeEnv: string | undefined): string | null {
+  if (nodeEnv !== 'production') return null;
+  if (!secret) return 'JWT_SECRET is not set';
+  const lower = secret.toLowerCase();
+  if (KNOWN_PLACEHOLDERS.includes(secret) || lower.includes('change-me') || lower.includes('changeme')) {
+    return 'JWT_SECRET is a placeholder value';
+  }
+  if (secret.length < MIN_PRODUCTION_SECRET_LENGTH) {
+    return `JWT_SECRET is shorter than ${MIN_PRODUCTION_SECRET_LENGTH} characters`;
+  }
+  return null;
+}
+
+/**
+ * Called by src/server.ts before it listens: a production deploy with a missing or
+ * placeholder JWT_SECRET exits at startup instead of signing tokens with a known key.
+ */
+export function assertJwtSecretConfigured(): void {
+  const problem = jwtSecretProblem(process.env.JWT_SECRET, process.env.NODE_ENV);
+  if (problem) {
+    throw new Error(
+      `${problem}. With NODE_ENV=production, set JWT_SECRET to a random string of at least ` +
+        `${MIN_PRODUCTION_SECRET_LENGTH} characters, e.g. \`openssl rand -hex 32\`.`
+    );
+  }
+}
 
 /**
  * The JWT signing secret. Outside production a missing JWT_SECRET falls back to a
- * dev-only value; in production (NODE_ENV=production) it must be set, so a deploy
- * that forgets it fails loudly instead of signing tokens with a known key.
+ * dev-only value. In production server.ts already refused to start with a bad secret;
+ * this re-checks in case the environment changed (or the app runs without server.ts).
  */
 export function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
-  if (secret) return secret;
-  if (process.env.NODE_ENV === 'production') {
-    console.error('JWT_SECRET is not set in environment variables');
+  const problem = jwtSecretProblem(secret, process.env.NODE_ENV);
+  if (problem) {
+    console.error(`Server configuration error: ${problem}`);
     throw new ApiError(500, 'Server configuration error');
   }
-  return DEV_JWT_SECRET;
+  return secret || DEV_JWT_SECRET;
 }
 
 /**
  * JWT Authentication middleware
  * Expects Authorization header: "Bearer <token>"
  */
-export function authenticate(req: Request, _res: Response, next: NextFunction) {
+export async function authenticate(req: Request, _res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -64,9 +104,18 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
       throw new ApiError(401, 'Invalid token');
     }
 
+    const userId = decoded.sub || decoded.userId || decoded.id;
+    // A deleted user's still-unexpired access token must stop working.
+    const user = typeof userId === 'string'
+      ? await prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+      : null;
+    if (!user) {
+      throw new ApiError(401, 'Invalid token');
+    }
+
     req.auth = {
       ...decoded,
-      userId: decoded.sub || decoded.userId || decoded.id,
+      userId,
     };
     next();
   } catch (error) {
@@ -78,7 +127,7 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
  * Optional authentication - attaches user if token is present
  * Does not throw error if token is missing
  */
-export function optionalAuthenticate(req: Request, _res: Response, next: NextFunction) {
+export async function optionalAuthenticate(req: Request, _res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -90,11 +139,11 @@ export function optionalAuthenticate(req: Request, _res: Response, next: NextFun
 
     try {
       const decoded = jwt.verify(token, getJwtSecret()) as any;
-      if (typeof decoded === 'object' && decoded.type !== 'refresh') {
-        req.auth = {
-          ...decoded,
-          userId: decoded.sub || decoded.userId || decoded.id,
-        };
+      const userId = typeof decoded === 'object' ? decoded.sub || decoded.userId || decoded.id : undefined;
+      const exists = typeof userId === 'string' && decoded.type !== 'refresh'
+        && (await prisma.user.findUnique({ where: { id: userId }, select: { id: true } }));
+      if (exists) {
+        req.auth = { ...decoded, userId };
       }
     } catch {
       // Invalid token, but continue without authentication

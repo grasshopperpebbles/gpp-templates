@@ -10,6 +10,15 @@ dotenv.config({ path: envPath });
 import prisma from './lib/prisma.js';
 import { closeRedis } from './lib/redis.js';
 import { createApp } from './app.js';
+import { assertJwtSecretConfigured } from './middleware/auth.middleware.js';
+
+// Refuse to start in production with a missing/placeholder/short JWT_SECRET.
+try {
+  assertJwtSecretConfigured();
+} catch (error) {
+  console.error(`❌ Refusing to start: ${(error as Error).message}`);
+  process.exit(1);
+}
 
 const app = createApp();
 const PORT = process.env.API_PORT || 3001;

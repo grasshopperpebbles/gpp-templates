@@ -48,9 +48,9 @@ export function createApp(): Express {
     credentials: false,
   }));
 
-  // 5. Body parsing with size limits
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  // 5. Body parsing with size limits (raise per route if one needs bigger bodies, e.g. uploads)
+  app.use(express.json({ limit: '100kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
   // ==========================================================================
   // ROUTE MOUNTING

@@ -64,7 +64,16 @@ describe('/api/v1/users', () => {
     expect(invalid.status).toBe(400);
   });
 
-  it('updates and deletes a user', async () => {
+  it('rejects creating a user whose email differs only in case (409)', async () => {
+    const res = await request(app)
+      .post('/api/v1/users')
+      .set(auth)
+      .send({ email: 'ADA@Example.com', name: 'Ada again', password: 'long-enough' });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('updates and deletes yourself', async () => {
     const updated = await request(app).patch(`/api/v1/users/${me.id}`).set(auth).send({ name: 'Ada L.' });
     expect(updated.status).toBe(200);
     expect(updated.body.data.name).toBe('Ada L.');
@@ -72,7 +81,58 @@ describe('/api/v1/users', () => {
     const deleted = await request(app).delete(`/api/v1/users/${me.id}`).set(auth);
     expect(deleted.status).toBe(200);
 
+    // The deleted user's access token stops working.
     const after = await request(app).get(`/api/v1/users/${me.id}`).set(auth);
-    expect(after.status).toBe(404);
+    expect(after.status).toBe(401);
+  });
+
+  it('normalizes an updated email (trim + lowercase)', async () => {
+    const res = await request(app).patch(`/api/v1/users/${me.id}`).set(auth).send({ email: '  Ada.New@Example.COM ' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.email).toBe('ada.new@example.com');
+  });
+
+  it('rejects updating your email to another user\'s email in any case (409)', async () => {
+    await registerUser({ email: 'bob@example.com', name: 'Bob' });
+
+    const res = await request(app).patch(`/api/v1/users/${me.id}`).set(auth).send({ email: 'BOB@example.com' });
+
+    expect(res.status).toBe(409);
+  });
+});
+
+describe('ownership: user A acting on user B', () => {
+  let bob: { id: string };
+  let bobAuth: { Authorization: string };
+
+  beforeEach(async () => {
+    const registered = await registerUser({ email: 'bob@example.com', name: 'Bob' });
+    bob = registered.user;
+    bobAuth = { Authorization: `Bearer ${registered.accessToken}` };
+  });
+
+  it('A cannot update B (403) and B is unchanged', async () => {
+    const res = await request(app).patch(`/api/v1/users/${bob.id}`).set(auth).send({ name: 'Hacked', email: 'evil@example.com' });
+
+    expect(res.status).toBe(403);
+    const check = await request(app).get('/api/v1/auth/me').set(bobAuth);
+    expect(check.body.data).toMatchObject({ name: 'Bob', email: 'bob@example.com' });
+  });
+
+  it('A cannot delete B (403) and B still works', async () => {
+    const res = await request(app).delete(`/api/v1/users/${bob.id}`).set(auth);
+
+    expect(res.status).toBe(403);
+    const check = await request(app).get('/api/v1/auth/me').set(bobAuth);
+    expect(check.status).toBe(200);
+  });
+
+  it('A gets 403 (not 404) for an id that does not exist, so ids cannot be probed', async () => {
+    const patch = await request(app).patch('/api/v1/users/cmissing0000000000000000').set(auth).send({ name: 'x' });
+    const del = await request(app).delete('/api/v1/users/cmissing0000000000000000').set(auth);
+
+    expect(patch.status).toBe(403);
+    expect(del.status).toBe(403);
   });
 });
