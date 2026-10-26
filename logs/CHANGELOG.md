@@ -1,6 +1,14 @@
 
 ---
 
+## [Unreleased] - 2026-10-26 - Go pack: Postgres data layer
+
+**Status:** COMPLETED
+
+- `api/go-http` (not bundled in gpp-cli): `item.PostgresStore` on pgx v5 (`pgxpool`) when `DATABASE_URL` is set, in-memory store (with a warning) when not. Embedded SQL migrations (`internal/db/migrations`) applied on startup, recorded in `schema_migrations`, under an advisory lock. Startup retries the connection for 30 s, then exits instead of falling back to memory; the pool closes after HTTP shutdown.
+- `item.Store` methods take a context and return errors (`item.ErrNotFound` → 404, timeout → 503, other → 500 with a fixed message); `DATABASE_QUERY_TIMEOUT` (5s). New `GET /ready` (and `/api/v1/ready`) pings Postgres (503 when down); `/health` and `server -healthcheck` stay liveness-only.
+- Tests: one store contract for both stores; Postgres, migration and connect tests skip unless `TEST_DATABASE_URL` is set, each in its own schema; `make test-db` runs them on a throwaway `postgres:16-alpine`.
+
 ## [Unreleased] - 2026-10-26 - FastAPI pack: Redis is optional at the package level
 
 **Status:** COMPLETED
