@@ -23,11 +23,16 @@ gpp template install /path/to/gpp-templates --all
 - [x] `api/express`, `api/express-mysql`, `api/go-http`: Dockerfile, tests, security fixes; Express copies equal gpp-cli's bundled ones.
 - [ ] Express: user list/view and `POST /users` are open to any logged-in user; no refresh-token rotation. Go: no data layer yet.
 
+### Tauri and Chrome MV3 packs (2026-10-26)
+
+- [x] `desktop/tauri` and `extension/chrome-mv3` install, type-check, test, build and run (see CHANGELOG 2026-10-26).
+- [ ] gpp-cli: `runner.ts` uses `npm run tauri dev/build` and `variantMetadata` npm commands for chrome-mv3 while both packs document pnpm.
+- [ ] gpp-cli auth-flows: if it ever adds its commands to `build.rs` + the capability, the Tauri pack can switch to a per-command ACL.
+
 ### Electron desktop pack (2026-10-25)
 
 - [x] Make `desktop/electron` install, build, lint, test, run and package (see CHANGELOG 2026-10-25).
 - [ ] Ship default icons in `build/` and document a `publish` example for auto-updates.
-- [ ] `desktop/tauri` has not had the same check; run it the same way.
 - [ ] Dev restarts Electron by hand after main-process edits; consider `tsc --watch` + a restart helper (or electron-vite) if that gets in the way.
 
 **Tasks:**

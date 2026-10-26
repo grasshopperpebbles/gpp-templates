@@ -1,6 +1,12 @@
 
 ---
 
+## Tauri pack: no AppManifest command list while add-ons register commands (2026-10-26)
+
+**Decision:** `desktop/tauri` keeps `tauri_build::build()` and a `core:default` capability; its IPC commands enforce their own limits (app data folder only, program allowlist, app-scoped keychain). No `AppManifest::commands` list.
+
+**Rationale:** with that list Tauri refuses every app command the capability doesn't grant, and gpp-cli's auth-flows add-on registers `auth::*` commands without editing `build.rs` or the capability, so they would fail at runtime. Revisit if the add-on learns to add its commands there.
+
 ## Change a bundled pack in both repos (2026-10-26)
 
 **Decision:** packs that gpp-cli also bundles are changed in both repos in the same session; gpp-cli's `npm run check:packs` fails on any difference.
