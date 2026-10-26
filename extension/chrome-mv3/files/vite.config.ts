@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { crx } from '@crxjs/vite-plugin';
@@ -18,5 +19,8 @@ export default defineConfig({
     hmr: {
       port: 5190,
     },
+  },
+  test: {
+    include: ['src/**/*.test.ts'],
   },
 });
