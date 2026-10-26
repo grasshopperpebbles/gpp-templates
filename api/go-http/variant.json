@@ -1,7 +1,7 @@
 {
   "name": "go-http",
   "displayName": "Go HTTP API",
-  "description": "Go REST API on the standard library net/http (Go 1.26 routing) with slog logging, graceful shutdown, an item.Store seam for a database, optional Redis cache, httptest tests and a static non-root Docker image.",
+  "description": "Go REST API on the standard library net/http (Go 1.26 routing) with slog logging, graceful shutdown, a Postgres item store (pgx v5, embedded migrations) with an in-memory fallback, optional Redis cache, httptest tests and a static non-root Docker image.",
   "platform": "api",
   "runtime": "go",
   "dependencies": {
@@ -14,21 +14,23 @@
   "features": {
     "included": [
       "Go 1.26 standard library routing",
-      "Zero external framework dependencies",
+      "No web framework (standard library net/http)",
       "Structured logging (slog)",
       "Graceful shutdown",
-      "Environment configuration (SERVER_ADDR, CORS_ORIGINS, DATABASE_URL, REDIS_URL, LOG_LEVEL, LOG_FORMAT)",
-      "Health check endpoint (/health)",
+      "Environment configuration (SERVER_ADDR, CORS_ORIGINS, DATABASE_URL, DATABASE_QUERY_TIMEOUT, REDIS_URL, LOG_LEVEL, LOG_FORMAT)",
+      "Liveness check (/health) and readiness check that pings Postgres (/ready)",
       "CORS middleware (CORS_ORIGINS)",
       "Request logging middleware",
-      "Example CRUD endpoints behind an item.Store interface (in memory; database seam)",
+      "Example CRUD endpoints behind an item.Store interface",
+      "Postgres item store on pgx v5 (pgxpool) when DATABASE_URL is set; in-memory store otherwise",
+      "Embedded SQL migrations applied on startup (schema_migrations table, advisory lock)",
       "Redis cache via REDIS_URL with in-memory fallback",
       "Dockerfile (golang:1.26-alpine build, static binary on alpine:3.22, non-root, healthcheck via `server -healthcheck` on the SERVER_ADDR port)",
-      "Table-driven httptest tests, go test -race (make test / make test-docker)",
+      "Table-driven httptest tests, go test -race (make test / make test-docker); Postgres store tests when TEST_DATABASE_URL is set (make test-db)",
       "Makefile with common targets"
     ],
     "excluded": [
-      "Database driver, data layer and migrations (DATABASE_URL is read; implement item.Store, e.g. with pgx)",
+      "Migration tooling beyond the embedded runner (no down migrations; add goose or golang-migrate if you need them)",
       "Authentication (add separately)",
       "OpenAPI/Swagger docs (add swaggo separately)",
       "Pack-level docker-compose.yml (gpp's root compose runs the API, database and Redis)"

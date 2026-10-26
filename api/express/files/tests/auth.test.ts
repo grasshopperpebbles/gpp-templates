@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { Prisma } from '@prisma/client';
 import { app, registerUser } from './helpers.js';
+import { fakeHooks, fakePrisma } from './fakePrisma.js';
+
+const refresh = (token: string) => request(app).post('/api/v1/auth/refresh').send({ refresh_token: token });
 
 describe('POST /api/v1/auth/register', () => {
   it('creates a user and returns tokens without the password', async () => {
@@ -10,7 +15,7 @@ describe('POST /api/v1/auth/register', () => {
       .send({ email: 'ada@example.com', password: 'correct-horse', name: 'Ada' });
 
     expect(res.status).toBe(201);
-    expect(res.body.data.user).toMatchObject({ email: 'ada@example.com', name: 'Ada' });
+    expect(res.body.data.user).toMatchObject({ email: 'ada@example.com', name: 'Ada', role: 'user' });
     expect(res.body.data.user).not.toHaveProperty('password');
     expect(res.body.data.access_token).toEqual(expect.any(String));
     expect(res.body.data.refresh_token).toEqual(expect.any(String));
@@ -54,6 +59,17 @@ describe('POST /api/v1/auth/register', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.data.user.email).toBe('ada@example.com');
+  });
+
+  it('ignores a role in the body: registration always creates a normal user', async () => {
+    const res = await request(app)
+      .post('/api/v1/auth/register')
+      .send({ email: 'ada@example.com', password: 'correct-horse', name: 'Ada', role: 'admin' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.user.role).toBe('user');
+    const me = await request(app).get('/api/v1/auth/me').set('Authorization', `Bearer ${res.body.data.access_token}`);
+    expect(me.body.data.role).toBe('user');
   });
 
   it('rejects a duplicate email with 409', async () => {
@@ -141,6 +157,35 @@ describe('POST /api/v1/auth/login', () => {
     expect(hash).toMatch(/^\$2[aby]\$10\$/);
   });
 
+  it('drops the user\'s expired refresh tokens and the families left without tokens', async () => {
+    const { refreshToken } = await registerUser();
+    await fakePrisma.refreshToken.updateMany({ where: {}, data: { expiresAt: new Date(Date.now() - 1000) } });
+
+    await request(app).post('/api/v1/auth/login').send({ email: 'ada@example.com', password: 'correct-horse' }).expect(200);
+
+    const families = await fakePrisma.refreshTokenFamily.findMany();
+    expect(families).toHaveLength(1);
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows).toHaveLength(1);
+    expect(rows[0].familyId).toBe(families[0].id);
+    expect((await refresh(refreshToken)).status).toBe(401);
+  });
+
+  it('still logs in when pruning old tokens keeps hitting write conflicts (P2034)', async () => {
+    await registerUser();
+    const conflict = new Prisma.PrismaClientKnownRequestError('Transaction failed due to a write conflict or a deadlock', {
+      code: 'P2034',
+      clientVersion: Prisma.prismaVersion.client,
+    });
+    const prune = vi.spyOn(fakePrisma.refreshTokenFamily, 'deleteMany').mockRejectedValue(conflict);
+
+    const res = await request(app).post('/api/v1/auth/login').send({ email: 'ada@example.com', password: 'correct-horse' });
+
+    expect(res.status).toBe(200);
+    expect(prune).toHaveBeenCalledTimes(3);
+    expect((await refresh(res.body.data.refresh_token)).status).toBe(200);
+  });
+
   it('validates the body (400)', async () => {
     const res = await request(app).post('/api/v1/auth/login').send({ email: 'ada@example.com' });
 
@@ -155,7 +200,7 @@ describe('GET /api/v1/auth/me', () => {
     const res = await request(app).get('/api/v1/auth/me').set('Authorization', `Bearer ${accessToken}`);
 
     expect(res.status).toBe(200);
-    expect(res.body.data).toMatchObject({ id: user.id, email: 'ada@example.com' });
+    expect(res.body.data).toMatchObject({ id: user.id, email: 'ada@example.com', role: 'user' });
   });
 
   it('requires a bearer token (401)', async () => {
@@ -190,22 +235,182 @@ describe('GET /api/v1/auth/me', () => {
 });
 
 describe('POST /api/v1/auth/refresh', () => {
-  it('issues a new access token for a refresh token', async () => {
+  it('issues a new access token and a new refresh token', async () => {
     const { refreshToken } = await registerUser();
 
-    const res = await request(app).post('/api/v1/auth/refresh').send({ refresh_token: refreshToken });
+    const res = await refresh(refreshToken);
 
     expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ token_type: 'bearer' });
+    expect(res.body.data.refresh_token).toEqual(expect.any(String));
+    expect(res.body.data.refresh_token).not.toBe(refreshToken);
     const me = await request(app)
       .get('/api/v1/auth/me')
       .set('Authorization', `Bearer ${res.body.data.access_token}`);
     expect(me.status).toBe(200);
   });
 
+  it('the rotated token keeps working: refresh -> refresh -> refresh', async () => {
+    let { refreshToken } = await registerUser();
+
+    for (let i = 0; i < 3; i++) {
+      const res = await refresh(refreshToken);
+      expect(res.status).toBe(200);
+      refreshToken = res.body.data.refresh_token;
+    }
+  });
+
+  it('stores only a hash of the refresh token, linked to its replacement', async () => {
+    const { refreshToken } = await registerUser();
+    await refresh(refreshToken).expect(200);
+
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows).toHaveLength(2);
+    expect(rows.map((r) => r.tokenHash)).not.toContain(refreshToken);
+    const [old, current] = rows;
+    expect(old.revokedAt).toBeInstanceOf(Date);
+    expect(old.replacedById).toBe(current.id);
+    expect(current.familyId).toBe(old.familyId);
+    expect(current.revokedAt).toBeNull();
+  });
+
+  it('rejects a reused (already rotated) token and revokes its whole family', async () => {
+    const { refreshToken: first } = await registerUser();
+    const rotated = await refresh(first);
+    const second = rotated.body.data.refresh_token as string;
+
+    const reuse = await refresh(first);
+    expect(reuse.status).toBe(401);
+    expect(reuse.body.error.message).toBe('Refresh token has been revoked');
+
+    // The token issued by the legitimate rotation is revoked as well.
+    const afterReuse = await refresh(second);
+    expect(afterReuse.status).toBe(401);
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows.every((r) => r.revokedAt !== null)).toBe(true);
+    const [family] = await fakePrisma.refreshTokenFamily.findMany();
+    expect(family.revokedAt).toBeInstanceOf(Date);
+  });
+
+  it('reuse revokes only that login, not the user\'s other sessions', async () => {
+    const { refreshToken: phone } = await registerUser();
+    const login = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'ada@example.com', password: 'correct-horse' })
+      .expect(200);
+    const laptop = login.body.data.refresh_token as string;
+
+    await refresh(phone).expect(200);
+    await refresh(phone).expect(401); // reuse
+
+    expect((await refresh(laptop)).status).toBe(200);
+  });
+
+  it('lets only one of two concurrent refreshes with the same token succeed', async () => {
+    const { refreshToken } = await registerUser();
+
+    const statuses = (await Promise.all([refresh(refreshToken), refresh(refreshToken)])).map((r) => r.status);
+
+    expect(statuses.sort()).toEqual([200, 401]);
+  });
+
+  it('two concurrent refreshes with the same token leave no live token in the family', async () => {
+    const { refreshToken } = await registerUser();
+
+    const results = await Promise.all([refresh(refreshToken), refresh(refreshToken)]);
+
+    expect(results.map((r) => r.status).sort()).toEqual([200, 401]);
+    const winner = results.find((r) => r.status === 200)!;
+    expect((await refresh(winner.body.data.refresh_token)).status).toBe(401);
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows.every((r) => r.revokedAt !== null)).toBe(true);
+  });
+
+  // The two tests below force the dangerous ordering: the winning rotation has claimed the
+  // presented token but not yet inserted its replacement when the reuse is detected. The
+  // hook pauses the winner just before that insert until the other request finishes (or,
+  // when the other request is blocked on the winner, 100ms). The replacement must still end
+  // up revoked.
+  const settle = <T>(promise: PromiseLike<T>) => Promise.resolve(promise).then(() => undefined, () => undefined);
+  const pauseWinnerUntil = (start: () => PromiseLike<unknown>) => {
+    let other: Promise<unknown> | undefined;
+    fakeHooks.beforeRefreshTokenCreate = async () => {
+      delete fakeHooks.beforeRefreshTokenCreate; // only the winner's insert
+      other = Promise.resolve(start());
+      await Promise.race([settle(other), new Promise((resolve) => setTimeout(resolve, 100))]);
+    };
+    return () => other!;
+  };
+
+  it('a concurrent reuse of the same token revokes the replacement the winner is issuing', async () => {
+    const { refreshToken } = await registerUser();
+    const loser = pauseWinnerUntil(() => refresh(refreshToken));
+
+    const winner = await refresh(refreshToken);
+    const lost = await loser();
+
+    expect(winner.status).toBe(200);
+    expect((lost as { status: number }).status).toBe(401);
+    expect((await refresh(winner.body.data.refresh_token)).status).toBe(401);
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows.every((r) => r.revokedAt !== null)).toBe(true);
+  });
+
+  it('replaying an old token during a legitimate rotation revokes the token that rotation issues', async () => {
+    const { refreshToken: first } = await registerUser();
+    const second = (await refresh(first).expect(200)).body.data.refresh_token as string;
+    const replay = pauseWinnerUntil(() => refresh(first));
+
+    const legit = await refresh(second);
+    const replayed = await replay();
+
+    expect(legit.status).toBe(200);
+    expect((replayed as { status: number }).status).toBe(401);
+    expect((await refresh(legit.body.data.refresh_token)).status).toBe(401);
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows.every((r) => r.revokedAt !== null)).toBe(true);
+  });
+
+  it('retries a rotation that the database aborted with a write conflict (P2034)', async () => {
+    const { refreshToken } = await registerUser();
+    const conflict = new Prisma.PrismaClientKnownRequestError('Transaction failed due to a write conflict or a deadlock', {
+      code: 'P2034',
+      clientVersion: Prisma.prismaVersion.client,
+    });
+    const transaction = vi.spyOn(fakePrisma, '$transaction').mockRejectedValueOnce(conflict);
+
+    const res = await refresh(refreshToken);
+
+    expect(res.status).toBe(200);
+    expect(transaction).toHaveBeenCalledTimes(2);
+    expect((await refresh(res.body.data.refresh_token)).status).toBe(200);
+  });
+
+  it('rejects a validly signed refresh token that the server never issued (401)', async () => {
+    const { user } = await registerUser();
+    const forged = jwt.sign({ sub: user.id, type: 'refresh', jti: 'x' }, 'test-secret', { expiresIn: '1h' });
+
+    const res = await refresh(forged);
+
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects an expired refresh token (401)', async () => {
+    const { user } = await registerUser();
+    const expired = jwt.sign(
+      { sub: user.id, type: 'refresh', exp: Math.floor(Date.now() / 1000) - 10 },
+      'test-secret'
+    );
+
+    const res = await refresh(expired);
+
+    expect(res.status).toBe(401);
+  });
+
   it('rejects an access token (401)', async () => {
     const { accessToken } = await registerUser();
 
-    const res = await request(app).post('/api/v1/auth/refresh').send({ refresh_token: accessToken });
+    const res = await refresh(accessToken);
 
     expect(res.status).toBe(401);
   });
@@ -214,14 +419,44 @@ describe('POST /api/v1/auth/refresh', () => {
     const { accessToken, refreshToken, user } = await registerUser();
     await request(app).delete(`/api/v1/users/${user.id}`).set('Authorization', `Bearer ${accessToken}`).expect(200);
 
-    const res = await request(app).post('/api/v1/auth/refresh').send({ refresh_token: refreshToken });
+    const res = await refresh(refreshToken);
 
     expect(res.status).toBe(401);
+    expect(await fakePrisma.refreshToken.findMany()).toHaveLength(0);
   });
 
   it('requires refresh_token (400)', async () => {
     const res = await request(app).post('/api/v1/auth/refresh').send({});
 
     expect(res.status).toBe(400);
+  });
+});
+
+describe('POST /api/v1/auth/logout', () => {
+  const logout = (token: string) => request(app).post('/api/v1/auth/logout').send({ refresh_token: token });
+
+  it('revokes the refresh token so it cannot be refreshed', async () => {
+    const { refreshToken } = await registerUser();
+
+    const res = await logout(refreshToken);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect((await refresh(refreshToken)).status).toBe(401);
+  });
+
+  it('is idempotent for an already revoked token', async () => {
+    const { refreshToken } = await registerUser();
+    await logout(refreshToken).expect(200);
+
+    expect((await logout(refreshToken)).status).toBe(200);
+  });
+
+  it('rejects an access token or garbage (401) and requires refresh_token (400)', async () => {
+    const { accessToken } = await registerUser();
+
+    expect((await logout(accessToken)).status).toBe(401);
+    expect((await logout('not-a-jwt')).status).toBe(401);
+    expect((await request(app).post('/api/v1/auth/logout').send({})).status).toBe(400);
   });
 });

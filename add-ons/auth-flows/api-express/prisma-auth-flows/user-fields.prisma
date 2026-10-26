@@ -1,0 +1,3 @@
+  // gpp add auth-flows: set when the user confirms their email address
+  emailVerifiedAt DateTime?       @map("email_verified_at")
+  authFlowTokens  AuthFlowToken[]

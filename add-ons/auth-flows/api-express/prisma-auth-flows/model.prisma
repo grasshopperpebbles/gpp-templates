@@ -1,0 +1,15 @@
+// gpp add auth-flows: single-use, expiring email verification and password reset tokens.
+// Only a SHA-256 hash of each token's secret is stored (see src/lib/auth-flow-tokens.ts).
+model AuthFlowToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  purpose   String
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@map("auth_flow_tokens")
+}

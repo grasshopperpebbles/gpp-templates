@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
 import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { stat } from 'node:fs/promises';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import log from 'electron-log/main';
 import windowStateKeeper from 'electron-window-state';
@@ -8,7 +9,14 @@ import electronUpdater from 'electron-updater';
 import contextMenu from 'electron-context-menu';
 import { registerSettingsHandlers } from './ipc/settingsHandlers.js';
 import { CHANNELS } from './ipc/channels.js';
-import { externalHttpUrl, isAllowedPathName, isAppUrl } from './ipc/validate.js';
+import {
+  APP_ORIGIN,
+  APP_SCHEME,
+  externalHttpUrl,
+  isAllowedPathName,
+  isAppUrl,
+  resolveAppFile,
+} from './ipc/validate.js';
 
 // electron-updater is CommonJS; take autoUpdater off the default export
 const { autoUpdater } = electronUpdater;
@@ -21,7 +29,30 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Dev loads the Vite server; a packaged app always loads the built files
 const devServerUrl = app.isPackaged ? undefined : process.env.VITE_DEV_SERVER_URL;
-const rendererIndex = join(__dirname, '..', 'dist', 'index.html');
+const rendererDir = join(__dirname, '..', 'dist');
+
+// The built renderer is served from app://bundle/ instead of file://. A file:// page sends
+// `Origin: null`, which an API could only allow by trusting every sandboxed or file page; app://
+// pages send `Origin: app://bundle`. Standard + secure give the scheme a real origin, relative
+// URLs, storage and a secure context; supportFetchAPI lets the page fetch() its own files.
+// Must run before the app is ready.
+protocol.registerSchemesAsPrivileged([
+  { scheme: APP_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true } },
+]);
+
+/** Serves app://bundle/<path> from dist/, refusing anything outside it. */
+function registerAppProtocol(): void {
+  protocol.handle(APP_SCHEME, async (request) => {
+    const file = resolveAppFile(rendererDir, request.url);
+    if (!file) return new Response('Not found', { status: 404 });
+    try {
+      if (!(await stat(file)).isFile()) return new Response('Not found', { status: 404 });
+    } catch {
+      return new Response('Not found', { status: 404 });
+    }
+    return net.fetch(pathToFileURL(file).toString());
+  });
+}
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -86,8 +117,8 @@ function createMainWindow(): BrowserWindow {
     window.webContents.openDevTools({ mode: 'detach' });
     log.info('Development mode: loading from dev server');
   } else {
-    void window.loadFile(rendererIndex);
-    log.info('Production mode: loading from dist');
+    void window.loadURL(`${APP_ORIGIN}/index.html`);
+    log.info(`Production mode: loading ${APP_ORIGIN}/ from dist`);
   }
 
   return window;
@@ -108,6 +139,7 @@ ipcMain.handle(CHANNELS.appGetPath, (event, name: unknown) => {
 app.whenReady().then(() => {
   log.info('App ready');
 
+  if (!devServerUrl) registerAppProtocol();
   registerSettingsHandlers(devServerUrl);
 
   mainWindow = createMainWindow();

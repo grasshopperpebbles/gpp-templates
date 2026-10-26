@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import prisma from '../../lib/prisma.js';
-import { authenticate } from '../../middleware/auth.middleware.js';
+import { authenticate, requireAdmin } from '../../middleware/auth.middleware.js';
 import { validate, validateMultiple } from '../../middleware/validation.middleware.js';
 import { asyncHandler } from '../../middleware/error-handler.middleware.js';
 import { createUserSchema, updateUserSchema, paginationSchema, idParamSchema } from '../../schemas/index.js';
@@ -11,22 +11,32 @@ import { BCRYPT_ROUNDS } from './auth.routes.js';
 const router: Router = Router();
 
 /**
- * Only the user themself may change or delete their account. Runs before any lookup, so
- * another user's id gets 403 whether or not it exists (ids can't be probed).
+ * A user may read, change or delete only their own account; an admin may act on anyone.
+ * Runs before any lookup, so a non-admin gets 403 for another id whether or not it exists
+ * (ids can't be probed).
  */
-function assertSelf(req: Request, id: string): void {
-  if (req.auth?.userId !== id) {
-    throw new ApiError(403, 'You can only modify your own account');
+function assertSelfOrAdmin(req: Request, id: string, message: string): void {
+  if (req.auth?.userId !== id && req.auth?.role !== 'admin') {
+    throw new ApiError(403, message);
   }
 }
 
+const userFields = {
+  id: true,
+  email: true,
+  name: true,
+  role: true,
+  createdAt: true,
+} as const;
+
 /**
  * GET /api/v1/users
- * List users (with pagination)
+ * List users (with pagination). Admin only.
  */
 router.get(
   '/',
   authenticate,
+  requireAdmin,
   validate(paginationSchema, 'query'),
   asyncHandler(async (req: Request, res: Response) => {
     // Query params are validated by middleware, safely parse as numbers
@@ -38,12 +48,8 @@ router.get(
       prisma.user.findMany({
         skip,
         take: limit,
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          createdAt: true,
-        },
+        orderBy: { createdAt: 'asc' },
+        select: userFields,
       }),
       prisma.user.count(),
     ]);
@@ -63,7 +69,7 @@ router.get(
 
 /**
  * GET /api/v1/users/:id
- * Get user by ID
+ * Get user by ID: your own, or anyone's as an admin (403 otherwise)
  */
 router.get(
   '/:id',
@@ -71,15 +77,11 @@ router.get(
   validate(idParamSchema, 'params'),
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
+    assertSelfOrAdmin(req, id, 'You can only view your own account');
 
     const user = await prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
+      select: userFields,
     });
 
     if (!user) {
@@ -95,14 +97,15 @@ router.get(
 
 /**
  * POST /api/v1/users
- * Create new user
+ * Create new user ("role" optional, default "user"). Admin only.
  */
 router.post(
   '/',
   authenticate,
+  requireAdmin,
   validate(createUserSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    const { email, name, password } = req.body;
+    const { email, name, password, role } = req.body;
 
     // Check if user already exists
     const existing = await prisma.user.findUnique({
@@ -120,13 +123,9 @@ router.post(
         email,
         name,
         password: hashedPassword,
+        role,
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
+      select: userFields,
     });
 
     res.status(201).json({
@@ -138,7 +137,8 @@ router.post(
 
 /**
  * PATCH /api/v1/users/:id
- * Update your own user (403 for anyone else's id)
+ * Update your own user, or anyone as an admin (403 otherwise). The role can't be changed
+ * here (updateUserSchema has no role field).
  */
 router.patch(
   '/:id',
@@ -149,7 +149,7 @@ router.patch(
   }),
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    assertSelf(req, id);
+    assertSelfOrAdmin(req, id, 'You can only modify your own account');
     const updateData = req.body;
 
     // Check if user exists
@@ -168,6 +168,7 @@ router.patch(
         id: true,
         email: true,
         name: true,
+        role: true,
         updatedAt: true,
       },
     });
@@ -181,7 +182,8 @@ router.patch(
 
 /**
  * DELETE /api/v1/users/:id
- * Delete your own user (403 for anyone else's id)
+ * Delete your own user, or anyone as an admin (403 otherwise). Their refresh tokens go
+ * with them (ON DELETE CASCADE).
  */
 router.delete(
   '/:id',
@@ -189,7 +191,7 @@ router.delete(
   validate(idParamSchema, 'params'),
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    assertSelf(req, id);
+    assertSelfOrAdmin(req, id, 'You can only modify your own account');
 
     const user = await prisma.user.findUnique({
       where: { id },

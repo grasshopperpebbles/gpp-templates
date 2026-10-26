@@ -1,6 +1,31 @@
 
 ---
 
+## [Unreleased] - 2026-10-26 - Electron app://, Express auth, Stripe and auth-flows add-ons, web sign-in
+
+**Status:** COMPLETED
+
+- `desktop/electron`: the built renderer loads from `app://bundle` (privileged scheme, `protocol.handle`, path traversal refused), so API requests carry `Origin: app://bundle`; `isAppUrl` and the navigation guard follow it. APIs allow `app://bundle`, never `null` (FastAPI comments updated).
+- `api/express`, `api/express-mysql`: `role` (user/admin) with admin-only user list, view of others and `POST /users`; `set-role` script for the first admin; refresh tokens stored hashed, rotated, revocable (`POST /auth/logout`), reuse revokes the login's family under a row lock (`refresh_token_families`), retried on deadlock. Migrations for Postgres and MySQL; tests 84 per pack.
+- `add-ons/stripe`: `POST /stripe/checkout-session` for FastAPI and Express (price and redirect-origin allowlists), Electron main gets the build-time `VITE_API_BASE_URL`, env vars keyed by platform (no secrets for desktop apps), Express client moved under `src/`.
+- `add-ons/auth-flows`: rebuilt on the API packs' own register/login (verify-email, resend, forgot/reset, verification-status; hashed single-use tokens; Alembic and Prisma migrations; console email in development); the Tauri client reads both packs' responses.
+- `web/nextjs-saas-dashboard`, `nextjs-admin-dashboard`, `nextjs-webapp`: NextAuth sign-in loads the user from `/auth/me` (it read a `user` neither API returns). `web/sveltekit-*-dashboard`: `VITE_API_URL` is used (API status badge).
+
+## [Unreleased] - 2026-10-26 - Tauri and Chrome MV3 packs install, build and run
+
+**Status:** COMPLETED
+
+- `desktop/tauri`: `cargo check` failed (keyring 2 has no `delete_credential`; the icons `tauri.conf.json` lists were missing) and type-check failed (`process.env.HOME`). Now Tauri 2.12, keyring 3 with the OS-store features (same line as gpp-cli's auth-flows add-on), placeholder icons, Tauri 2 `TAURI_ENV_*` in `vite.config.ts`, Vite 6, React 18.3, `pnpm.onlyBuiltDependencies`, `type-check` / `test` (cargo test) / `lint:rust` (clippy) scripts. Security: a CSP (was `null`) and devCsp, a `core:default`-only capability, unused shell/fs/dialog plugins (configured with Tauri 1 keys) removed, file commands confined to the app data folder, `run_command` limited to an allowlist (`gpp`), keychain entries scoped to the app identifier. Names from `{{PROJECT_SLUG}}`.
+- `extension/chrome-mv3`: type-check failed (3 unused symbols) and the manifest's icons were missing. Now CRXJS 3.0, Vite 6, vitest, `.nvmrc` 22, pnpm. Permissions cut to `storage` (dropped `tabs`, `scripting`, all-site `host_permissions`), explicit `extension_pages` CSP, service worker checks message type and sender (`src/shared/messages.ts`, 5 tests), tab-URL logger removed. Names from `{{PROJECT_SLUG}}`.
+
+## [Unreleased] - 2026-10-26 - Go pack: Postgres data layer
+
+**Status:** COMPLETED
+
+- `api/go-http` (not bundled in gpp-cli): `item.PostgresStore` on pgx v5 (`pgxpool`) when `DATABASE_URL` is set, in-memory store (with a warning) when not. Embedded SQL migrations (`internal/db/migrations`) applied on startup, recorded in `schema_migrations`, under an advisory lock. Startup retries the connection for 30 s, then exits instead of falling back to memory; the pool closes after HTTP shutdown.
+- `item.Store` methods take a context and return errors (`item.ErrNotFound` → 404, timeout → 503, other → 500 with a fixed message); `DATABASE_QUERY_TIMEOUT` (5s). New `GET /ready` (and `/api/v1/ready`) pings Postgres (503 when down); `/health` and `server -healthcheck` stay liveness-only.
+- Tests: one store contract for both stores; Postgres, migration and connect tests skip unless `TEST_DATABASE_URL` is set, each in its own schema; `make test-db` runs them on a throwaway `postgres:16-alpine`.
+
 ## [Unreleased] - 2026-10-26 - FastAPI pack: Redis is optional at the package level
 
 **Status:** COMPLETED

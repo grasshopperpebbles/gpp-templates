@@ -18,7 +18,9 @@
       "Background service worker",
       "Popup UI with React",
       "Hot Module Replacement in dev",
-      "Chrome types included"
+      "Chrome types included",
+      "Least-privilege manifest (storage only) with an extension-pages CSP",
+      "Message type and sender checks with vitest tests"
     ],
     "excluded": [
       "Firefox support (use firefox-mv3 variant)",

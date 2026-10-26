@@ -5,6 +5,8 @@
  * content scripts and the popup.
  */
 
+import { isAllowedSender, parseMessage } from '../shared/messages';
+
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
@@ -19,9 +21,18 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
-// Listen for messages from content scripts or popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Message received:', message, 'from:', sender);
+// Listen for messages from content scripts or popup. Unknown messages and messages
+// from senders not allowed to send them (see src/shared/messages.ts) are refused.
+chrome.runtime.onMessage.addListener((raw, sender, sendResponse) => {
+  const message = parseMessage(raw);
+  if (!message) {
+    sendResponse({ error: 'Unknown message type' });
+    return;
+  }
+  if (!isAllowedSender(message, sender, chrome.runtime.id)) {
+    sendResponse({ error: 'Sender not allowed' });
+    return;
+  }
 
   switch (message.type) {
     case 'GET_STATUS':
@@ -32,7 +43,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case 'TOGGLE_ENABLED':
       chrome.storage.local.get(['enabled'], (result) => {
-        const newEnabled = !result.enabled;
+        const newEnabled = !(result.enabled ?? true);
         chrome.storage.local.set({ enabled: newEnabled }, () => {
           sendResponse({ enabled: newEnabled });
         });
@@ -41,23 +52,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case 'DATA_CAPTURED':
       // Handle data captured from content script
-      console.log('Data captured:', message.payload);
       chrome.storage.local.set({ lastCapture: message.payload }, () => {
         sendResponse({ status: 'stored' });
       });
       return true;
-
-    default:
-      console.log('Unknown message type:', message.type);
-      sendResponse({ error: 'Unknown message type' });
-  }
-});
-
-// Listen for tab updates (optional - for URL-based functionality)
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url) {
-    // Perform actions when a page finishes loading
-    console.log('Tab updated:', tab.url);
   }
 });
 

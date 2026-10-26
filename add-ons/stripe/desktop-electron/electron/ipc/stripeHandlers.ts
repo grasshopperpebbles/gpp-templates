@@ -4,16 +4,27 @@
 // Session with its secret key; this main-process handler asks the API for the session URL and opens
 // it in the system browser. The renderer only calls window.electronAPI.stripe.openCheckout().
 //
-// The API must expose: POST {API_BASE_URL}/stripe/checkout-session (any base path is kept, e.g.
-// API_BASE_URL=http://localhost:8000/api/v1 posts to /api/v1/stripe/checkout-session)
+// The API must expose: POST {API base URL}/stripe/checkout-session (any base path is kept, e.g.
+// http://localhost:8000/api/v1 posts to /api/v1/stripe/checkout-session). `gpp add stripe` adds
+// that endpoint to a gpp FastAPI or Express API.
 //   request body:  { "priceId": "price_..." }
 //   response body: { "url": "https://checkout.stripe.com/..." }
+//
+// The API base URL, first match wins:
+//   1. API_BASE_URL in the environment that launches the app (a runtime override)
+//   2. VITE_API_BASE_URL at build time: the renderer's value, which config/mainProcessConfig.ts
+//      writes to dist-electron/build-config.json when Vite runs (`pnpm dev`, `pnpm build`, `pnpm dist`)
+//   3. DEFAULT_API_BASE_URL below, set by `gpp add stripe` from the project's API
 import { ipcMain, shell } from 'electron';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { CHANNELS } from './channels.js';
 import { isAppUrl } from './validate.js';
 
-// Set API_BASE_URL in the environment that launches the app, or change the default for your builds.
-const DEFAULT_API_BASE_URL = 'http://localhost:8000';
+const DEFAULT_API_BASE_URL = 'http://localhost:8000/api/v1';
+// dist-electron/build-config.json (this file compiles to dist-electron/ipc/stripeHandlers.js)
+const BUILD_CONFIG_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', 'build-config.json');
 const CHECKOUT_PATH = '/stripe/checkout-session';
 const REQUEST_TIMEOUT_MS = 15_000;
 // Hosts whose https URLs may be opened in the system browser. Add a host here only if your API
@@ -25,12 +36,22 @@ export interface CheckoutRequest {
   priceId: string;
 }
 
+/** VITE_API_BASE_URL as it was at build time, or undefined when the build had none. */
+function buildTimeApiBaseUrl(): string | undefined {
+  try {
+    const { apiBaseUrl } = JSON.parse(readFileSync(BUILD_CONFIG_PATH, 'utf8')) as { apiBaseUrl?: unknown };
+    return typeof apiBaseUrl === 'string' && apiBaseUrl.trim() ? apiBaseUrl.trim() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function apiBaseUrl(): URL {
-  const base = new URL(process.env.API_BASE_URL || DEFAULT_API_BASE_URL);
+  const base = new URL(process.env.API_BASE_URL?.trim() || buildTimeApiBaseUrl() || DEFAULT_API_BASE_URL);
   const local = LOCAL_HOSTS.includes(base.hostname);
   // Plain http only for a local API in development
   if (base.protocol !== 'https:' && !(base.protocol === 'http:' && local)) {
-    throw new Error('API_BASE_URL must be https (http is allowed only for localhost)');
+    throw new Error('The API base URL must be https (http is allowed only for localhost)');
   }
   return base;
 }

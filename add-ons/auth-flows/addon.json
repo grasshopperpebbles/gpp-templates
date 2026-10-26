@@ -1,17 +1,21 @@
 {
   "name": "auth-flows",
   "displayName": "Authentication Flows",
-  "description": "Complete authentication flows including registration, email verification, password reset",
+  "description": "Email verification and password reset on top of the gpp API packs' own register/login (FastAPI, Express on PostgreSQL or MySQL), with Next.js pages",
   "type": "addon",
   "platforms": ["web", "api-express", "api-fastapi", "desktop-tauri"],
   "features": [
-    "User registration with email verification",
-    "Password reset flow",
-    "Email templates (Resend, SendGrid, SES)",
-    "API routes and frontend pages",
-    "Secure credential storage for desktop apps (keychain)",
-    "Tauri IPC commands for auth"
+    "Email verification: the API emails a link after the pack's POST /auth/register; POST /auth/verify-email, /auth/resend-verification",
+    "Password reset: POST /auth/forgot-password (same answer for unknown emails) and /auth/reset-password",
+    "GET /auth/verification-status and users.email_verified_at; require_verified_email (FastAPI) / requireVerifiedEmail (Express) for routes that need it",
+    "Single-use, expiring tokens with 32 random bytes, stored as SHA-256 hashes and checked in constant time",
+    "A reset retires other reset links; on Express it also revokes the user's refresh tokens",
+    "Alembic migration (FastAPI) or Prisma schema patch plus migration (Express, PostgreSQL and MySQL)",
+    "Email via Resend, SendGrid or AWS SES; development logs emails to the console without keys",
+    "Next.js pages (/verify-email, /forgot-password, /reset-password), /api/auth proxy routes and a verify-email banner",
+    "Secure credential storage for Tauri desktop apps (OS keychain via keyring)",
+    "Tauri IPC commands, login and register forms (desktop part is Tauri-only; Electron apps are skipped)"
   ],
-  "usage": "gpp add auth-flows",
-  "note": "Add-ons are installed via 'gpp add' command, not 'gpp template install'. They add files to existing platform directories."
+  "usage": "gpp add auth-flows [--provider resend|sendgrid|ses]",
+  "note": "Add-ons are installed via 'gpp add' command, not 'gpp template install'. They add files to existing platform directories. See README.md."
 }

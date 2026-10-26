@@ -8,7 +8,7 @@ import (
 )
 
 func TestLoadDefaults(t *testing.T) {
-	for _, k := range []string{"SERVER_ADDR", "SERVER_READ_TIMEOUT", "SERVER_WRITE_TIMEOUT", "LOG_LEVEL", "LOG_FORMAT", "CORS_ORIGINS", "DATABASE_URL", "REDIS_URL"} {
+	for _, k := range []string{"SERVER_ADDR", "SERVER_READ_TIMEOUT", "SERVER_WRITE_TIMEOUT", "LOG_LEVEL", "LOG_FORMAT", "CORS_ORIGINS", "DATABASE_URL", "DATABASE_QUERY_TIMEOUT", "REDIS_URL"} {
 		t.Setenv(k, "")
 	}
 	cfg := Load()
@@ -18,6 +18,8 @@ func TestLoadDefaults(t *testing.T) {
 		WriteTimeout: 30 * time.Second,
 		LogLevel:     slog.LevelInfo,
 		LogFormat:    "json",
+
+		DatabaseQueryTimeout: 5 * time.Second,
 	}
 	if !reflect.DeepEqual(cfg, want) {
 		t.Errorf("Load() = %+v, want %+v", cfg, want)
@@ -38,6 +40,7 @@ func TestLoadFromEnv(t *testing.T) {
 			return reflect.DeepEqual(c.CORSOrigins, []string{"http://a.test", "http://b.test"})
 		}},
 		{"DATABASE_URL", "postgresql://u:p@db:5432/app", func(c Config) bool { return c.DatabaseURL == "postgresql://u:p@db:5432/app" }},
+		{"DATABASE_QUERY_TIMEOUT", "750ms", func(c Config) bool { return c.DatabaseQueryTimeout == 750*time.Millisecond }},
 		{"REDIS_URL", "redis://cache:6379/0", func(c Config) bool { return c.RedisURL == "redis://cache:6379/0" }},
 	}
 	for _, tt := range tests {
