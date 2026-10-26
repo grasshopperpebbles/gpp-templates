@@ -182,11 +182,12 @@ the secret fails with a clear error instead of signing tokens with a known key.
 `CORS_ORIGINS` is a comma-separated list of allowed origins. Credentials are
 **off** (`allow_credentials=False` in `app/main.py`): auth uses Bearer tokens in
 the `Authorization` header, not cookies, so browsers don't need credentialed
-CORS. A packaged Electron app (loaded from `file://`) sends `Origin: null`;
-adding `null` to `CORS_ORIGINS` is acceptable **only** while credentials stay
-off. With credentials on, allowing `null` would let any sandboxed page
-(sandboxed iframes, `data:` URLs) make credentialed calls to the API. If you
-switch to cookie auth, turn credentials on and list explicit origins only.
+CORS. The gpp Electron desktop app serves its built renderer from
+`app://bundle/` and sends `Origin: app://bundle`, so it is listed by name
+(`CORS_ORIGINS=http://localhost:5180,app://bundle`, the first being its Vite
+dev server). Don't add `null`: sandboxed iframes, `data:` URLs and `file://`
+pages all send it. If you switch to cookie auth, turn credentials on and list
+explicit origins only.
 ## Database Migrations
 
 `alembic/versions/0001_create_users.py` creates the `users` table. After changing
