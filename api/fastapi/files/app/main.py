@@ -38,9 +38,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     # Auth is Bearer tokens in the Authorization header, not cookies, so no
-    # credentialed CORS. Keep it False if CORS_ORIGINS ever includes "null"
-    # (a packaged Electron app sends Origin: null): with credentials, any
-    # sandboxed page could make credentialed calls. See README "CORS".
+    # credentialed CORS. List exact origins in CORS_ORIGINS and never "null"
+    # (sandboxed iframes and file:// pages send it). See README "CORS".
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
