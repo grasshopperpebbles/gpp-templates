@@ -8,14 +8,13 @@
 
 console.log('Content script loaded');
 
-// Listen for messages from the background script or popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Content script received message:', message);
-
-  switch (message.type) {
+// Listen for messages from the popup (chrome.tabs.sendMessage). Only this extension
+// can message its content scripts, but the page itself is untrusted: read the DOM,
+// never eval or inject what it contains.
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  switch (message?.type) {
     case 'CAPTURE':
-      const data = capturePageData();
-      sendResponse({ success: true, data });
+      sendResponse({ success: true, data: capturePageData() });
       break;
 
     case 'PING':
@@ -42,25 +41,17 @@ function capturePageData() {
   };
 }
 
-/**
- * Send data to the background script
- */
-function sendToBackground(type: string, payload: unknown) {
-  chrome.runtime.sendMessage({ type, payload }, (response) => {
+// Example: send data to the background script automatically on specific pages.
+// Uncomment and modify as needed
+/*
+if (window.location.hostname.includes('example.com')) {
+  chrome.runtime.sendMessage({ type: 'DATA_CAPTURED', payload: capturePageData() }, (response) => {
     if (chrome.runtime.lastError) {
       console.error('Error sending message:', chrome.runtime.lastError);
       return;
     }
     console.log('Background response:', response);
   });
-}
-
-// Example: Automatically capture data on specific pages
-// Uncomment and modify as needed
-/*
-if (window.location.hostname.includes('example.com')) {
-  const data = capturePageData();
-  sendToBackground('DATA_CAPTURED', data);
 }
 */
 

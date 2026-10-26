@@ -43,7 +43,7 @@ function App() {
 
   const handleCapture = async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab.id) return;
+    if (tab?.id === undefined) return;
 
     chrome.tabs.sendMessage(tab.id, { type: 'CAPTURE' }, (response) => {
       if (chrome.runtime.lastError) {

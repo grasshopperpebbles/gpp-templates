@@ -1,16 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "My Extension",
+  "name": "{{PROJECT_SLUG}}",
   "version": "0.1.0",
   "description": "A Chrome extension built with Vite and TypeScript",
   "permissions": [
-    "storage",
-    "tabs",
-    "scripting"
-  ],
-  "host_permissions": [
-    "https://*/*",
-    "http://*/*"
+    "storage"
   ],
   "background": {
     "service_worker": "src/background/index.ts",
@@ -23,6 +17,9 @@
       "run_at": "document_idle"
     }
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "action": {
     "default_popup": "src/popup/index.html",
     "default_icon": {
