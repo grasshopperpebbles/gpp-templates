@@ -1,4 +1,4 @@
-.PHONY: build build-linux run dev test test-docker test-coverage vet clean deps lint docker-build docker-run setup fmt help
+.PHONY: build build-linux run dev test test-db test-docker test-coverage vet clean deps lint docker-build docker-run setup fmt help
 
 # Go parameters
 GOCMD=go
@@ -28,6 +28,17 @@ dev:
 test:
 	$(GOCMD) vet ./...
 	$(GOCMD) test -race ./...
+
+# Run the tests, including the Postgres ones, against a throwaway
+# postgres:16-alpine container on TEST_DB_PORT (removed afterwards)
+TEST_DB_CONTAINER={{PLATFORM_SLUG}}-test-db
+TEST_DB_PORT=55432
+test-db:
+	docker run -d --rm --name $(TEST_DB_CONTAINER) -e POSTGRES_PASSWORD=postgres -p $(TEST_DB_PORT):5432 postgres:16-alpine
+	@until docker exec $(TEST_DB_CONTAINER) pg_isready -h 127.0.0.1 -U postgres >/dev/null 2>&1; do sleep 1; done
+	$(GOCMD) vet ./...
+	TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:$(TEST_DB_PORT)/postgres $(GOCMD) test -race -count=1 ./...; \
+	status=$$?; docker stop $(TEST_DB_CONTAINER) >/dev/null; exit $$status
 
 # Run vet + race tests in a Go container: no local Go needed
 test-docker:
@@ -61,6 +72,7 @@ docker-build:
 	docker build -t $(IMAGE) .
 
 # Run the image on its own, without the database/Redis from the root compose
+# (items are kept in memory unless .env points at a reachable Postgres)
 docker-run:
 	docker run --rm -p 8080:8080 $(if $(wildcard .env),--env-file .env) $(IMAGE)
 
@@ -83,7 +95,8 @@ help:
 	@echo "  run           - Run the application on the host"
 	@echo "  dev           - Run with hot reload (requires air)"
 	@echo "  test          - go vet + go test -race ./..."
-	@echo "  test-docker   - Same, inside $(GO_IMAGE) (no local Go needed)"
+	@echo "  test-db       - Same plus the Postgres tests, on a throwaway postgres container"
+	@echo "  test-docker   - Same as test, inside $(GO_IMAGE) (no local Go needed)"
 	@echo "  test-coverage - Run tests with coverage report"
 	@echo "  clean         - Clean build files"
 	@echo "  deps          - Get dependencies"
