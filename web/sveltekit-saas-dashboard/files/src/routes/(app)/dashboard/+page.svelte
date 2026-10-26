@@ -1,7 +1,18 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import StatsCard from "$lib/components/data/StatsCard.svelte";
+  import Badge from "$lib/components/ui/Badge.svelte";
   import Card from "$lib/components/ui/Card.svelte";
+  import { checkApiHealth } from "$lib/api";
+  import { config } from "$lib/config";
   import { user } from "$lib/stores/auth";
+
+  // Backend at VITE_API_URL: null while checking
+  let apiOnline = $state<boolean | null>(null);
+
+  onMount(async () => {
+    apiOnline = await checkApiHealth();
+  });
 
   const stats = [
     { title: "Total Projects", value: 12, change: 8.2, icon: "projects" as const },
@@ -24,9 +35,20 @@
 </svelte:head>
 
 <div class="space-y-6">
-  <div>
-    <h1 class="text-2xl font-bold">Welcome back, {$user?.name}!</h1>
-    <p class="text-gray-500 dark:text-gray-400 mt-1">Here's what's happening with your projects today.</p>
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold">Welcome back, {$user?.name}!</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Here's what's happening with your projects today.</p>
+    </div>
+    <span title={config.apiUrl}>
+      {#if apiOnline === null}
+        <Badge variant="outline">API: checking...</Badge>
+      {:else if apiOnline}
+        <Badge variant="success">API: online</Badge>
+      {:else}
+        <Badge variant="error">API: unreachable</Badge>
+      {/if}
+    </span>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
