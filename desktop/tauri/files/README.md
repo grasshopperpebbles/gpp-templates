@@ -57,7 +57,6 @@ The Vite dev server runs on port 1420 (Tauri's convention, not Vite's default 51
 │   ├── capabilities/
 │   │   └── default.json  # What the main window may call
 │   ├── icons/            # App icons (placeholders: regenerate with `pnpm tauri icon <1024px png or svg>`)
-│   ├── build.rs          # Declares the app commands so each gets an allow-<command> permission
 │   ├── Cargo.toml        # Rust dependencies
 │   └── tauri.conf.json   # Tauri configuration (window, CSP, bundle)
 └── package.json
@@ -77,11 +76,13 @@ The Rust backend exposes these commands:
 | `get_credential` | Retrieve from keychain |
 | `delete_credential` | Delete from keychain |
 
-File paths are relative to the app data folder; absolute paths and `..` are refused. To add a command, write it in `lib.rs`, register it in `generate_handler!`, list it in `build.rs`, and grant `allow-<command-name>` in `capabilities/default.json`.
+File paths are relative to the app data folder; absolute paths and `..` are refused. To add a command, write it in `lib.rs` and register it in `generate_handler!`. Treat its arguments as untrusted: any script running in the window can call it.
+
+For per-window control over app commands, list them in `build.rs` with `tauri_build::AppManifest::new().commands(&[...])` and grant `allow-<command-name>` in `capabilities/default.json`; once that list exists, every app command (including ones add-ons register) must be granted there or it is refused.
 
 ## Security
 
-- Capabilities: the main window gets `core:default` plus this app's own commands; no fs, shell or other plugins are installed
+- Capabilities: the main window gets `core:default` only; no fs, shell or other plugins are installed. The app's own commands are callable from the bundled frontend, never from remote origins
 - Content-Security-Policy in `tauri.conf.json` (`app.security.csp`; `devCsp` adds what Vite's dev server needs). To call an API from the frontend, add its origin to `connect-src`
 - File commands confined to the app data folder; `run_command` only runs allowlisted programs
 - Credentials stored in the system keychain, scoped to the app's identifier
