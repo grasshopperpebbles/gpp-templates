@@ -1,17 +1,15 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
-import jwt, { SignOptions } from 'jsonwebtoken';
 import prisma from '../../lib/prisma.js';
+import { issueTokenPair, revokeRefreshToken, rotateRefreshToken } from '../../lib/tokens.js';
 import { validate } from '../../middleware/validation.middleware.js';
 import { asyncHandler, ApiError } from '../../middleware/error-handler.middleware.js';
 import { loginSchema, registerSchema, refreshTokenSchema } from '../../schemas/index.js';
-import { authenticate, getJwtSecret } from '../../middleware/auth.middleware.js';
+import { authenticate } from '../../middleware/auth.middleware.js';
 
 const router: Router = Router();
 
-const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '1h') as SignOptions['expiresIn'];
-const REFRESH_TOKEN_EXPIRES_IN = (process.env.REFRESH_TOKEN_EXPIRES_IN || '30d') as SignOptions['expiresIn'];
 export const BCRYPT_ROUNDS = 10;
 
 // Login compares against this when the email is unknown, so a missing account costs the
@@ -20,7 +18,8 @@ const DUMMY_PASSWORD_HASH = bcrypt.hashSync(randomBytes(16).toString('hex'), BCR
 
 /**
  * POST /api/v1/auth/register
- * Register a new user
+ * Register a new user. Always role "user": registerSchema has no role field (an extra
+ * `role` in the body is stripped), see README "Roles" for making an admin.
  */
 router.post(
   '/register',
@@ -51,26 +50,16 @@ router.post(
         id: true,
         email: true,
         name: true,
+        role: true,
         createdAt: true,
       },
-    });
-
-    // Generate tokens
-    const accessToken = jwt.sign({ sub: user.id, email: user.email }, getJwtSecret(), {
-      expiresIn: JWT_EXPIRES_IN,
-    });
-
-    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, getJwtSecret(), {
-      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
     });
 
     res.status(201).json({
       success: true,
       data: {
         user,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        token_type: 'bearer',
+        ...(await issueTokenPair(user)),
       },
     });
   })
@@ -97,69 +86,44 @@ router.post(
       throw new ApiError(401, 'Invalid email or password');
     }
 
-    // Generate tokens
-    const accessToken = jwt.sign({ sub: user.id, email: user.email }, getJwtSecret(), {
-      expiresIn: JWT_EXPIRES_IN,
-    });
-
-    const refreshToken = jwt.sign({ sub: user.id, type: 'refresh' }, getJwtSecret(), {
-      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-    });
-
     res.json({
       success: true,
-      data: {
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        token_type: 'bearer',
-      },
+      data: await issueTokenPair(user),
     });
   })
 );
 
 /**
  * POST /api/v1/auth/refresh
- * Refresh access token
+ * Exchange a refresh token for a new access + refresh token pair. The presented refresh
+ * token is revoked; presenting it again revokes every token of that login (its family).
  */
 router.post(
   '/refresh',
   validate(refreshTokenSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    const { refresh_token } = req.body;
+    res.json({
+      success: true,
+      data: await rotateRefreshToken(req.body.refresh_token),
+    });
+  })
+);
 
-    try {
-      // Verify refresh token
-      const payload = jwt.verify(refresh_token, getJwtSecret()) as { sub: string; type: string };
+/**
+ * POST /api/v1/auth/logout
+ * Revoke a refresh token. Needs only the refresh token (the access token may already have
+ * expired); access tokens stay valid until they expire (JWT_EXPIRES_IN).
+ */
+router.post(
+  '/logout',
+  validate(refreshTokenSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await revokeRefreshToken(req.body.refresh_token);
 
-      if (payload.type !== 'refresh') {
-        throw new ApiError(401, 'Invalid refresh token');
-      }
-
-      // Check if user still exists
-      const user = await prisma.user.findUnique({
-        where: { id: payload.sub },
-      });
-
-      if (!user) {
-        throw new ApiError(401, 'User not found');
-      }
-
-      // Generate new access token
-      const accessToken = jwt.sign({ sub: user.id, email: user.email }, getJwtSecret(), {
-        expiresIn: JWT_EXPIRES_IN,
-      });
-
-      res.json({
-        success: true,
-        data: {
-          access_token: accessToken,
-          token_type: 'bearer',
-        },
-      });
-    } catch (error) {
-      if (error instanceof ApiError) throw error;
-      throw new ApiError(401, 'Invalid or expired refresh token');
-    }
+    res.json({
+      success: true,
+      message: 'Logged out',
+    });
   })
 );
 
@@ -183,6 +147,7 @@ router.get(
         id: true,
         email: true,
         name: true,
+        role: true,
         createdAt: true,
       },
     });

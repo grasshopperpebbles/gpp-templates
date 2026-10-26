@@ -14,7 +14,9 @@ production Dockerfile and a Vitest + Supertest test suite.
   - Performance logging
   - Zod schema validation
   - Error handling with request IDs
-  - JWT authentication (register, login, refresh, `/me`)
+  - JWT authentication (register, login, refresh, logout, `/me`)
+  - Refresh token rotation with reuse detection (hashed `refresh_tokens` table)
+  - User roles (`user` / `admin`) with admin-only user management
 - ✅ **Type-safe routes** with TypeScript
 - ✅ **Health check endpoint** (`GET /health`, reports Redis status)
 - ✅ **Redis** client (`src/lib/redis.ts`), optional via `REDIS_URL`
@@ -68,7 +70,8 @@ Migrations do not run on container start. Apply them explicitly:
 docker compose exec {{PROJECT_SLUG}}-api npx prisma migrate deploy
 ```
 
-The pack ships an initial migration (`prisma/migrations/*_init`, the `users` table). Commit
+The pack ships two migrations: `*_init` (the `users` table) and `*_roles_and_refresh_tokens`
+(the `role` column and the `refresh_tokens` table). Commit
 `prisma/migrations/`. To change the schema, edit `prisma/schema.prisma` and create a new
 migration against a database that is reachable from where you run it, e.g. on the host with the
 `localhost` `DATABASE_URL` from `.env`:
@@ -85,6 +88,14 @@ then rebuild the image (`docker compose up -d --build`) and run `migrate deploy`
 curl http://localhost:3001/health
 ```
 
+### 5. Make the first admin
+
+Register normally, then promote the account (see [Roles](#roles)):
+
+```bash
+docker compose exec {{PROJECT_SLUG}}-api node dist/scripts/set-role.js you@example.com
+```
+
 ### Host-only exception
 
 If your team has **explicitly** opted out of the Docker-only rule, `npm install`,
@@ -98,10 +109,12 @@ src/
 ├── app.ts                 # createApp(): middleware + routes, no listen (used by tests)
 ├── server.ts              # Loads .env, starts the HTTP server, graceful shutdown
 ├── lib/
+│   ├── admin.ts           # setUserRole() (used by scripts/set-role.ts)
 │   ├── prisma.ts          # Prisma client instance
-│   └── redis.ts           # Optional Redis client (REDIS_URL)
+│   ├── redis.ts           # Optional Redis client (REDIS_URL)
+│   └── tokens.ts          # Access/refresh token issue, rotation, revocation
 ├── middleware/
-│   ├── auth.middleware.ts           # JWT authentication, getJwtSecret()
+│   ├── auth.middleware.ts           # authenticate, requireAdmin, getJwtSecret()
 │   ├── error-handler.middleware.ts  # Error handling
 │   ├── request-logger.middleware.ts # Request logging
 │   └── validation.middleware.ts     # Zod validation
@@ -109,13 +122,15 @@ src/
 │   ├── health.routes.ts   # Health check
 │   └── v1/
 │       ├── index.ts         # API v1 router
-│       ├── auth.routes.ts   # Register, login, refresh, me
-│       └── users.routes.ts  # Example user routes
-└── schemas/
-    └── index.ts           # Zod validation schemas
+│       ├── auth.routes.ts   # Register, login, refresh, logout, me
+│       └── users.routes.ts  # User routes (admin / self)
+├── schemas/
+│   └── index.ts           # Zod validation schemas
+└── scripts/
+    └── set-role.ts        # Make an account admin (or user) by email
 prisma/
-├── schema.prisma
-└── migrations/            # Initial migration (commit new ones)
+├── schema.prisma          # User (with role), RefreshToken
+└── migrations/            # Shipped migrations (commit new ones)
 tests/                     # Vitest + Supertest (health, auth, users, errors, config)
 Dockerfile
 ```
@@ -137,7 +152,8 @@ fail the check; DB/Redis readiness is docker compose's job (`depends_on: conditi
 ```bash
 POST /api/v1/auth/register   # { "email", "password" (8+ chars), "name" } -> 201, user + tokens
 POST /api/v1/auth/login      # { "email", "password" } -> access_token + refresh_token
-POST /api/v1/auth/refresh    # { "refresh_token" } -> new access_token
+POST /api/v1/auth/refresh    # { "refresh_token" } -> new access_token + refresh_token
+POST /api/v1/auth/logout     # { "refresh_token" } -> revokes it
 GET  /api/v1/auth/me         # Authorization: Bearer <access_token>
 ```
 
@@ -146,28 +162,85 @@ GET  /api/v1/auth/me         # Authorization: Bearer <access_token>
 - Passwords are 8 to 72 characters and at most 72 UTF-8 bytes (bcrypt's input limit).
 - Login runs a bcrypt comparison even for an unknown email, so response times do not reveal
   which accounts exist.
-- Refresh tokens are only accepted by `/auth/refresh`; using one as a bearer token returns 401.
-- `authenticate` loads the user on every request, so a deleted user's access token stops
-  working immediately, and `/auth/refresh` rejects a deleted user's refresh token.
+- Registration always creates a `user`; a `role` in the body is ignored.
+- Refresh tokens are only accepted by `/auth/refresh` and `/auth/logout`; using one as a bearer
+  token returns 401, and access tokens are rejected by both.
+- `authenticate` loads the user (and their role) on every request, so a deleted user's access
+  token stops working immediately and a role change applies on the next request.
 
-**Known limitation:** refresh tokens are stateless JWTs. They are not rotated on use and cannot
-be revoked individually before they expire (`REFRESH_TOKEN_EXPIRES_IN`, default 30 days); only
-deleting the user or changing `JWT_SECRET` (which logs everyone out) invalidates them. Add a
-token table (or a per-user token version) if you need logout-everywhere or rotation.
+#### Refresh tokens: rotation and revocation
+
+Refresh tokens are JWTs (`type: "refresh"`, a unique `jti`), and each one is also recorded in
+the `refresh_tokens` table: a SHA-256 hash of the token (never the token itself), `user_id`,
+`family_id`, `expires_at`, `revoked_at` and `replaced_by_id`. Logic is in `src/lib/tokens.ts`.
+
+- **Login / register** start a new token family (one per sign-in, so one per device).
+- **`/auth/refresh`** revokes the presented token and returns a new `access_token` **and**
+  `refresh_token` in the same family (the old row's `replaced_by_id` points to the new one).
+  Store the new refresh token; the old one is now spent.
+- **Reuse detection:** presenting a refresh token that was already rotated or logged out
+  returns 401 `Refresh token has been revoked` and revokes **every token in its family**, so
+  whoever copied it (and the real client) must log in again. Other sign-ins of the same user
+  are not affected. Two simultaneous refreshes with the same token count as reuse too (only
+  one can claim it), so clients should serialize refreshes.
+- **`/auth/logout`** revokes the presented refresh token (200, also for an already revoked
+  one). It needs only the refresh token, not an access token. Access tokens are stateless and
+  stay valid until they expire (`JWT_EXPIRES_IN`, default 1h), so keep them short-lived.
+- A refresh token that is not in the table (for example one issued before this table existed,
+  or by another server with the same `JWT_SECRET`) is rejected with 401. Deleting a user
+  deletes their refresh tokens (`ON DELETE CASCADE`).
+- Expired rows of a user are deleted when that user next logs in. Revoked rows are kept until
+  they expire so reuse can still be detected. To prune everything, run
+  `DELETE FROM refresh_tokens WHERE expires_at < now()` from a scheduled job.
 
 ### Users (Requires Authentication)
 
 ```bash
-GET    /api/v1/users?page=1&limit=10   # limit 1-100
-GET    /api/v1/users/:id               # ids are Prisma cuid() strings
-POST   /api/v1/users                   # { "email", "name", "password" }
-PATCH  /api/v1/users/:id               # { "name"?, "email"? }; only your own id, else 403
-DELETE /api/v1/users/:id               # only your own id, else 403
+GET    /api/v1/users?page=1&limit=10   # admin only; limit 1-100, oldest first
+GET    /api/v1/users/:id               # your own id, or any id as an admin
+POST   /api/v1/users                   # admin only; { "email", "name", "password", "role"? }
+PATCH  /api/v1/users/:id               # { "name"?, "email"? }; your own id, or any id as an admin
+DELETE /api/v1/users/:id               # your own id, or any id as an admin
 ```
 
-Any authenticated user can list and read users and create new ones; `PATCH`/`DELETE` only
-work on the caller's own account (`req.auth.userId === :id`, otherwise 403 before any lookup).
-Add your own roles if some users should manage others.
+A normal user gets 403 for the admin-only routes and for any other user's id, whether or not
+that id exists (checked before any lookup, so ids cannot be probed). User responses include
+`role`; they never include the password hash.
+
+### Roles
+
+`User.role` is a Prisma enum, `user` (the default) or `admin`:
+
+| Action | `user` | `admin` |
+| --- | --- | --- |
+| Read / update / delete own account | ✅ | ✅ |
+| List users, read another user | 403 | ✅ |
+| Create users (`POST /users`, optional `"role"`) | 403 | ✅ |
+| Update / delete another user | 403 | ✅ |
+| Change a role through the API | ❌ | only `POST /users` sets one (for a new account) |
+
+Nobody can change their own role: `registerSchema` and `updateUserSchema` have no `role` field
+and zod strips unknown keys, so a `role` sent to register or `PATCH` is ignored. Protect your
+own routes with `authenticate, requireAdmin` (from `src/middleware/auth.middleware.ts`).
+
+**The first admin** is made with the `set-role` script, which promotes an existing account by
+email. Register the account through the API first, then:
+
+```bash
+# In Docker (the production image has no tsx, so run the compiled script)
+docker compose exec {{PROJECT_SLUG}}-api node dist/scripts/set-role.js you@example.com
+
+# On the host
+npm run set-role -- you@example.com
+
+# Demote again
+npm run set-role -- you@example.com user
+```
+
+It uses the same `DATABASE_URL` as the API. There is deliberately no env-driven bootstrap
+(such as an `ADMIN_EMAIL` that is promoted on startup or on registration): until that address
+is registered, anyone could register it and become admin. Once you have one admin, create more
+with `POST /api/v1/users` and `"role": "admin"`.
 
 ## Middleware
 
@@ -273,6 +346,7 @@ queue), so treat it as a cache, not a source of truth.
 - `npm run type-check` - Type check without building
 - `npm run db:deploy` - Apply migrations (`prisma migrate deploy`)
 - `npm run db:migrate` - Create a migration (`prisma migrate dev`)
+- `npm run set-role -- <email> [admin|user]` - Promote (default) or demote an account
 
 ### Adding New Routes
 
@@ -302,7 +376,8 @@ Set `NODE_ENV=production` (the seeded `.env` says `development`, which overrides
 default inside compose), `DATABASE_URL`, a strong `JWT_SECRET` (32+ random characters; the
 server exits at startup otherwise), `CORS_ORIGINS` and
 `API_PORT`. Build the image from this folder's `Dockerfile` and run
-`npx prisma migrate deploy` (in the container) as a release step.
+`npx prisma migrate deploy` (in the container) as a release step. Make the first admin with
+`node dist/scripts/set-role.js <email>` (see [Roles](#roles)).
 
 ## Troubleshooting
 

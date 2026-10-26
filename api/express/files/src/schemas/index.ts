@@ -25,11 +25,16 @@ const password = z
   .max(PASSWORD_MAX_BYTES, `Password must be at most ${PASSWORD_MAX_BYTES} characters`)
   .refine(withinBcryptLimit, `Password must be at most ${PASSWORD_MAX_BYTES} bytes (UTF-8)`);
 
-// User schemas
+// Roles (the Role enum in prisma/schema.prisma)
+export const roleSchema = z.enum(['user', 'admin']);
+
+// User schemas. Only POST /users (admin-only) accepts a role. registerSchema and
+// updateUserSchema have none, and zod strips unknown keys, so nobody can set their own.
 export const createUserSchema = z.object({
   email,
   name: z.string().min(1, 'Name is required').max(100),
   password,
+  role: roleSchema.default('user'),
 });
 
 export const updateUserSchema = z.object({
