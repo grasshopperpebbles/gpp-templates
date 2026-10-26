@@ -31,8 +31,8 @@ const errInvalidJSON = "invalid JSON body"
 
 // Config holds server configuration
 type Config struct {
-	// Items is the item store. item.NewService() is in memory; swap in a
-	// database-backed item.Store here.
+	// Items is the item store: item.NewService() (memory) or
+	// a database-backed item.Store, chosen in cmd/server/main.go.
 	Items        item.Store
 	Logger       *slog.Logger
 	ReadTimeout  time.Duration
@@ -192,7 +192,11 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleListItems(w http.ResponseWriter, r *http.Request) {
-	items := s.items.List()
+	items, err := s.items.List(r.Context())
+	if err != nil {
+		s.storeError(w, r, err)
+		return
+	}
 	s.jsonResponse(w, map[string]interface{}{
 		"items": items,
 		"count": len(items),
@@ -211,7 +215,11 @@ func (s *Server) handleCreateItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	created := s.items.Create(req)
+	created, err := s.items.Create(r.Context(), req)
+	if err != nil {
+		s.storeError(w, r, err)
+		return
+	}
 	s.jsonResponse(w, created, http.StatusCreated)
 }
 
@@ -222,9 +230,9 @@ func (s *Server) handleGetItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	it, found := s.items.Get(id)
-	if !found {
-		s.jsonError(w, "item not found", http.StatusNotFound)
+	it, err := s.items.Get(r.Context(), id)
+	if err != nil {
+		s.storeError(w, r, err)
 		return
 	}
 
@@ -252,9 +260,9 @@ func (s *Server) handleUpdateItem(w http.ResponseWriter, r *http.Request) {
 		req.Name = &name
 	}
 
-	updated, found := s.items.Update(id, req)
-	if !found {
-		s.jsonError(w, "item not found", http.StatusNotFound)
+	updated, err := s.items.Update(r.Context(), id, req)
+	if err != nil {
+		s.storeError(w, r, err)
 		return
 	}
 
@@ -268,8 +276,8 @@ func (s *Server) handleDeleteItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.items.Delete(id) {
-		s.jsonError(w, "item not found", http.StatusNotFound)
+	if err := s.items.Delete(r.Context(), id); err != nil {
+		s.storeError(w, r, err)
 		return
 	}
 
@@ -314,6 +322,25 @@ func (s *Server) jsonResponse(w http.ResponseWriter, data interface{}, status in
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)
+}
+
+// storeError answers a failed store call: 404 for item.ErrNotFound, 503 when
+// the store timed out, 500 otherwise. Store details stay in the server log.
+func (s *Server) storeError(w http.ResponseWriter, r *http.Request, err error) {
+	switch {
+	case errors.Is(err, item.ErrNotFound):
+		s.jsonError(w, "item not found", http.StatusNotFound)
+	case errors.Is(err, context.DeadlineExceeded):
+		s.logger.Error("store timeout", "method", r.Method, "path", r.URL.Path, "error", err)
+		s.jsonError(w, "service unavailable", http.StatusServiceUnavailable)
+	case errors.Is(err, context.Canceled) && r.Context().Err() != nil:
+		// The client went away; nobody reads this response.
+		s.logger.Debug("request canceled", "method", r.Method, "path", r.URL.Path)
+		s.jsonError(w, "request canceled", http.StatusServiceUnavailable)
+	default:
+		s.logger.Error("store error", "method", r.Method, "path", r.URL.Path, "error", err)
+		s.jsonError(w, "internal server error", http.StatusInternalServerError)
+	}
 }
 
 func (s *Server) jsonError(w http.ResponseWriter, message string, status int) {
