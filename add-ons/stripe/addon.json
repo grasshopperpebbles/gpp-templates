@@ -15,17 +15,37 @@
     "cms-wordpress"
   ],
   "features": [
-    "Publishable/secret key env wiring per platform",
+    "Env wiring scoped per platform: secret keys only in the API and web server routes",
     "Express and FastAPI server SDK stubs",
+    "POST /stripe/checkout-session in FastAPI and Express APIs (price allowlist, redirect URLs limited to configured origins)",
     "Expo and Flutter client stubs",
     "Desktop: no secret keys; Electron opens API-created Checkout via main + IPC, Tauri gets the publishable key only",
     "WordPress plugin scaffold for WooCommerce-style checkout hooks"
   ],
   "usage": "gpp add stripe",
-  "envVars": [
-    "STRIPE_PUBLISHABLE_KEY",
-    "STRIPE_SECRET_KEY",
-    "STRIPE_WEBHOOK_SECRET"
-  ],
+  "envVars": {
+    "api": [
+      "STRIPE_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET",
+      "STRIPE_PRICE_IDS",
+      "STRIPE_CHECKOUT_MODE",
+      "STRIPE_CHECKOUT_SUCCESS_URL",
+      "STRIPE_CHECKOUT_CANCEL_URL",
+      "STRIPE_CHECKOUT_ALLOWED_ORIGINS"
+    ],
+    "web": [
+      "STRIPE_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET",
+      "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"
+    ],
+    "mobile-expo": [
+      "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY"
+    ],
+    "desktop-tauri": [
+      "VITE_STRIPE_PUBLISHABLE_KEY"
+    ],
+    "desktop-electron": []
+  },
+  "envVarsNote": "Keyed by platform. Secret keys appear only under server-side apps (api, web server routes); desktop and mobile apps get a publishable key or nothing. src/commands/addons/stripe.ts writes the matching block into each app's .env.example.",
   "note": "Harvested from ngineeringos build.addon.stripe; ngos owns judgment, gpp owns files."
 }
