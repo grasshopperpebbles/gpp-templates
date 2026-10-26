@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
-import { app, registerUser } from './helpers.js';
+import { app, registerAdmin } from './helpers.js';
 import { fakePrisma } from './fakePrisma.js';
 
 const STRONG_SECRET = 'k3Jq9vX2mP7sT4wZ8bN1cR6yH5fL0dGa';
 const SECRET_DETAIL = 'connect ECONNREFUSED db-password-hunter2@10.0.0.5:5432';
 
 async function failingUsersList() {
-  const { accessToken } = await registerUser();
+  const { accessToken } = await registerAdmin(); // GET /users is admin-only
   vi.spyOn(fakePrisma.user, 'count').mockRejectedValueOnce(new Error(SECRET_DETAIL));
   vi.spyOn(console, 'error').mockImplementation(() => {});
   return request(app).get('/api/v1/users').set('Authorization', `Bearer ${accessToken}`);

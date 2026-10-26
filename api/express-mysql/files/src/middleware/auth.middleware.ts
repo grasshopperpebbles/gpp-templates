@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import type { Role } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { ApiError } from './error-handler.middleware.js';
 
@@ -9,6 +10,8 @@ declare global {
     interface Request {
       auth?: {
         userId: string;
+        /** Loaded from the database on every request, never taken from the token. */
+        role: Role;
         [key: string]: any;
       };
     }
@@ -105,9 +108,10 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
     }
 
     const userId = decoded.sub || decoded.userId || decoded.id;
-    // A deleted user's still-unexpired access token must stop working.
+    // A deleted user's still-unexpired access token must stop working, and the role
+    // comes from the database so a promotion or demotion applies immediately.
     const user = typeof userId === 'string'
-      ? await prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+      ? await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } })
       : null;
     if (!user) {
       throw new ApiError(401, 'Invalid token');
@@ -116,6 +120,7 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
     req.auth = {
       ...decoded,
       userId,
+      role: user.role,
     };
     next();
   } catch (error) {
@@ -140,10 +145,11 @@ export async function optionalAuthenticate(req: Request, _res: Response, next: N
     try {
       const decoded = jwt.verify(token, getJwtSecret()) as any;
       const userId = typeof decoded === 'object' ? decoded.sub || decoded.userId || decoded.id : undefined;
-      const exists = typeof userId === 'string' && decoded.type !== 'refresh'
-        && (await prisma.user.findUnique({ where: { id: userId }, select: { id: true } }));
-      if (exists) {
-        req.auth = { ...decoded, userId };
+      const user = typeof userId === 'string' && decoded.type !== 'refresh'
+        ? await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } })
+        : null;
+      if (user) {
+        req.auth = { ...decoded, userId, role: user.role };
       }
     } catch {
       // Invalid token, but continue without authentication
@@ -153,4 +159,14 @@ export async function optionalAuthenticate(req: Request, _res: Response, next: N
   } catch {
     next(); // Continue without authentication
   }
+}
+
+/**
+ * Admin-only routes: use after `authenticate`. Anyone else gets 403.
+ */
+export function requireAdmin(req: Request, _res: Response, next: NextFunction) {
+  if (req.auth?.role !== 'admin') {
+    return next(new ApiError(403, 'Admin access required'));
+  }
+  next();
 }
