@@ -1,75 +1,53 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { FormEvent, useState } from "react";
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-});
-
-type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+const inputClass =
+  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const buttonClass =
+  "inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50";
 
 export function ForgotPasswordForm() {
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [sentMessage, setSentMessage] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ForgotPasswordFormData>({
-    resolver: zodResolver(forgotPasswordSchema),
-  });
-
-  async function onSubmit(data: ForgotPasswordFormData) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email }),
+        body: JSON.stringify({ email: email.trim() }),
       });
-
-      const result = await response.json();
-
+      const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(result.error || "Failed to send reset email");
+        setError(typeof result.error === "string" ? result.error : "Could not send the reset link.");
+        return;
       }
-
-      setSuccess(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setSentMessage(result.message);
+    } catch {
+      setError("Could not reach the server. Please try again.");
     } finally {
       setIsLoading(false);
     }
   }
 
-  if (success) {
+  if (sentMessage) {
     return (
-      <div className="rounded-lg border bg-card p-6 text-center">
-        <div className="text-4xl mb-4">📧</div>
-        <h2 className="text-lg font-semibold mb-2">Check your email</h2>
-        <p className="text-sm text-muted-foreground">
-          If an account exists with that email, we&apos;ve sent you a password
-          reset link. Please check your inbox.
-        </p>
+      <div className="rounded-lg border p-6 text-center">
+        <h2 className="mb-2 text-lg font-semibold">Check your email</h2>
+        <p className="text-sm text-muted-foreground">{sentMessage}</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {error && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
-
+    <form onSubmit={onSubmit} className="space-y-4">
+      {error && <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">{error}</div>}
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium">
           Email
@@ -77,21 +55,16 @@ export function ForgotPasswordForm() {
         <input
           id="email"
           type="email"
+          required
+          autoComplete="email"
           placeholder="name@example.com"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className={inputClass}
           disabled={isLoading}
-          {...register("email")}
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
         />
-        {errors.email && (
-          <p className="text-sm text-red-600">{errors.email.message}</p>
-        )}
       </div>
-
-      <button
-        type="submit"
-        className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        disabled={isLoading}
-      >
+      <button type="submit" className={buttonClass} disabled={isLoading}>
         {isLoading ? "Sending..." : "Send reset link"}
       </button>
     </form>

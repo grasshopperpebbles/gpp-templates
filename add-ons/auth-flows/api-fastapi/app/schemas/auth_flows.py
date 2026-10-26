@@ -1,54 +1,42 @@
-"""Pydantic schemas for Auth Flows endpoints."""
-from typing import Optional
-from pydantic import BaseModel, EmailStr, Field
+"""Schemas for the auth flows endpoints (gpp add auth-flows)."""
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Annotated
+
+from pydantic import AfterValidator, BaseModel, EmailStr, Field
 
 
-class RegisterRequest(BaseModel):
-    """Request schema for user registration."""
-    name: str = Field(..., min_length=2, max_length=100)
+def _max_72_bytes(value: str) -> str:
+    # bcrypt only uses the first 72 bytes; non-ASCII characters take several.
+    if len(value.encode("utf-8")) > 72:
+        raise ValueError("password must be at most 72 bytes (UTF-8)")
+    return value
+
+
+# Same rules as the pack's registration: 8..72 characters, at most 72 UTF-8 bytes.
+NewPassword = Annotated[str, Field(min_length=8, max_length=72), AfterValidator(_max_72_bytes)]
+Token = Annotated[str, Field(min_length=1, max_length=200)]
+
+
+class TokenRequest(BaseModel):
+    token: Token
+
+
+class EmailRequest(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=8, max_length=100)
-
-
-class RegisterResponse(BaseModel):
-    """Response schema for user registration."""
-    message: str
-    user_id: Optional[str] = None
-
-
-class VerifyEmailRequest(BaseModel):
-    """Request schema for email verification."""
-    token: str
-
-
-class VerifyEmailResponse(BaseModel):
-    """Response schema for email verification."""
-    message: str
-    verified: bool = False
-
-
-class ResendVerificationRequest(BaseModel):
-    """Request schema for resending verification email."""
-    email: EmailStr
-
-
-class ForgotPasswordRequest(BaseModel):
-    """Request schema for forgot password."""
-    email: EmailStr
-
-
-class ForgotPasswordResponse(BaseModel):
-    """Response schema for forgot password."""
-    message: str
 
 
 class ResetPasswordRequest(BaseModel):
-    """Request schema for password reset."""
-    token: str
-    password: str = Field(..., min_length=8, max_length=100)
+    token: Token
+    password: NewPassword
 
 
-class ResetPasswordResponse(BaseModel):
-    """Response schema for password reset."""
+class MessageResponse(BaseModel):
     message: str
-    success: bool = False
+
+
+class VerificationStatusResponse(BaseModel):
+    email: str
+    email_verified: bool
+    email_verified_at: datetime | None = None

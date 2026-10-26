@@ -1,21 +1,20 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(token ? "loading" : "error");
+  const [message, setMessage] = useState(token ? "" : "No verification token provided.");
+  // A token works once: don't send it twice when React runs the effect twice (Strict Mode).
+  const started = useRef(false);
 
   useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setMessage("No verification token provided.");
-      return;
-    }
+    if (!token || started.current) return;
+    started.current = true;
 
     async function verifyEmail() {
       try {
@@ -25,11 +24,11 @@ function VerifyEmailContent() {
           body: JSON.stringify({ token }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (response.ok) {
           setStatus("success");
-          setMessage("Your email has been verified successfully!");
+          setMessage(data.message || "Your email address is verified.");
         } else {
           setStatus("error");
           setMessage(data.error || "Failed to verify email. The link may have expired.");
