@@ -8,6 +8,17 @@ const API_URL = (
   "http://localhost:8000/api/v1"
 ).replace(/\/$/, "");
 
+type ApiUser = { id: string | number; email: string; name?: string | null; role?: string };
+type LoginResponse = { access_token?: string; token?: string; user?: ApiUser };
+
+/** The Express API packs wrap responses in `{ success, data }`; FastAPI returns the body as is. */
+function unwrap<T>(body: unknown): T {
+  if (body && typeof body === "object" && "success" in body && "data" in body) {
+    return (body as { data: T }).data;
+  }
+  return body as T;
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -36,16 +47,32 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          const data = await response.json();
+          const data = unwrap<LoginResponse>(await response.json());
+          const accessToken = data.access_token ?? data.token;
+
+          // The API packs' login returns only tokens, so load the user with the new token
+          let user = data.user;
+          if (!user && accessToken) {
+            const me = await fetch(`${API_URL}/auth/me`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            if (!me.ok) {
+              return null;
+            }
+            user = unwrap<ApiUser>(await me.json());
+          }
+          if (!user?.id) {
+            return null;
+          }
 
           // Return user object that will be saved in the JWT
           return {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.name,
-            role: data.user.role || "user",
+            id: String(user.id),
+            email: user.email,
+            name: user.name,
+            role: user.role === "admin" ? "admin" : "user",
             // Store the API token for making authenticated API requests
-            accessToken: data.access_token ?? data.token,
+            accessToken,
           };
         } catch (error) {
           console.error("Auth error:", error);
