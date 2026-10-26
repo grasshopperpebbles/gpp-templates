@@ -11,7 +11,7 @@ Electron desktop application template with React, TypeScript, Vite, and standard
 - **electron-log** for logging (main process)
 - **electron-builder** for packaging, **electron-updater** for auto-updates
 - **electron-context-menu** for context menus
-- **Security defaults**: sandbox, context isolation, no Node in the renderer, a narrow preload API, IPC sender and argument checks, external links in the system browser, no in-app navigation, and a production Content-Security-Policy
+- **Security defaults**: sandbox, context isolation, no Node in the renderer, a narrow preload API, IPC sender and argument checks, external links in the system browser, no in-app navigation, a production Content-Security-Policy, and the built renderer served from its own `app://bundle` origin instead of `file://`
 
 ## Quick Start
 
@@ -33,6 +33,15 @@ pnpm build           # renderer -> dist/
 pnpm build:electron  # main + preload -> dist-electron/
 pnpm start           # both, then run the built app
 ```
+
+### How the built app loads
+
+`pnpm dev` loads the Vite server (`http://localhost:5180`). The built app (`pnpm start`, `pnpm dist`) does not use `file://`: `electron/main.ts` registers a privileged `app` scheme and serves `dist/` at `app://bundle/` (`app://bundle/` maps to `dist/index.html`; paths outside `dist/` get a 404). The page then has a real origin, `app://bundle`, so:
+
+- `fetch` to an API sends `Origin: app://bundle`, which the API can allow by name (a `file://` page sends `Origin: null`);
+- the CSP's `'self'` and the IPC sender checks (`isAppUrl`) mean `app://bundle` only.
+
+To rename the host, change `APP_HOST` in `electron/ipc/validate.ts` and the API's allowed origin. Changing the scheme or host changes the origin, so `localStorage` and other per-origin storage start empty.
 
 ### Check
 
@@ -58,11 +67,11 @@ Output goes to `release/`.
 ```
 .
 ├── electron/
-│   ├── main.ts              # Main process (ESM)
+│   ├── main.ts              # Main process (ESM); serves dist/ at app://bundle/
 │   ├── preload.cts          # Preload, built as CommonJS (sandboxed preloads can't be ESM)
 │   └── ipc/
 │       ├── channels.ts      # IPC channel names (repeated in preload.cts; a test checks they match)
-│       ├── validate.ts      # Sender, URL and argument checks (pure, unit tested)
+│       ├── validate.ts      # Sender, URL, app:// path and argument checks (pure, unit tested)
 │       └── settingsHandlers.ts
 ├── src/
 │   ├── App.tsx
@@ -119,7 +128,7 @@ const res = await fetch(`${apiBaseUrl}/health`);
 - **Build time:** Vite inlines the value, so set the production URL (in `.env`, `.env.production`, or the shell) before `pnpm build` / `pnpm dist`.
 - **CSP:** `pnpm build` adds the URL's origin to the production `connect-src` (`config/csp.ts`). Without `VITE_API_BASE_URL` the policy stays `default-src 'self'`, which blocks every network call.
 - **https in production:** a plain `http://` URL to a host other than `localhost` still builds, but `pnpm build` warns: the packaged app would send tokens unencrypted.
-- **CORS:** the API must allow the renderer's origin: `http://localhost:5180` in dev, and `null` in the packaged app (it loads from `file://`). For the gpp FastAPI pack, in the API's `.env` (comma-separated): `CORS_ORIGINS=http://localhost:5180,null`.
+- **CORS:** the API must allow the renderer's origin: `http://localhost:5180` in dev, and `app://bundle` in the built app (see [How the built app loads](#how-the-built-app-loads)). For the gpp FastAPI pack, in the API's `.env` (comma-separated): `CORS_ORIGINS=http://localhost:5180,app://bundle`. Don't allow `null`: every sandboxed iframe and `file://` page sends it.
 
 ## Logging
 

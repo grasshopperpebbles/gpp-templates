@@ -28,7 +28,7 @@ const contentSecurityPolicy = (apiBaseUrl: string | undefined): Plugin => ({
 
 export default defineConfig(({ mode }) => ({
   plugins: [react(), contentSecurityPolicy(loadEnv(mode, process.cwd(), 'VITE_').VITE_API_BASE_URL)],
-  // Relative asset URLs so dist/index.html works when Electron loads it from file://
+  // Relative asset URLs; the built app serves dist/ from app://bundle/ (electron/main.ts)
   base: './',
   resolve: {
     alias: {
