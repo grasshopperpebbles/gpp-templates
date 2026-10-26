@@ -60,6 +60,12 @@ type Store interface {
 	Delete(ctx context.Context, id string) error
 }
 
+// Pinger is implemented by stores backed by a database; /ready pings it.
+// Stores without it (the in-memory Service) are always ready.
+type Pinger interface {
+	Ping(ctx context.Context) error
+}
+
 var _ Store = (*Service)(nil)
 
 // Service is an in-memory Store. Data is lost on restart.
