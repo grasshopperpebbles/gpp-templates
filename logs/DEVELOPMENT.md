@@ -1,6 +1,10 @@
 
 ---
 
+## SESSION NOTE - 2026-10-26 (open TODO items, with gpp-cli v0.9.104)
+
+Branches merged into `fix/open-issues`: `fix/leftovers-sveltekit`, `fix/electron-app-scheme`, `fix/stripe-desktop-api`, `feat/go-http-postgres`, `fix/express-auth`, `fix/tauri-chrome-mv3`, `fix/auth-flows-addon`, plus the Express race fix and the web sign-in fix on the branch. Bundled copies synced to gpp-cli; drift check passes. Verification details are in gpp-cli's DEVELOPMENT note for v0.9.104.
+
 ## Session: Tauri and Chrome MV3 packs verified (2026-10-26)
 
 **Status:** COMPLETED

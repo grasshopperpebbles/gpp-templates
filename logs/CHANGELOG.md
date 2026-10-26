@@ -1,6 +1,16 @@
 
 ---
 
+## [Unreleased] - 2026-10-26 - Electron app://, Express auth, Stripe and auth-flows add-ons, web sign-in
+
+**Status:** COMPLETED
+
+- `desktop/electron`: the built renderer loads from `app://bundle` (privileged scheme, `protocol.handle`, path traversal refused), so API requests carry `Origin: app://bundle`; `isAppUrl` and the navigation guard follow it. APIs allow `app://bundle`, never `null` (FastAPI comments updated).
+- `api/express`, `api/express-mysql`: `role` (user/admin) with admin-only user list, view of others and `POST /users`; `set-role` script for the first admin; refresh tokens stored hashed, rotated, revocable (`POST /auth/logout`), reuse revokes the login's family under a row lock (`refresh_token_families`), retried on deadlock. Migrations for Postgres and MySQL; tests 84 per pack.
+- `add-ons/stripe`: `POST /stripe/checkout-session` for FastAPI and Express (price and redirect-origin allowlists), Electron main gets the build-time `VITE_API_BASE_URL`, env vars keyed by platform (no secrets for desktop apps), Express client moved under `src/`.
+- `add-ons/auth-flows`: rebuilt on the API packs' own register/login (verify-email, resend, forgot/reset, verification-status; hashed single-use tokens; Alembic and Prisma migrations; console email in development); the Tauri client reads both packs' responses.
+- `web/nextjs-saas-dashboard`, `nextjs-admin-dashboard`, `nextjs-webapp`: NextAuth sign-in loads the user from `/auth/me` (it read a `user` neither API returns). `web/sveltekit-*-dashboard`: `VITE_API_URL` is used (API status badge).
+
 ## [Unreleased] - 2026-10-26 - Tauri and Chrome MV3 packs install, build and run
 
 **Status:** COMPLETED
