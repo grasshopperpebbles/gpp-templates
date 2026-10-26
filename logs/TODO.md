@@ -21,7 +21,9 @@ gpp template install /path/to/gpp-templates --all
 
 - [x] `api/fastapi`: Docker, tests, Redis, auth, security fixes; identical to gpp-cli's bundled copy.
 - [x] `api/express`, `api/express-mysql`, `api/go-http`: Dockerfile, tests, security fixes; Express copies equal gpp-cli's bundled ones.
-- [ ] Express: user list/view and `POST /users` are open to any logged-in user; no refresh-token rotation. Go: no data layer yet.
+- [ ] Express: user list/view and `POST /users` are open to any logged-in user; no refresh-token rotation.
+- [x] Go: Postgres data layer (pgx v5, embedded migrations, `/ready`) (2026-10-26).
+- [ ] Go: a recipe or `gpp add api` run with go-http has not been scaffolded end to end with the new data layer (only the pack, rendered by hand).
 
 ### Electron desktop pack (2026-10-25)
 

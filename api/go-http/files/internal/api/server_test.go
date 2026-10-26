@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -22,6 +23,26 @@ func newTestHandler(t *testing.T, origins ...string) (http.Handler, *item.Servic
 	store := item.NewService()
 	srv := NewServer(Config{Items: store, CORSOrigins: origins})
 	return srv.Routes(), store
+}
+
+// mustCreate adds an item straight to the store.
+func mustCreate(t *testing.T, store item.Store, name string) item.Item {
+	t.Helper()
+	it, err := store.Create(context.Background(), item.CreateRequest{Name: name})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return it
+}
+
+// count returns how many items the store holds.
+func count(t *testing.T, store item.Store) int {
+	t.Helper()
+	items, err := store.List(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return len(items)
 }
 
 // do sends a request through h and returns the recorded response.
@@ -75,6 +96,51 @@ func TestHealth(t *testing.T) {
 	}
 }
 
+// pingStore is an in-memory store whose Ping returns err.
+type pingStore struct {
+	*item.Service
+	err error
+}
+
+func (p pingStore) Ping(context.Context) error { return p.err }
+
+func TestReady(t *testing.T) {
+	tests := []struct {
+		name         string
+		store        item.Store
+		wantStatus   int
+		wantDatabase string
+	}{
+		{"memory store", item.NewService(), http.StatusOK, "memory"},
+		{"database up", pingStore{item.NewService(), nil}, http.StatusOK, "ok"},
+		{"database down", pingStore{item.NewService(), errors.New("dial tcp: connection refused")}, http.StatusServiceUnavailable, "unavailable"},
+	}
+	for _, tt := range tests {
+		for _, path := range []string{"/ready", "/api/v1/ready"} {
+			t.Run(tt.name+" "+path, func(t *testing.T) {
+				h := NewServer(Config{Items: tt.store}).Routes()
+				rec := do(t, h, http.MethodGet, path, "")
+				if rec.Code != tt.wantStatus {
+					t.Fatalf("status = %d, want %d", rec.Code, tt.wantStatus)
+				}
+				body := decode(t, rec)
+				if body["database"] != tt.wantDatabase {
+					t.Errorf("database = %v, want %q", body["database"], tt.wantDatabase)
+				}
+				if strings.Contains(rec.Body.String(), "refused") {
+					t.Errorf("body leaks the ping error: %s", rec.Body.String())
+				}
+			})
+		}
+	}
+
+	// /health is liveness only: still 200 with the database down.
+	h := NewServer(Config{Items: pingStore{item.NewService(), errors.New("down")}}).Routes()
+	if rec := do(t, h, http.MethodGet, "/health", ""); rec.Code != http.StatusOK {
+		t.Errorf("/health with database down = %d, want 200", rec.Code)
+	}
+}
+
 func TestCreateItem(t *testing.T) {
 	tests := []struct {
 		name            string
@@ -112,7 +178,7 @@ func TestCreateItem(t *testing.T) {
 				if !strings.Contains(msg, tt.wantError) {
 					t.Errorf("error = %q, want it to contain %q", msg, tt.wantError)
 				}
-				if n := len(store.List()); n != 0 {
+				if n := count(t, store); n != 0 {
 					t.Errorf("store has %d items after a rejected create, want 0", n)
 				}
 				return
@@ -129,7 +195,7 @@ func TestCreateItem(t *testing.T) {
 			if body["status"] != tt.wantStatusField {
 				t.Errorf("status = %v, want %q", body["status"], tt.wantStatusField)
 			}
-			if _, found := store.Get(body["id"].(string)); !found {
+			if _, err := store.Get(context.Background(), body["id"].(string)); err != nil {
 				t.Error("created item not in store")
 			}
 		})
@@ -147,8 +213,8 @@ func TestListItems(t *testing.T) {
 		t.Errorf("empty list body = %s, want items as [] not null", got)
 	}
 
-	first := store.Create(item.CreateRequest{Name: "first"})
-	store.Create(item.CreateRequest{Name: "second"})
+	first := mustCreate(t, store, "first")
+	mustCreate(t, store, "second")
 
 	rec = do(t, h, http.MethodGet, "/api/v1/items", "")
 	body := decode(t, rec)
@@ -187,7 +253,7 @@ func TestItemByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h, store := newTestHandler(t)
-			created := store.Create(item.CreateRequest{Name: "original"})
+			created := mustCreate(t, store, "original")
 			id := created.ID
 			if tt.missing {
 				id = "does-not-exist"
@@ -203,14 +269,14 @@ func TestItemByID(t *testing.T) {
 				if rec.Body.Len() != 0 {
 					t.Errorf("204 body = %q, want empty", rec.Body.String())
 				}
-				if _, found := store.Get(created.ID); found {
+				if _, err := store.Get(context.Background(), created.ID); !errors.Is(err, item.ErrNotFound) {
 					t.Error("item still in store after delete")
 				}
 			case rec.Code >= 400:
 				if body := decode(t, rec); body["error"] == nil || body["error"] == "" {
 					t.Errorf("error response without error message: %v", body)
 				}
-				if got, _ := store.Get(created.ID); got.Name != "original" {
+				if got, _ := store.Get(context.Background(), created.ID); got.Name != "original" {
 					t.Errorf("failed request changed the item: name = %q", got.Name)
 				}
 			default:
@@ -280,7 +346,7 @@ func TestCORS(t *testing.T) {
 // run with -race to catch shared-memory bugs.
 func TestConcurrentRequests(t *testing.T) {
 	h, store := newTestHandler(t)
-	seed := store.Create(item.CreateRequest{Name: "seed"})
+	seed := mustCreate(t, store, "seed")
 
 	var wg sync.WaitGroup
 	for i := 0; i < 20; i++ {
@@ -291,8 +357,58 @@ func TestConcurrentRequests(t *testing.T) {
 	}
 	wg.Wait()
 
-	if n := len(store.List()); n != 21 {
+	if n := count(t, store); n != 21 {
 		t.Errorf("store has %d items, want 21", n)
+	}
+}
+
+// failingStore fails every call with err, to check how handlers map store errors.
+type failingStore struct{ err error }
+
+func (f failingStore) List(context.Context) ([]item.Item, error)      { return nil, f.err }
+func (f failingStore) Get(context.Context, string) (item.Item, error) { return item.Item{}, f.err }
+func (f failingStore) Create(context.Context, item.CreateRequest) (item.Item, error) {
+	return item.Item{}, f.err
+}
+func (f failingStore) Update(context.Context, string, item.UpdateRequest) (item.Item, error) {
+	return item.Item{}, f.err
+}
+func (f failingStore) Delete(context.Context, string) error { return f.err }
+
+// TestStoreErrors checks store failures become 404/503/500 with a fixed
+// message, never the store's error text.
+func TestStoreErrors(t *testing.T) {
+	tests := []struct {
+		name       string
+		err        error
+		wantStatus int
+		wantError  string
+	}{
+		{"not found", item.ErrNotFound, http.StatusNotFound, "item not found"},
+		{"wrapped not found", fmt.Errorf("get: %w", item.ErrNotFound), http.StatusNotFound, "item not found"},
+		{"timeout", fmt.Errorf("query: %w", context.DeadlineExceeded), http.StatusServiceUnavailable, "service unavailable"},
+		{"other", errors.New("pq: password=secret connection refused"), http.StatusInternalServerError, "internal server error"},
+	}
+	requests := []struct{ method, path, body string }{
+		{http.MethodGet, "/api/v1/items", ""},
+		{http.MethodPost, "/api/v1/items", `{"name":"x"}`},
+		{http.MethodGet, "/api/v1/items/abc", ""},
+		{http.MethodPut, "/api/v1/items/abc", `{"name":"x"}`},
+		{http.MethodDelete, "/api/v1/items/abc", ""},
+	}
+	for _, tt := range tests {
+		for _, rq := range requests {
+			t.Run(tt.name+" "+rq.method+" "+rq.path, func(t *testing.T) {
+				h := NewServer(Config{Items: failingStore{tt.err}}).Routes()
+				rec := do(t, h, rq.method, rq.path, rq.body)
+				if rec.Code != tt.wantStatus {
+					t.Fatalf("status = %d, want %d (body %q)", rec.Code, tt.wantStatus, rec.Body.String())
+				}
+				if got := decode(t, rec)["error"]; got != tt.wantError {
+					t.Errorf("error = %q, want %q", got, tt.wantError)
+				}
+			})
+		}
 	}
 }
 
@@ -334,7 +450,7 @@ func TestDecodeErrorsAreStable(t *testing.T) {
 			for _, method := range []string{http.MethodPost, http.MethodPut} {
 				path := "/api/v1/items"
 				if method == http.MethodPut {
-					path += "/" + store.Create(item.CreateRequest{Name: "seed"}).ID
+					path += "/" + mustCreate(t, store, "seed").ID
 				}
 				rec := do(t, h, method, path, b)
 				if rec.Code != http.StatusBadRequest {

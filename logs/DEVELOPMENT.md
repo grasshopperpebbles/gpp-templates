@@ -1,6 +1,12 @@
 
 ---
 
+## Session: Go pack Postgres data layer (2026-10-26)
+
+**Status:** COMPLETED
+
+`go vet` clean; `go test -race ./...` passes with and without `TEST_DATABASE_URL` (postgres:16-alpine). Docker image run against Postgres on a user network with gpp's URL format (`postgresql://postgres:postgres@<slug>-db:5432/<slug>_db`): create/list/get/update/delete over HTTP, data survives restarts of the API and DB containers, `/ready` 503 while the DB is stopped, container healthy, unreachable DB exits 1 after 30 s.
+
 ## Session: FastAPI Redis optional (2026-10-26)
 
 **Status:** COMPLETED

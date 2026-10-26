@@ -1,6 +1,12 @@
 
 ---
 
+## Go pack: a set DATABASE_URL must work; /health stays liveness (2026-10-26)
+
+**Decision:** with `DATABASE_URL` set the Go API fails startup if Postgres stays unreachable, instead of falling back to memory; readiness is a separate `/ready`, and the compose healthcheck keeps probing `/health`. Migrations are embedded SQL files with a small runner, not a framework.
+
+**Rationale:** a silent memory fallback loses writes. The server listens only after connecting and migrating, so compose's healthy state already means the data layer came up, while a later DB blip doesn't mark the API unhealthy. One table doesn't justify goose/golang-migrate; the README points to them.
+
 ## Change a bundled pack in both repos (2026-10-26)
 
 **Decision:** packs that gpp-cli also bundles are changed in both repos in the same session; gpp-cli's `npm run check:packs` fails on any difference.
