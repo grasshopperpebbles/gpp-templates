@@ -1,7 +1,7 @@
 {
   "name": "express-mysql",
   "displayName": "Express API (MySQL)",
-  "description": "Node.js Express API with TypeScript, Prisma (MySQL), JWT authentication (register/login/refresh), the same middleware stack as the Express template, Vitest + Supertest tests and a production Dockerfile. Use with Docker MySQL for local development.",
+  "description": "Node.js Express API with TypeScript, Prisma (MySQL), JWT authentication (register/login/refresh/logout) with refresh token rotation, user/admin roles, the same middleware stack as the Express template, Vitest + Supertest tests and a production Dockerfile. Use with Docker MySQL for local development.",
   "platform": "api",
   "dependencies": {
     "requires": [],
@@ -19,7 +19,9 @@
       "Performance logging",
       "Zod schema validation",
       "Error handling with request IDs",
-      "JWT authentication (register, login, refresh, /me; refresh tokens can't authenticate)",
+      "JWT authentication (register, login, refresh, logout, /me; refresh tokens can't authenticate)",
+      "Refresh token rotation with reuse detection (hashed refresh_tokens table, family revocation, logout)",
+      "User roles (user/admin): listing, reading other users and POST /users are admin-only; set-role script for the first admin",
       "Type-safe routes",
       "Health check endpoint (reports Redis status)",
       "Graceful shutdown",
