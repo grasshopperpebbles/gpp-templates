@@ -1,6 +1,13 @@
 
 ---
 
+## [Unreleased] - 2026-10-26 - Tauri and Chrome MV3 packs install, build and run
+
+**Status:** COMPLETED
+
+- `desktop/tauri`: `cargo check` failed (keyring 2 has no `delete_credential`; the icons `tauri.conf.json` lists were missing) and type-check failed (`process.env.HOME`). Now Tauri 2.12, keyring 3 with the OS-store features (same line as gpp-cli's auth-flows add-on), placeholder icons, Tauri 2 `TAURI_ENV_*` in `vite.config.ts`, Vite 6, React 18.3, `pnpm.onlyBuiltDependencies`, `type-check` / `test` (cargo test) / `lint:rust` (clippy) scripts. Security: a CSP (was `null`) and devCsp, a `core:default`-only capability, unused shell/fs/dialog plugins (configured with Tauri 1 keys) removed, file commands confined to the app data folder, `run_command` limited to an allowlist (`gpp`), keychain entries scoped to the app identifier. Names from `{{PROJECT_SLUG}}`.
+- `extension/chrome-mv3`: type-check failed (3 unused symbols) and the manifest's icons were missing. Now CRXJS 3.0, Vite 6, vitest, `.nvmrc` 22, pnpm. Permissions cut to `storage` (dropped `tabs`, `scripting`, all-site `host_permissions`), explicit `extension_pages` CSP, service worker checks message type and sender (`src/shared/messages.ts`, 5 tests), tab-URL logger removed. Names from `{{PROJECT_SLUG}}`.
+
 ## [Unreleased] - 2026-10-26 - Go pack: Postgres data layer
 
 **Status:** COMPLETED

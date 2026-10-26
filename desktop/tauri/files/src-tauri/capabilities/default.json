@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The main window: Tauri's core defaults only. No fs, shell or other plugin access. The app's own commands (lib.rs) are callable from the bundled frontend and never from remote origins.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

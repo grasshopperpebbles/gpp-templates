@@ -1,6 +1,12 @@
 
 ---
 
+## Tauri pack: no AppManifest command list while add-ons register commands (2026-10-26)
+
+**Decision:** `desktop/tauri` keeps `tauri_build::build()` and a `core:default` capability; its IPC commands enforce their own limits (app data folder only, program allowlist, app-scoped keychain). No `AppManifest::commands` list.
+
+**Rationale:** with that list Tauri refuses every app command the capability doesn't grant, and gpp-cli's auth-flows add-on registers `auth::*` commands without editing `build.rs` or the capability, so they would fail at runtime. Revisit if the add-on learns to add its commands there.
+
 ## Go pack: a set DATABASE_URL must work; /health stays liveness (2026-10-26)
 
 **Decision:** with `DATABASE_URL` set the Go API fails startup if Postgres stays unreachable, instead of falling back to memory; readiness is a separate `/ready`, and the compose healthcheck keeps probing `/health`. Migrations are embedded SQL files with a small runner, not a framework.
