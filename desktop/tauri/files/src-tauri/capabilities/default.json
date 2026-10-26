@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The main window: Tauri's core defaults plus this app's own commands. No fs or shell plugin access.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "allow-read-file",
+    "allow-write-file",
+    "allow-list-directory",
+    "allow-run-command",
+    "allow-store-credential",
+    "allow-get-credential",
+    "allow-delete-credential"
+  ]
+}

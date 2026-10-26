@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Tauri App",
+  "productName": "{{PROJECT_SLUG}}",
   "version": "0.1.0",
-  "identifier": "com.tauri.app",
+  "identifier": "com.{{PROJECT_SLUG}}.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,8 @@
   "app": {
     "windows": [
       {
-        "title": "Tauri App",
+        "label": "main",
+        "title": "{{PROJECT_SLUG}}",
         "width": 1200,
         "height": 800,
         "resizable": true,
@@ -21,7 +22,20 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self'",
+        "img-src": "'self' asset: data:",
+        "connect-src": "ipc: http://ipc.localhost"
+      },
+      "devCsp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' asset: data:",
+        "connect-src": "ipc: http://ipc.localhost ws://localhost:1420"
+      }
     }
   },
   "bundle": {
@@ -34,17 +48,5 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  },
-  "plugins": {
-    "shell": {
-      "open": true
-    },
-    "fs": {
-      "all": true,
-      "scope": ["$APPDATA", "$DOCUMENT", "$HOME"]
-    },
-    "dialog": {
-      "all": true
-    }
   }
 }

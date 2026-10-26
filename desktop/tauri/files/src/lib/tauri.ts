@@ -20,28 +20,28 @@ export interface CommandResult {
 }
 
 /**
- * Read a file from the filesystem
+ * Read a file from the app data folder (`path` is relative to it; `..` is refused)
  */
 export async function readFile(path: string): Promise<FileResult> {
   return invoke<FileResult>('read_file', { path });
 }
 
 /**
- * Write content to a file
+ * Write content to a file in the app data folder
  */
 export async function writeFile(path: string, content: string): Promise<FileResult> {
   return invoke<FileResult>('write_file', { path, content });
 }
 
 /**
- * List directory contents
+ * List a directory in the app data folder ('' for the folder itself)
  */
-export async function listDirectory(path: string): Promise<string[]> {
+export async function listDirectory(path = ''): Promise<string[]> {
   return invoke<string[]>('list_directory', { path });
 }
 
 /**
- * Execute a CLI command
+ * Execute a CLI command. Only programs in ALLOWED_PROGRAMS (src-tauri/src/lib.rs) run.
  */
 export async function runCommand(
   program: string,
@@ -78,26 +78,22 @@ export async function runGpp(
 }
 
 /**
- * Store a credential in the system keychain
+ * Store a credential in the system keychain (under this app's identifier)
  */
-export async function storeCredential(
-  service: string,
-  account: string,
-  password: string
-): Promise<void> {
-  return invoke('store_credential', { service, account, password });
+export async function storeCredential(account: string, password: string): Promise<void> {
+  return invoke('store_credential', { account, password });
 }
 
 /**
  * Retrieve a credential from the system keychain
  */
-export async function getCredential(service: string, account: string): Promise<string> {
-  return invoke<string>('get_credential', { service, account });
+export async function getCredential(account: string): Promise<string> {
+  return invoke<string>('get_credential', { account });
 }
 
 /**
  * Delete a credential from the system keychain
  */
-export async function deleteCredential(service: string, account: string): Promise<void> {
-  return invoke('delete_credential', { service, account });
+export async function deleteCredential(account: string): Promise<void> {
+  return invoke('delete_credential', { account });
 }

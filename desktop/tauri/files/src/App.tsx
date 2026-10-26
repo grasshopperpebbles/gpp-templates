@@ -1,12 +1,5 @@
 import { useState } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-
-interface CommandResult {
-  success: boolean;
-  stdout: string;
-  stderr: string;
-  exit_code: number | null;
-}
+import { listDirectory, runCommand, writeFile } from './lib/tauri';
 
 function App() {
   const [output, setOutput] = useState<string>('');
@@ -15,11 +8,7 @@ function App() {
   async function runGppVersion() {
     setLoading(true);
     try {
-      const result = await invoke<CommandResult>('run_command', {
-        program: 'gpp',
-        args: ['--version'],
-        cwd: null,
-      });
+      const result = await runCommand('gpp', ['--version']);
 
       if (result.success) {
         setOutput(`GPP Version:\n${result.stdout}`);
@@ -32,13 +21,12 @@ function App() {
     setLoading(false);
   }
 
-  async function listHomeDir() {
+  async function listAppData() {
     setLoading(true);
     try {
-      const files = await invoke<string[]>('list_directory', {
-        path: process.env.HOME || '~',
-      });
-      setOutput(`Home directory contents:\n${files.join('\n')}`);
+      await writeFile('hello.txt', `Written at ${new Date().toISOString()}\n`);
+      const files = await listDirectory();
+      setOutput(`App data folder contents:\n${files.join('\n')}`);
     } catch (error) {
       setOutput(`Failed to list directory: ${error}`);
     }
@@ -60,11 +48,11 @@ function App() {
           </button>
 
           <button
-            onClick={listHomeDir}
+            onClick={listAppData}
             disabled={loading}
             className="bg-green-600 hover:bg-green-700 disabled:opacity-50 px-4 py-2 rounded"
           >
-            {loading ? 'Loading...' : 'List Home Directory'}
+            {loading ? 'Loading...' : 'Write and List App Data'}
           </button>
         </div>
 
@@ -78,8 +66,8 @@ function App() {
           <p>This template includes:</p>
           <ul className="list-disc list-inside mt-2 space-y-1">
             <li>Tauri 2.0 with React + TypeScript</li>
-            <li>IPC commands for file operations</li>
-            <li>Shell command execution</li>
+            <li>IPC commands for files in the app data folder</li>
+            <li>Allowlisted CLI command execution</li>
             <li>Secure credential storage (keychain)</li>
             <li>Tailwind CSS styling</li>
           </ul>
