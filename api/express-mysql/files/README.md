@@ -70,8 +70,9 @@ Migrations do not run on container start. Apply them explicitly:
 docker compose exec {{PROJECT_SLUG}}-api npx prisma migrate deploy
 ```
 
-The pack ships two migrations: `*_init` (the `users` table) and `*_roles_and_refresh_tokens`
-(the `role` column and the `refresh_tokens` table). Commit
+The pack ships three migrations: `*_init` (the `users` table), `*_roles_and_refresh_tokens`
+(the `role` column and the `refresh_tokens` table) and `*_refresh_token_families` (the
+`refresh_token_families` table). Commit
 `prisma/migrations/`. To change the schema, edit `prisma/schema.prisma` and create a new
 migration against a database that is reachable from where you run it, e.g. on the host with the
 `localhost` `DATABASE_URL` from `.env`:
@@ -129,7 +130,7 @@ src/
 └── scripts/
     └── set-role.ts        # Make an account admin (or user) by email
 prisma/
-├── schema.prisma          # User (with role), RefreshToken
+├── schema.prisma          # User (with role), RefreshTokenFamily, RefreshToken
 └── migrations/            # Shipped migrations (commit new ones)
 tests/                     # Vitest + Supertest (health, auth, users, errors, config)
 Dockerfile
@@ -172,7 +173,8 @@ GET  /api/v1/auth/me         # Authorization: Bearer <access_token>
 
 Refresh tokens are JWTs (`type: "refresh"`, a unique `jti`), and each one is also recorded in
 the `refresh_tokens` table: a SHA-256 hash of the token (never the token itself), `user_id`,
-`family_id`, `expires_at`, `revoked_at` and `replaced_by_id`. Logic is in `src/lib/tokens.ts`.
+`family_id`, `expires_at`, `revoked_at` and `replaced_by_id`. Each family also has a row in
+`refresh_token_families` (`user_id`, `revoked_at`). Logic is in `src/lib/tokens.ts`.
 
 - **Login / register** start a new token family (one per sign-in, so one per device).
 - **`/auth/refresh`** revokes the presented token and returns a new `access_token` **and**
@@ -183,15 +185,22 @@ the `refresh_tokens` table: a SHA-256 hash of the token (never the token itself)
   whoever copied it (and the real client) must log in again. Other sign-ins of the same user
   are not affected. Two simultaneous refreshes with the same token count as reuse too (only
   one can claim it), so clients should serialize refreshes.
+- **No race:** a refresh runs in one transaction that locks the family's
+  `refresh_token_families` row, and reuse detection marks that row revoked while holding the
+  same lock. A refresh that races with a reuse therefore either sees the family already
+  revoked (and issues nothing) or finishes first, and then its new token is revoked with the
+  rest of the family. A revoked family never gets a working token again.
 - **`/auth/logout`** revokes the presented refresh token (200, also for an already revoked
   one). It needs only the refresh token, not an access token. Access tokens are stateless and
   stay valid until they expire (`JWT_EXPIRES_IN`, default 1h), so keep them short-lived.
 - A refresh token that is not in the table (for example one issued before this table existed,
   or by another server with the same `JWT_SECRET`) is rejected with 401. Deleting a user
-  deletes their refresh tokens (`ON DELETE CASCADE`).
-- Expired rows of a user are deleted when that user next logs in. Revoked rows are kept until
-  they expire so reuse can still be detected. To prune everything, run
-  `DELETE FROM refresh_tokens WHERE expires_at < now()` from a scheduled job.
+  deletes their refresh tokens and families (`ON DELETE CASCADE`).
+- Expired rows of a user (and families left without tokens) are deleted when that user next
+  logs in. Revoked rows are kept until they expire so reuse can still be detected. To prune
+  everything, run `DELETE FROM refresh_tokens WHERE expires_at < now()` and then
+  `DELETE FROM refresh_token_families WHERE id NOT IN (SELECT family_id FROM refresh_tokens)`
+  from a scheduled job.
 
 ### Users (Requires Authentication)
 

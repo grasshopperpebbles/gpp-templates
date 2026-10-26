@@ -2,8 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { Prisma } from '@prisma/client';
 import { app, registerUser } from './helpers.js';
-import { fakePrisma } from './fakePrisma.js';
+import { fakeHooks, fakePrisma } from './fakePrisma.js';
 
 const refresh = (token: string) => request(app).post('/api/v1/auth/refresh').send({ refresh_token: token });
 
@@ -156,6 +157,35 @@ describe('POST /api/v1/auth/login', () => {
     expect(hash).toMatch(/^\$2[aby]\$10\$/);
   });
 
+  it('drops the user\'s expired refresh tokens and the families left without tokens', async () => {
+    const { refreshToken } = await registerUser();
+    await fakePrisma.refreshToken.updateMany({ where: {}, data: { expiresAt: new Date(Date.now() - 1000) } });
+
+    await request(app).post('/api/v1/auth/login').send({ email: 'ada@example.com', password: 'correct-horse' }).expect(200);
+
+    const families = await fakePrisma.refreshTokenFamily.findMany();
+    expect(families).toHaveLength(1);
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows).toHaveLength(1);
+    expect(rows[0].familyId).toBe(families[0].id);
+    expect((await refresh(refreshToken)).status).toBe(401);
+  });
+
+  it('still logs in when pruning old tokens keeps hitting write conflicts (P2034)', async () => {
+    await registerUser();
+    const conflict = new Prisma.PrismaClientKnownRequestError('Transaction failed due to a write conflict or a deadlock', {
+      code: 'P2034',
+      clientVersion: Prisma.prismaVersion.client,
+    });
+    const prune = vi.spyOn(fakePrisma.refreshTokenFamily, 'deleteMany').mockRejectedValue(conflict);
+
+    const res = await request(app).post('/api/v1/auth/login').send({ email: 'ada@example.com', password: 'correct-horse' });
+
+    expect(res.status).toBe(200);
+    expect(prune).toHaveBeenCalledTimes(3);
+    expect((await refresh(res.body.data.refresh_token)).status).toBe(200);
+  });
+
   it('validates the body (400)', async () => {
     const res = await request(app).post('/api/v1/auth/login').send({ email: 'ada@example.com' });
 
@@ -258,6 +288,8 @@ describe('POST /api/v1/auth/refresh', () => {
     expect(afterReuse.status).toBe(401);
     const rows = await fakePrisma.refreshToken.findMany();
     expect(rows.every((r) => r.revokedAt !== null)).toBe(true);
+    const [family] = await fakePrisma.refreshTokenFamily.findMany();
+    expect(family.revokedAt).toBeInstanceOf(Date);
   });
 
   it('reuse revokes only that login, not the user\'s other sessions', async () => {
@@ -280,6 +312,78 @@ describe('POST /api/v1/auth/refresh', () => {
     const statuses = (await Promise.all([refresh(refreshToken), refresh(refreshToken)])).map((r) => r.status);
 
     expect(statuses.sort()).toEqual([200, 401]);
+  });
+
+  it('two concurrent refreshes with the same token leave no live token in the family', async () => {
+    const { refreshToken } = await registerUser();
+
+    const results = await Promise.all([refresh(refreshToken), refresh(refreshToken)]);
+
+    expect(results.map((r) => r.status).sort()).toEqual([200, 401]);
+    const winner = results.find((r) => r.status === 200)!;
+    expect((await refresh(winner.body.data.refresh_token)).status).toBe(401);
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows.every((r) => r.revokedAt !== null)).toBe(true);
+  });
+
+  // The two tests below force the dangerous ordering: the winning rotation has claimed the
+  // presented token but not yet inserted its replacement when the reuse is detected. The
+  // hook pauses the winner just before that insert until the other request finishes (or,
+  // when the other request is blocked on the winner, 100ms). The replacement must still end
+  // up revoked.
+  const settle = <T>(promise: PromiseLike<T>) => Promise.resolve(promise).then(() => undefined, () => undefined);
+  const pauseWinnerUntil = (start: () => PromiseLike<unknown>) => {
+    let other: Promise<unknown> | undefined;
+    fakeHooks.beforeRefreshTokenCreate = async () => {
+      delete fakeHooks.beforeRefreshTokenCreate; // only the winner's insert
+      other = Promise.resolve(start());
+      await Promise.race([settle(other), new Promise((resolve) => setTimeout(resolve, 100))]);
+    };
+    return () => other!;
+  };
+
+  it('a concurrent reuse of the same token revokes the replacement the winner is issuing', async () => {
+    const { refreshToken } = await registerUser();
+    const loser = pauseWinnerUntil(() => refresh(refreshToken));
+
+    const winner = await refresh(refreshToken);
+    const lost = await loser();
+
+    expect(winner.status).toBe(200);
+    expect((lost as { status: number }).status).toBe(401);
+    expect((await refresh(winner.body.data.refresh_token)).status).toBe(401);
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows.every((r) => r.revokedAt !== null)).toBe(true);
+  });
+
+  it('replaying an old token during a legitimate rotation revokes the token that rotation issues', async () => {
+    const { refreshToken: first } = await registerUser();
+    const second = (await refresh(first).expect(200)).body.data.refresh_token as string;
+    const replay = pauseWinnerUntil(() => refresh(first));
+
+    const legit = await refresh(second);
+    const replayed = await replay();
+
+    expect(legit.status).toBe(200);
+    expect((replayed as { status: number }).status).toBe(401);
+    expect((await refresh(legit.body.data.refresh_token)).status).toBe(401);
+    const rows = await fakePrisma.refreshToken.findMany();
+    expect(rows.every((r) => r.revokedAt !== null)).toBe(true);
+  });
+
+  it('retries a rotation that the database aborted with a write conflict (P2034)', async () => {
+    const { refreshToken } = await registerUser();
+    const conflict = new Prisma.PrismaClientKnownRequestError('Transaction failed due to a write conflict or a deadlock', {
+      code: 'P2034',
+      clientVersion: Prisma.prismaVersion.client,
+    });
+    const transaction = vi.spyOn(fakePrisma, '$transaction').mockRejectedValueOnce(conflict);
+
+    const res = await refresh(refreshToken);
+
+    expect(res.status).toBe(200);
+    expect(transaction).toHaveBeenCalledTimes(2);
+    expect((await refresh(res.body.data.refresh_token)).status).toBe(200);
   });
 
   it('rejects a validly signed refresh token that the server never issued (401)', async () => {
