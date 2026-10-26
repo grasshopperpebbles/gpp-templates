@@ -96,6 +96,51 @@ func TestHealth(t *testing.T) {
 	}
 }
 
+// pingStore is an in-memory store whose Ping returns err.
+type pingStore struct {
+	*item.Service
+	err error
+}
+
+func (p pingStore) Ping(context.Context) error { return p.err }
+
+func TestReady(t *testing.T) {
+	tests := []struct {
+		name         string
+		store        item.Store
+		wantStatus   int
+		wantDatabase string
+	}{
+		{"memory store", item.NewService(), http.StatusOK, "memory"},
+		{"database up", pingStore{item.NewService(), nil}, http.StatusOK, "ok"},
+		{"database down", pingStore{item.NewService(), errors.New("dial tcp: connection refused")}, http.StatusServiceUnavailable, "unavailable"},
+	}
+	for _, tt := range tests {
+		for _, path := range []string{"/ready", "/api/v1/ready"} {
+			t.Run(tt.name+" "+path, func(t *testing.T) {
+				h := NewServer(Config{Items: tt.store}).Routes()
+				rec := do(t, h, http.MethodGet, path, "")
+				if rec.Code != tt.wantStatus {
+					t.Fatalf("status = %d, want %d", rec.Code, tt.wantStatus)
+				}
+				body := decode(t, rec)
+				if body["database"] != tt.wantDatabase {
+					t.Errorf("database = %v, want %q", body["database"], tt.wantDatabase)
+				}
+				if strings.Contains(rec.Body.String(), "refused") {
+					t.Errorf("body leaks the ping error: %s", rec.Body.String())
+				}
+			})
+		}
+	}
+
+	// /health is liveness only: still 200 with the database down.
+	h := NewServer(Config{Items: pingStore{item.NewService(), errors.New("down")}}).Routes()
+	if rec := do(t, h, http.MethodGet, "/health", ""); rec.Code != http.StatusOK {
+		t.Errorf("/health with database down = %d, want 200", rec.Code)
+	}
+}
+
 func TestCreateItem(t *testing.T) {
 	tests := []struct {
 		name            string

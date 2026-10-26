@@ -16,9 +16,11 @@ type Config struct {
 	LogFormat    string
 	// CORSOrigins comes from CORS_ORIGINS (comma-separated); empty allows any origin.
 	CORSOrigins []string
-	// DatabaseURL is read but unused by the starter: wire it into an item.Store
-	// implementation (see cmd/server/main.go). gpp's root compose sets it.
+	// DatabaseURL selects the Postgres item store (cmd/server/main.go); empty
+	// keeps items in memory. gpp's root compose sets it.
 	DatabaseURL string
+	// DatabaseQueryTimeout bounds each database call (DATABASE_QUERY_TIMEOUT).
+	DatabaseQueryTimeout time.Duration
 	// RedisURL selects the pkg/cache backend; empty means in-memory.
 	RedisURL string
 }
@@ -34,6 +36,8 @@ func Load() Config {
 		CORSOrigins:  getList("CORS_ORIGINS"),
 		DatabaseURL:  getEnv("DATABASE_URL", ""),
 		RedisURL:     getEnv("REDIS_URL", ""),
+
+		DatabaseQueryTimeout: getDuration("DATABASE_QUERY_TIMEOUT", 5*time.Second),
 	}
 }
 

@@ -25,6 +25,9 @@ const (
 	defaultIdleTimeout       = 60 * time.Second
 )
 
+// readyTimeout bounds the database ping behind /ready.
+const readyTimeout = 2 * time.Second
+
 // errInvalidJSON is the only decode error clients see; decoder details stay in
 // the server log.
 const errInvalidJSON = "invalid JSON body"
@@ -32,7 +35,8 @@ const errInvalidJSON = "invalid JSON body"
 // Config holds server configuration
 type Config struct {
 	// Items is the item store: item.NewService() (memory) or
-	// a database-backed item.Store, chosen in cmd/server/main.go.
+	// item.NewPostgresStore (DATABASE_URL), chosen in cmd/server/main.go.
+	// A store that implements item.Pinger is pinged by /ready.
 	Items        item.Store
 	Logger       *slog.Logger
 	ReadTimeout  time.Duration
@@ -87,6 +91,8 @@ func (s *Server) Routes() http.Handler {
 	// Health endpoints
 	mux.HandleFunc("GET /health", s.handleHealth)
 	mux.HandleFunc("GET /api/v1/health", s.handleHealth)
+	mux.HandleFunc("GET /ready", s.handleReady)
+	mux.HandleFunc("GET /api/v1/ready", s.handleReady)
 
 	// Item CRUD endpoints
 	mux.HandleFunc("GET /api/v1/items", s.handleListItems)
@@ -189,6 +195,25 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 		"status":  "ok",
 		"service": "{{PLATFORM_SLUG}}",
 	}, http.StatusOK)
+}
+
+// handleReady reports whether the API can serve data: 200 when the store's
+// database answers a ping (or the store is in memory), 503 when it does not.
+// /health stays a liveness check that never touches the database.
+func (s *Server) handleReady(w http.ResponseWriter, r *http.Request) {
+	p, ok := s.items.(item.Pinger)
+	if !ok {
+		s.jsonResponse(w, map[string]string{"status": "ready", "database": "memory"}, http.StatusOK)
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), readyTimeout)
+	defer cancel()
+	if err := p.Ping(ctx); err != nil {
+		s.logger.Warn("readiness check failed", "error", err)
+		s.jsonResponse(w, map[string]string{"status": "unavailable", "database": "unavailable"}, http.StatusServiceUnavailable)
+		return
+	}
+	s.jsonResponse(w, map[string]string{"status": "ready", "database": "ok"}, http.StatusOK)
 }
 
 func (s *Server) handleListItems(w http.ResponseWriter, r *http.Request) {

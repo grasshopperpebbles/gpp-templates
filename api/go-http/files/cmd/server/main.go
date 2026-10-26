@@ -11,7 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/internal/api"
+	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/internal/db"
 	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/internal/item"
 	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/pkg/cache"
 	"{{PROJECT_SLUG}}/apps/{{PLATFORM_SLUG}}/pkg/config"
@@ -59,10 +62,13 @@ func main() {
 	}
 	defer cache.Close()
 
-	// Item store. The starter keeps items in memory. To use Postgres, open
-	// cfg.DatabaseURL here (database/sql + pgx, or sqlx/GORM), implement
-	// item.Store on top of it, and pass that instead.
-	var items item.Store = item.NewService()
+	// Item store: Postgres when DATABASE_URL is set, memory otherwise.
+	items, pool, err := openItemStore(cfg, logger)
+	if err != nil {
+		logger.Error("database setup failed", "error", err)
+		cache.Close()
+		os.Exit(1)
+	}
 
 	// Create API server
 	server := api.NewServer(api.Config{
@@ -97,6 +103,50 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		logger.Error("shutdown error", "error", err)
 	}
+	// After Shutdown: in-flight requests have finished with the pool.
+	if pool != nil {
+		pool.Close()
+	}
 
 	logger.Info("server stopped")
+}
+
+// Startup limits for the database: compose starts the API once Postgres is
+// healthy, so these only matter when it is slow or down.
+const (
+	dbConnectTimeout = 30 * time.Second
+	dbMigrateTimeout = 60 * time.Second
+)
+
+// openItemStore returns the Postgres store (and its pool, which the caller
+// closes on shutdown) when DATABASE_URL is set, after applying the embedded
+// migrations. With DATABASE_URL unset it returns the in-memory store and a nil
+// pool. A set but unreachable DATABASE_URL is an error, not a silent fallback
+// to memory, so data is never written where it would be lost.
+func openItemStore(cfg config.Config, logger *slog.Logger) (item.Store, *pgxpool.Pool, error) {
+	if cfg.DatabaseURL == "" {
+		logger.Warn("DATABASE_URL not set: items are kept in memory and lost on restart")
+		return item.NewService(), nil, nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), dbConnectTimeout)
+	defer cancel()
+	pool, err := db.Connect(ctx, cfg.DatabaseURL, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	mctx, mcancel := context.WithTimeout(context.Background(), dbMigrateTimeout)
+	defer mcancel()
+	applied, err := db.Migrate(mctx, pool)
+	if err != nil {
+		pool.Close()
+		return nil, nil, err
+	}
+	logger.Info("using Postgres item store",
+		"host", pool.Config().ConnConfig.Host,
+		"database", pool.Config().ConnConfig.Database,
+		"migrations_applied", applied,
+	)
+	return item.NewPostgresStore(pool, cfg.DatabaseQueryTimeout), pool, nil
 }
