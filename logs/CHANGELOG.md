@@ -1,6 +1,14 @@
 
 ---
 
+## [Unreleased] - 2026-10-29 - Admin dashboard pack: token kept on the server, builds clean
+
+**Status:** COMPLETED
+
+- `web/nextjs-admin-dashboard` security: the NextAuth session callback copied the API token into `session.accessToken`, which every script on the page can read (`/api/auth/session`, `useSession`), and `AuthContext` handed it to the browser API and GraphQL clients. The token now stays in the encrypted, HTTP-only session cookie. New `src/app/api/admin/[...path]` forwards same-origin calls to `API_URL/admin/...` with the token, read on the server (`src/lib/forward.ts`); writes need the app's own `Origin`; browser cookies are not sent upstream and only safe response headers come back. `src/app/api/graphql` does the same for `GRAPHQL_ENDPOINT`. `apiClient` and `graphqlClient` call this origin; `setApiAccessToken` and `setAuthToken` are gone. Template pages call `/api/admin/stats` and `/api/admin/users` (the paths `gpp admin generate-crud` pages already use).
+- `web/nextjs-admin-dashboard` build: 14 type errors fixed (`CardDescription`, button size `icon`, missing `debounce` → `useDebouncedCallback`, `@radix-ui/react-switch` dependency, React 19 `useRef`, `HeadersInit`, untyped stats); 7 lint errors fixed (`any`, empty interfaces, setState in an effect in `usePagination`). One lint warning left (`use-toast` `actionTypes`).
+- `env.example.txt`, README: `API_URL` is server-only; `NEXT_PUBLIC_API_BASE_URL` and `NEXT_PUBLIC_GRAPHQL_ENDPOINT` are still read as fallbacks.
+
 ## [Unreleased] - 2026-10-26 - Electron app://, Express auth, Stripe and auth-flows add-ons, web sign-in
 
 **Status:** COMPLETED

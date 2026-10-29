@@ -9,7 +9,6 @@ declare module "next-auth" {
       name?: string | null;
       role?: "user" | "admin";
     };
-    accessToken?: string;
   }
 
   interface User {

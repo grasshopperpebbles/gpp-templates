@@ -50,7 +50,6 @@ cp env.example.txt .env.local
 
 3. Update `.env.local`:
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api/v1
 API_URL=http://api:4000/api/v1
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
@@ -78,6 +77,8 @@ src/
 │   │   └── settings/      # System settings
 │   ├── login/             # Admin authentication
 │   └── api/               # API routes
+│       ├── admin/         # Forwards /api/admin/* to the backend with the admin's token
+│       ├── graphql/       # Forwards GraphQL queries the same way
 │       └── auth/          # NextAuth routes
 ├── components/            # React components
 │   ├── admin/             # Admin-specific components
@@ -91,7 +92,8 @@ src/
 │   └── ui/                # UI primitives
 ├── hooks/                 # Custom hooks
 ├── lib/                   # Utilities
-│   ├── api.ts             # API client
+│   ├── api.ts             # API client (same-origin calls)
+│   ├── forward.ts         # Server-only forwarding with the admin's token
 │   ├── auth-config.ts     # NextAuth configuration
 │   └── config.ts          # Feature flags
 ├── contexts/              # React contexts
@@ -190,20 +192,22 @@ const { user, isAdmin, isLoading, login, logout } = useAuth();
 
 Configure in `.env.local`:
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api/v1
 API_URL=http://api:4000/api/v1
 ```
+
+The browser never holds the API token. Sign-in stores it in NextAuth's encrypted, HTTP-only session cookie, and the session that page scripts can read does not include it. Pages call routes on the admin app's own origin; `src/app/api/admin/[...path]` reads the token on the server and forwards the call to `API_URL/admin/...`. Writes (POST, PUT, PATCH, DELETE) must come from the admin app's own origin (`NEXTAUTH_URL`).
 
 Use the API client:
 ```typescript
 import { apiClient } from '@/lib/api';
 
-const users = await apiClient.get('/api/users');
+// GET <API_URL>/admin/users, sent through /api/admin/users
+const users = await apiClient.get<User[]>('/api/admin/users');
 ```
 
 ### GraphQL (Optional)
 
-For GraphQL backends, use the GraphQL client:
+Set `GRAPHQL_ENDPOINT` (server only). Queries go through `/api/graphql`, which adds the admin's token the same way:
 ```typescript
 import { graphqlClient } from '@/lib/graphql';
 
