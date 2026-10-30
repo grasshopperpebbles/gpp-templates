@@ -1,6 +1,12 @@
 
 ---
 
+## Web packs keep API tokens on the server (2026-10-29)
+
+**Decision:** a Next pack that signs in with NextAuth keeps the API token in the JWT cookie only. The session callback never exposes it, and browser code calls same-origin routes that add it on the server and refuse cross-origin writes. Started with `nextjs-admin-dashboard`; `nextjs-saas-dashboard` and `nextjs-webapp` still expose it (TODO).
+
+**Rationale:** any script injected into a page (an XSS, a compromised dependency) could read `session.accessToken` and call the API directly, for as long as the token lives. An admin app is the worst place for that. The same-origin forwarder also matches what `gpp admin generate-crud` pages already call (`/api/admin/<model>`).
+
 ## Tauri pack: no AppManifest command list while add-ons register commands (2026-10-26)
 
 **Decision:** `desktop/tauri` keeps `tauri_build::build()` and a `core:default` capability; its IPC commands enforce their own limits (app data folder only, program allowlist, app-scoped keychain). No `AppManifest::commands` list.

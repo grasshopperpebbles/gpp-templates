@@ -1,6 +1,12 @@
 
 ---
 
+## Session: Admin dashboard pack fixed (2026-10-29)
+
+**Status:** COMPLETED
+
+Found while building realitydiversion's admin app from this pack. Fresh copy in a scratch folder, `npm install`: before, `tsc` 14 errors and eslint 7 errors; after, `tsc --noEmit` 0, `eslint` 0 errors (1 warning), `next build` passes (routes `/api/admin/[...path]`, `/api/graphql` dynamic). Runtime, `next start` against a mock API on 127.0.0.1: wrong password 401; sign-in 200; `/api/auth/session` has no token; `GET /api/admin/stats?x=1` → upstream `/api/v1/admin/stats?x=1` with `Bearer`, no cookie, upstream `set-cookie` dropped; POST with no `Origin` or a foreign one 403, same-origin POST forwarded with its body; signed-out GET 401; `/admin` signed out 307 to `/login`; `/api/graphql` 501 without `GRAPHQL_ENDPOINT`. gpp-cli doesn't bundle this pack, so `check:packs` is unaffected; its BaaS cleanup and crud generator don't use the removed functions.
+
 ## SESSION NOTE - 2026-10-26 (open TODO items, with gpp-cli v0.9.104)
 
 Branches merged into `fix/open-issues`: `fix/leftovers-sveltekit`, `fix/electron-app-scheme`, `fix/stripe-desktop-api`, `feat/go-http-postgres`, `fix/express-auth`, `fix/tauri-chrome-mv3`, `fix/auth-flows-addon`, plus the Express race fix and the web sign-in fix on the branch. Bundled copies synced to gpp-cli; drift check passes. Verification details are in gpp-cli's DEVELOPMENT note for v0.9.104.

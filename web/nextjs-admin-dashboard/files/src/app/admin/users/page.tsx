@@ -2,14 +2,14 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api";
+import { apiClient, type User } from "@/lib/api";
 
 export default function UsersManagementPage() {
   useAuth();
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
-    queryFn: () => apiClient.get("/admin/users"),
+    queryFn: () => apiClient.get<User[]>("/api/admin/users"),
   });
 
   if (isLoading) {
@@ -56,7 +56,7 @@ export default function UsersManagementPage() {
               </thead>
               <tbody>
                 {users && Array.isArray(users) && users.length > 0 ? (
-                  users.map((user: any) => (
+                  users.map((user) => (
                     <tr key={user.id} className="border-b border-zinc-100">
                       <td className="px-4 py-3 text-sm">{user.name || "—"}</td>
                       <td className="px-4 py-3 text-sm">{user.email}</td>

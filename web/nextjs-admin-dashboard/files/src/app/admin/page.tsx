@@ -4,12 +4,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 
+interface AdminStats {
+  totalUsers?: number;
+  activeSessions?: number;
+  systemStatus?: string;
+}
+
 export default function AdminDashboardPage() {
   const { user } = useAuth();
 
   const { data: stats, isLoading: dataLoading } = useQuery({
     queryKey: ["admin-stats"],
-    queryFn: () => apiClient.get("/admin/stats"),
+    queryFn: () => apiClient.get<AdminStats>("/api/admin/stats"),
   });
 
   if (dataLoading) {

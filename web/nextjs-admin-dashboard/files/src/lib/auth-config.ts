@@ -1,7 +1,8 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const API_URL = (
+/** Backend API base URL, used on the server only (sign-in and the /api/admin forwarder). */
+export const API_URL = (
   process.env.API_URL ||
   process.env.INTERNAL_API_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -102,6 +103,8 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.name = user.name;
         token.role = user.role;
+        // The API token stays in the encrypted, HTTP-only session cookie.
+        // Only server code (src/app/api/admin) reads it.
         token.accessToken = user.accessToken;
       }
       return token;
@@ -114,7 +117,7 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name as string;
         session.user.role = token.role as "user" | "admin";
       }
-      session.accessToken = token.accessToken as string;
+      // Never copy token.accessToken here: the session is readable by every script on the page.
       return session;
     },
   },

@@ -4,13 +4,11 @@ import {
   createContext,
   useContext,
   useCallback,
-  useEffect,
   useMemo,
   ReactNode,
 } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { ApiClientError, setApiAccessToken, User } from "@/lib/api";
-import { graphqlClient } from "@/lib/graphql";
+import { ApiClientError, User } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
@@ -27,20 +25,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, status, update } = useSession();
-  const user = session?.user
-    ? {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name ?? undefined,
-        role: session.user.role,
-      }
-    : null;
+  const sessionUser = session?.user;
+  const user: User | null = useMemo(
+    () =>
+      sessionUser
+        ? {
+            id: sessionUser.id,
+            email: sessionUser.email,
+            name: sessionUser.name ?? undefined,
+            role: sessionUser.role,
+          }
+        : null,
+    [sessionUser]
+  );
   const isLoading = status === "loading";
-
-  useEffect(() => {
-    setApiAccessToken(session?.accessToken ?? null);
-    graphqlClient.setAuthToken(session?.accessToken ?? null);
-  }, [session?.accessToken]);
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -57,8 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updated = await update();
       const nextRole = updated?.user?.role ?? session?.user?.role;
       if (nextRole !== "admin") {
-        setApiAccessToken(null);
-        graphqlClient.setAuthToken(null);
         await signOut({ redirect: false });
         throw new Error("Access denied. Admin privileges required.");
       }
@@ -67,8 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    setApiAccessToken(null);
-    graphqlClient.setAuthToken(null);
     await signOut({ redirect: false });
   }, []);
 
