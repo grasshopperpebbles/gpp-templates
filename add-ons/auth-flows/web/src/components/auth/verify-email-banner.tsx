@@ -1,9 +1,9 @@
+import { cookies } from "next/headers";
+import { getToken } from "next-auth/jwt";
 import { callAuthApi } from "@/lib/auth-flows/api";
 import { ResendVerificationButton } from "@/components/auth/resend-verification-button";
 
 interface VerifyEmailBannerProps {
-  /** The signed-in user's API access token (NextAuth: session.accessToken). */
-  accessToken?: string | null;
   /** The signed-in user's email, for the resend button. */
   email?: string | null;
 }
@@ -11,14 +11,21 @@ interface VerifyEmailBannerProps {
 /**
  * Server component: a "verify your email" notice while the signed-in user's address is
  * unverified (asks the API's /auth/verification-status). Renders nothing once it is
- * verified, without a token, or when the API can't be reached.
+ * verified, when nobody is signed in, or when the API can't be reached. The API token is
+ * read here on the server from NextAuth's encrypted session cookie; it is never passed
+ * through the page.
  *
  * Registration on the pack's /auth/register signs the user in straight away and the API
  * emails the verification link, so put this at the top of signed-in pages, e.g. in
  * src/app/(dashboard)/layout.tsx:
- *   <VerifyEmailBanner accessToken={session.accessToken} email={session.user.email} />
+ *   <VerifyEmailBanner email={session.user.email} />
  */
-export async function VerifyEmailBanner({ accessToken, email }: VerifyEmailBannerProps) {
+export async function VerifyEmailBanner({ email }: VerifyEmailBannerProps) {
+  const token = await getToken({
+    req: { cookies: await cookies(), headers: {} } as unknown as Parameters<typeof getToken>[0]["req"],
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+  const accessToken = token?.accessToken;
   if (!accessToken) return null;
   const status = await callAuthApi(
     "verification-status",

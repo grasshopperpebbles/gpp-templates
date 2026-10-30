@@ -1,6 +1,12 @@
 
 ---
 
+## Session: SaaS dashboard and webapp packs fixed (2026-10-30)
+
+**Status:** COMPLETED
+
+Evidence is in gpp-cli's DEVELOPMENT note for v0.9.106: clean installs typecheck, lint with 0 errors and build; `next start` against a mock API for all three NextAuth packs (no token in the session, `Bearer` upstream without browser cookies, foreign-origin writes 403, `%2e%2e` never reaches the API); the auth-flows banner rendered in saas-dashboard with the token read on the server.
+
 ## Session: Admin dashboard pack fixed (2026-10-29)
 
 **Status:** COMPLETED

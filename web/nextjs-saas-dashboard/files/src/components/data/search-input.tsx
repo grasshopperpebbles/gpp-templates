@@ -5,7 +5,7 @@ import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { debounce } from "@/lib/utils";
+import { useDebouncedCallback } from "@/hooks/use-debounce";
 
 interface SearchInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
   onSearch: (value: string) => void;
@@ -24,9 +24,9 @@ export function SearchInput({
   const [value, setValue] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const debouncedSearch = React.useMemo(
-    () => debounce((searchValue: string) => onSearch(searchValue), debounceMs),
-    [onSearch, debounceMs]
+  const debouncedSearch = useDebouncedCallback(
+    (searchValue: string) => onSearch(searchValue),
+    debounceMs
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

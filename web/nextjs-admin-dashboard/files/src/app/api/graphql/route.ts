@@ -8,5 +8,5 @@ export async function POST(request: NextRequest) {
   if (!GRAPHQL_ENDPOINT) {
     return NextResponse.json({ message: "GraphQL endpoint not configured. Set GRAPHQL_ENDPOINT." }, { status: 501 });
   }
-  return forwardToApi(request, GRAPHQL_ENDPOINT);
+  return forwardToApi(request, { base: GRAPHQL_ENDPOINT, requireAdmin: true });
 }

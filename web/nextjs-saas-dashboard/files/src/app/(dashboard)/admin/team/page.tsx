@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { redirect } from "next/navigation";
 import { features } from "@/lib/config";
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api";
+import { apiClient, type User } from "@/lib/api";
 
 export default function TeamManagementPage() {
   if (!features.teams) {
@@ -19,7 +19,7 @@ export default function TeamManagementPage() {
 
   const { data: teamMembers, isLoading } = useQuery({
     queryKey: ["team-members"],
-    queryFn: () => apiClient.get("/admin/team/members"),
+    queryFn: () => apiClient.get<User[]>("/admin/team/members"),
   });
 
   if (isLoading) {
@@ -49,7 +49,7 @@ export default function TeamManagementPage() {
           <h2 className="text-lg font-semibold mb-4">Team Members</h2>
           {teamMembers && Array.isArray(teamMembers) && teamMembers.length > 0 ? (
             <div className="space-y-2">
-              {teamMembers.map((member: any) => (
+              {teamMembers.map((member) => (
                 <div
                   key={member.id}
                   className="flex items-center justify-between rounded-md border border-zinc-200 p-4"

@@ -1,11 +1,12 @@
 /**
  * GraphQL Client for SaaS Dashboard
  *
- * Works with any GraphQL endpoint (FastAPI, Strapi, etc.)
- * Supports Bearer token authentication.
+ * Works with any GraphQL endpoint (FastAPI, Strapi, etc.).
+ * Queries go to /api/graphql on this app's own origin; that server route adds
+ * the signed-in user's API token and forwards them to GRAPHQL_ENDPOINT.
  */
 
-const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "";
+const GRAPHQL_PATH = "/api/graphql";
 
 interface GraphQLResponse<T> {
   data?: T;
@@ -19,27 +20,9 @@ interface GraphQLResponse<T> {
 
 export class GraphQLClient {
   private endpoint: string;
-  private authToken: string | null = null;
 
   constructor(endpoint?: string) {
-    this.endpoint = endpoint || GRAPHQL_ENDPOINT;
-    if (!this.endpoint) {
-      console.warn("GraphQL endpoint not configured. Set NEXT_PUBLIC_GRAPHQL_ENDPOINT environment variable.");
-    }
-  }
-
-  /**
-   * Set Bearer token for authentication
-   */
-  setAuthToken(token: string | null) {
-    this.authToken = token;
-  }
-
-  /**
-   * Get the in-memory auth token
-   */
-  getAuthToken(): string | null {
-    return this.authToken;
+    this.endpoint = endpoint || GRAPHQL_PATH;
   }
 
   /**
@@ -50,27 +33,14 @@ export class GraphQLClient {
     variables?: Record<string, unknown>,
     fetchOptions?: RequestInit
   ): Promise<T> {
-    if (!this.endpoint) {
-      throw new Error("GraphQL endpoint not configured");
-    }
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-
-    // Add Bearer token if available
-    const token = this.getAuthToken();
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
     const response = await fetch(this.endpoint, {
       method: "POST",
-      headers,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query,
         variables,
       }),
+      credentials: "same-origin",
       ...fetchOptions,
     });
 
@@ -110,7 +80,7 @@ export class GraphQLClient {
 export const graphqlClient = new GraphQLClient();
 
 /**
- * Helper function to create a GraphQL client with a custom endpoint
+ * Helper function to create a GraphQL client with a custom same-origin path
  */
 export function createGraphQLClient(endpoint: string): GraphQLClient {
   return new GraphQLClient(endpoint);
