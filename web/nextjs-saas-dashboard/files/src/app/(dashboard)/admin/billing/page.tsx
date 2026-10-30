@@ -6,6 +6,11 @@ import { features } from "@/lib/config";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 
+interface BillingInfo {
+  plan?: string;
+  status?: string;
+}
+
 export default function BillingPage() {
   if (!features.billing) {
     redirect("/dashboard");
@@ -19,7 +24,7 @@ export default function BillingPage() {
 
   const { data: billingInfo, isLoading } = useQuery({
     queryKey: ["billing"],
-    queryFn: () => apiClient.get("/admin/billing"),
+    queryFn: () => apiClient.get<BillingInfo>("/admin/billing"),
   });
 
   if (isLoading) {

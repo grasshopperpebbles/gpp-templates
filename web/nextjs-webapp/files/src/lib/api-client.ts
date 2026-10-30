@@ -1,5 +1,3 @@
-import { features } from "./config";
-
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface RequestOptions<T = unknown> {
@@ -26,13 +24,16 @@ class ApiError extends Error {
   }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+// `apiClient.get("/users/me")` calls /api/backend/users/me on this app's own origin.
+// That server route (src/app/api/backend/[...path]) adds the signed-in user's API
+// token and forwards the call to API_URL, so the browser never holds the token.
+const API_PATH = "/api/backend";
 
 function buildUrl(
   path: string,
   params?: Record<string, string | number | boolean | undefined>
 ): string {
-  const url = new URL(path, API_URL || window.location.origin);
+  const url = new URL(`${API_PATH}${path}`, window.location.origin);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
@@ -55,13 +56,11 @@ async function request<TResponse, TBody = unknown>(
     ...headers,
   };
 
-  // Auth headers should be passed explicitly by the chosen auth/session layer.
-  // This client does not assume token storage.
-
   const response = await fetch(url, {
     method,
     headers: requestHeaders,
     body: body ? JSON.stringify(body) : undefined,
+    credentials: "same-origin",
   });
 
   const data = await response.json().catch(() => null);

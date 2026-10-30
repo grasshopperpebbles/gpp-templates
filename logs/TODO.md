@@ -15,8 +15,8 @@ gpp template install /path/to/gpp-templates --all
 ### Admin dashboard pack (2026-10-29)
 
 - [x] `web/nextjs-admin-dashboard`: type-check, lint (0 errors) and build pass on a clean install; the API token no longer reaches page scripts (see CHANGELOG 2026-10-29).
-- [ ] Same token exposure in `web/nextjs-saas-dashboard` (`session.accessToken`, `setApiAccessToken`) and `web/nextjs-webapp` (`auth-config.ts`). gpp-cli bundles saas-dashboard and webapp, and its auth-flows add-on passes `session.accessToken` to `VerifyEmailBanner`, so the fix spans both repos.
-- [ ] gpp-cli `admin generate-crud`: the per-model `src/app/api/admin/<model>` routes call the browser `apiClient` on the server, with no token (401 before this change; now a relative-URL error). They shadow the pack's `/api/admin/[...path]` forwarder, which already serves the generated pages. Stop generating them, or generate them on `forwardToApi`.
+- [x] (2026-10-30, gpp-cli 0.9.106) Same token exposure in `web/nextjs-saas-dashboard` (`session.accessToken`, `setApiAccessToken`) and `web/nextjs-webapp` (`auth-config.ts`). gpp-cli bundles saas-dashboard and webapp, and its auth-flows add-on passes `session.accessToken` to `VerifyEmailBanner`, so the fix spans both repos.
+- [x] (2026-10-30, gpp-cli 0.9.106) gpp-cli `admin generate-crud`: the per-model `src/app/api/admin/<model>` routes call the browser `apiClient` on the server, with no token (401 before this change; now a relative-URL error). They shadow the pack's `/api/admin/[...path]` forwarder, which already serves the generated pages. Stop generating them, or generate them on `forwardToApi`.
 
 ### FastAPI pack (2026-10-26)
 
@@ -48,7 +48,7 @@ gpp template install /path/to/gpp-templates --all
   - [x] Native eslint flat config + `eslint` lint script in all 13 Next packs (FlatCompat crashed; `next lint` is gone in Next 16; landing had eslint 8)
   - [x] next / eslint-config-next / @next/mdx 16.4.2, exact react pins 19.1.0 → 19.3.1
   - [x] `.nvmrc` 20 → 22 everywhere; Strapi Dockerfiles `node:22-alpine`
-- [ ] Pre-existing broken Next packs (same failures before the refresh; lint now runs and shows real errors): ~~admin-dashboard (`CardDescription` export)~~ fixed 2026-10-29, app-landing + webapp (`tailwindcss-animate` missing), headless-storyblok (`StoryblokClient`/`StoryblokComponent` exports), headless-strapi + headless-wp-cms (missing cart/product modules), headless-wp-ecommerce (missing `@/lib/admin-settings`, email modules), headless-wp-full + saas-dashboard (type errors), headless-sanity (build needs `projectId`), marketing (`/pagefind/pagefind.js` type before postbuild). Only nextjs-landing is fully green; devtool-site builds.
+- [ ] Pre-existing broken Next packs (same failures before the refresh; lint now runs and shows real errors): ~~admin-dashboard (`CardDescription` export)~~ fixed 2026-10-29, app-landing + ~~webapp~~ (`tailwindcss-animate` missing; webapp fixed 2026-10-30), headless-storyblok (`StoryblokClient`/`StoryblokComponent` exports), headless-strapi + headless-wp-cms (missing cart/product modules), headless-wp-ecommerce (missing `@/lib/admin-settings`, email modules), headless-wp-full + ~~saas-dashboard~~ (type errors; saas-dashboard fixed 2026-10-30), headless-sanity (build needs `projectId`), marketing (`/pagefind/pagefind.js` type before postbuild). Only nextjs-landing is fully green; devtool-site builds.
 - [x] Strapi docker-compose: require `${PROJECT_SLUG}` (remove `:-strapi` / `:-strapi-dev`); strapi-dev `setup.sh` + `env/.env.example`; sync with gpp-cli; update logs — COMPLETED (2026-04-08)
 - [x] Add container_name with ${PROJECT_SLUG} prefix to all backend docker-compose templates (python/fastapi, api/go-http, api/rust-axum, worker/celery-python, worker/rust-tokio) - COMPLETED (2026-04-04)
 - [x] SaaS dashboard: add feature flags for team/billing (off by default), create dashboard route group layout, bundle into gpp-cli - COMPLETED (2026-04-04)

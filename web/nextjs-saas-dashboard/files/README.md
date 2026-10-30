@@ -29,7 +29,6 @@ cp env.example.txt .env.local
 
 3. Update `.env.local` with your API configuration:
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api/v1
 API_URL=http://api:3001/api/v1
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=replace-with-a-long-random-secret
@@ -71,22 +70,22 @@ The template uses a single NextAuth credentials session flow backed by your API.
 1. `src/lib/auth-config.ts` calls your backend at `/auth/login`
 2. `src/contexts/AuthContext.tsx` exposes a simple `useAuth()` wrapper for app code
 3. Protected dashboard and admin segments are enforced on the server
-4. Authenticated client requests reuse the API access token from the session
+4. The API access token stays in NextAuth's encrypted, HTTP-only cookie; the session that page scripts can read does not include it. Browser requests go through `/api/backend/...` on this origin, where `src/lib/forward.ts` adds the token on the server
 
 ## API Integration
 
 ### REST API
 
-The REST API client in `lib/api.ts` uses `NEXT_PUBLIC_API_BASE_URL`. Server-side auth callbacks can use `API_URL` when the browser-facing URL differs from the internal network URL.
+`apiClient.get("/users/me")` in `lib/api.ts` calls `/api/backend/users/me` on this app's origin, which forwards it to `API_URL/users/me` with the signed-in user's token (signed-out requests, such as register, go without one). Writes must come from this app's own origin (`NEXTAUTH_URL`). `API_URL` is read on the server only; `NEXT_PUBLIC_API_BASE_URL` is still read as a fallback.
 
 ### GraphQL (Optional)
 
 A GraphQL client is available in `lib/graphql.ts` for connecting to GraphQL endpoints (FastAPI with Strawberry/Ariadne, Strapi, etc.).
 
 **Setup:**
-1. Set environment variable:
+1. Set environment variable (server only; queries go through `/api/graphql`, which adds the token):
 ```env
-NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:8000/graphql
+GRAPHQL_ENDPOINT=http://localhost:8000/graphql
 ```
 
 2. Use the GraphQL client:

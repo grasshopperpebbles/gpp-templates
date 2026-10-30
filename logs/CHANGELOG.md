@@ -1,6 +1,15 @@
 
 ---
 
+## [Unreleased] - 2026-10-30 - SaaS dashboard and webapp packs keep the API token on the server
+
+**Status:** COMPLETED
+
+- `web/nextjs-saas-dashboard`, `web/nextjs-webapp` security: the session callback no longer copies the API token into `session.accessToken`. New `src/app/api/backend/[...path]` forwards same-origin calls to `API_URL` with the token read on the server (signed-out calls such as register go without one); `apiClient` (and saas-dashboard's `graphqlClient`, via `/api/graphql`) call this origin. The shared `src/lib/forward.ts` (identical in all three NextAuth packs) refuses cross-origin writes and `.`/`..` path segments; the admin pack's forwarder now uses it with `requireAdmin`.
+- Both packs typecheck, lint (0 errors) and build on a clean install: saas-dashboard had 9 type errors and 3 lint errors, webapp 3 type errors, a lint error and a missing `tailwindcss-animate`.
+- `add-ons/auth-flows`: `VerifyEmailBanner` reads the token from the session cookie on the server and takes only `email`.
+- Same changes in gpp-cli's bundled copies (0.9.106).
+
 ## [Unreleased] - 2026-10-29 - Admin dashboard pack: token kept on the server, builds clean
 
 **Status:** COMPLETED

@@ -24,17 +24,12 @@ export function usePagination<T>({
   pageSize: initialPageSize = 10,
   initialPage = 1,
 }: UsePaginationProps<T>): UsePaginationReturn<T> {
-  const [currentPage, setCurrentPage] = React.useState(initialPage);
+  const [requestedPage, setCurrentPage] = React.useState(initialPage);
   const [pageSize, setPageSizeState] = React.useState(initialPageSize);
 
   const totalPages = Math.ceil(items.length / pageSize);
-
-  // Reset to first page when items change significantly
-  React.useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  // Stay on the last page when the items shrink
+  const currentPage = totalPages > 0 ? Math.min(requestedPage, totalPages) : requestedPage;
 
   const paginatedItems = React.useMemo(() => {
     const start = (currentPage - 1) * pageSize;

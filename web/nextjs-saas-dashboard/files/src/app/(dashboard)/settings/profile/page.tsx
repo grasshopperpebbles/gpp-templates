@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -12,14 +12,15 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || "",
-        email: user.email || "",
-      });
-    }
-  }, [user]);
+  // Fill the form once the session's user arrives (during render, not in an effect)
+  const [filledFor, setFilledFor] = useState(user?.id);
+  if (user && user.id !== filledFor) {
+    setFilledFor(user.id);
+    setFormData({
+      name: user.name || "",
+      email: user.email || "",
+    });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -1,11 +1,13 @@
 /**
  * API Client for SaaS Dashboard
- * Handles all API requests with authentication and error handling.
+ *
+ * `apiClient.get("/users/me")` calls /api/backend/users/me on this app's own
+ * origin. That server route (src/app/api/backend/[...path]) adds the signed-in
+ * user's API token and forwards the call to API_URL, so the browser never
+ * holds the token. Requests carry the session cookie automatically.
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1";
-let accessToken: string | null = null;
+const API_PATH = "/api/backend";
 
 export interface ApiError {
   message: string;
@@ -25,34 +27,20 @@ export class ApiClientError extends Error {
   }
 }
 
-export function setApiAccessToken(token: string | null) {
-  accessToken = token;
-}
-
-async function getAuthToken(): Promise<string | null> {
-  return accessToken;
-}
-
 async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = await getAuthToken();
-  const url = `${API_BASE_URL}${endpoint}`;
-
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...options.headers,
-  };
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  const headers = new Headers(options.headers);
+  if (options.body !== undefined && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(`${API_PATH}${endpoint}`, {
       ...options,
       headers,
+      credentials: "same-origin",
     });
 
     if (!response.ok) {
@@ -64,6 +52,9 @@ async function request<T>(
       );
     }
 
+    if (response.status === 204) {
+      return undefined as T;
+    }
     return response.json();
   } catch (error) {
     if (error instanceof ApiClientError) {
