@@ -170,7 +170,7 @@ See `.gpp/CONVENTIONS.md` in your project for detailed patterns.
 - `gpp add route <path> [--static]` - Create a new page/route
 - `gpp add api <name>` - Create a domain-specific API module
 - `gpp remove <platform> [--yes]` - Remove platform from config
-- `gpp delete platform <platform> [--yes]` - Delete platform files
+- `gpp delete <platform> --yes` - Delete the platform app directory and its deploy.json entry
 - `gpp convert plan [path]` - Analyze existing project for conversion
 - `gpp convert apply [path]` - Convert existing project to GPP structure
 - `gpp convert continue [path]` - Resume a partially completed conversion
