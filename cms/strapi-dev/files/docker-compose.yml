@@ -3,13 +3,15 @@
 #===============================================================================
 # Strapi starts via start-strapi.sh (install deps, first-start once, then develop).
 # Uses environment variables from .env. PROJECT_SLUG must be set (gpp recipe apply / env sync).
+# Service keys use {{GPP_APP_KEY_PREFIX}} so `gpp verify` passes (Docker Desktop
+# shows the service key). Substituted on gpp add.
 #===============================================================================
 
 # Fixed compose project name from PROJECT_SLUG prevents volume name churn when the repo folder moves
 name: ${PROJECT_SLUG}
 
 services:
-  db:
+  {{GPP_APP_KEY_PREFIX}}-db:
     image: mysql:8.0
     container_name: ${PROJECT_SLUG}-mysql
     restart: unless-stopped
@@ -27,7 +29,7 @@ services:
       - "${MYSQL_PORT:-3308}:3306"
     command: --default-authentication-plugin=mysql_native_password
 
-  strapi:
+  {{GPP_APP_KEY_PREFIX}}-strapi:
     build:
       context: .
       dockerfile: Dockerfile
@@ -35,12 +37,12 @@ services:
     container_name: ${PROJECT_SLUG}
     restart: unless-stopped
     depends_on:
-      db:
+      {{GPP_APP_KEY_PREFIX}}-db:
         condition: service_started
     environment:
       # Database
       DATABASE_CLIENT: mysql
-      DATABASE_HOST: db
+      DATABASE_HOST: {{GPP_APP_KEY_PREFIX}}-db
       DATABASE_PORT: 3306
       DATABASE_NAME: ${MYSQL_DATABASE:-strapi_dev}
       DATABASE_USERNAME: ${MYSQL_USER:-strapi}
@@ -90,14 +92,14 @@ services:
       retries: 5
       start_period: 90s
 
-  phpmyadmin:
+  {{GPP_APP_KEY_PREFIX}}-phpmyadmin:
     image: phpmyadmin:5
     container_name: ${PROJECT_SLUG}-phpmyadmin
     restart: unless-stopped
     depends_on:
-      - db
+      - {{GPP_APP_KEY_PREFIX}}-db
     environment:
-      PMA_HOST: db
+      PMA_HOST: {{GPP_APP_KEY_PREFIX}}-db
       PMA_USER: root
       PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       UPLOAD_LIMIT: 100M

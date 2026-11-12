@@ -51,7 +51,7 @@ Or use the helper:
 
 View logs:
 ```bash
-docker compose logs -f strapi
+docker compose logs -f {{GPP_APP_KEY_PREFIX}}-strapi
 ```
 
 ## Environment variables
@@ -65,14 +65,14 @@ Key variables in `.env`:
 
 ## Database management
 
-phpMyAdmin runs at http://localhost:9091 (or `PHPMYADMIN_PORT`). Server `db`, user `root`, password from `MYSQL_ROOT_PASSWORD` in `.env`.
+phpMyAdmin runs at http://localhost:9091 (or `PHPMYADMIN_PORT`). Server `{{GPP_APP_KEY_PREFIX}}-db`, user `root`, password from `MYSQL_ROOT_PASSWORD` in `.env`. GPP replaces `{{GPP_APP_KEY_PREFIX}}` with the app directory name when the pack is added.
 
 ## Adding plugins
 
 Install a plugin in the Strapi container, then enable it in `config/plugins.ts` and restart:
 ```bash
-docker compose exec strapi npm install <plugin-package>
-docker compose restart strapi
+docker compose exec {{GPP_APP_KEY_PREFIX}}-strapi npm install <plugin-package>
+docker compose restart {{GPP_APP_KEY_PREFIX}}-strapi
 ```
 
 ## API authentication
@@ -81,8 +81,8 @@ Create an API token in the admin panel (Settings > API Tokens) and set `STRAPI_A
 
 ## Troubleshooting
 
-**Strapi won't start:** check `docker compose logs strapi`, `docker compose ps`, and that `.env` has every required variable.
+**Strapi won't start:** check `docker compose logs {{GPP_APP_KEY_PREFIX}}-strapi`, `docker compose ps`, and that `.env` has every required variable.
 
-**Database connection errors:** make sure the `db` container is running and the credentials in `.env` match; check `docker compose logs db`.
+**Database connection errors:** make sure the `{{GPP_APP_KEY_PREFIX}}-db` service is running and the credentials in `.env` match; check `docker compose logs {{GPP_APP_KEY_PREFIX}}-db`.
 
 **Port conflicts:** change the ports in `.env`.
