@@ -1,0 +1,24 @@
+{
+  "name": "node-bullmq",
+  "displayName": "Node BullMQ Worker",
+  "description": "TypeScript worker using BullMQ on the project's Redis. Typed job registry, health endpoint, graceful shutdown, Vitest, and a production Dockerfile.",
+  "platform": "worker",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": ["express"]
+  },
+  "features": {
+    "included": [
+      "BullMQ worker on REDIS_URL",
+      "Typed job registry",
+      "Health endpoint",
+      "Graceful shutdown",
+      "Dockerfile (node:22-slim multi-stage, non-root)",
+      "Vitest tests that do not need Redis"
+    ],
+    "excluded": [
+      "Its own Redis service inside the app directory (the root compose provides Redis)"
+    ]
+  }
+}
