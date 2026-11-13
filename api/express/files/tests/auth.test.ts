@@ -274,10 +274,23 @@ describe('POST /api/v1/auth/refresh', () => {
     expect(current.revokedAt).toBeNull();
   });
 
+  /** Move every revocation back in time, past the 30-second reuse grace window. */
+  const ageRevocations = async (seconds = 31) => {
+    for (const row of await fakePrisma.refreshToken.findMany()) {
+      if (row.revokedAt) {
+        await fakePrisma.refreshToken.update({
+          where: { id: row.id },
+          data: { revokedAt: new Date(row.revokedAt.getTime() - seconds * 1000) },
+        });
+      }
+    }
+  };
+
   it('rejects a reused (already rotated) token and revokes its whole family', async () => {
     const { refreshToken: first } = await registerUser();
     const rotated = await refresh(first);
     const second = rotated.body.data.refresh_token as string;
+    await ageRevocations();
 
     const reuse = await refresh(first);
     expect(reuse.status).toBe(401);
@@ -301,12 +314,90 @@ describe('POST /api/v1/auth/refresh', () => {
     const laptop = login.body.data.refresh_token as string;
 
     await refresh(phone).expect(200);
+    await ageRevocations();
     await refresh(phone).expect(401); // reuse
 
     expect((await refresh(laptop)).status).toBe(200);
   });
 
-  it('lets only one of two concurrent refreshes with the same token succeed', async () => {
+  describe('reuse grace window', () => {
+    it('reuse within the window issues another pair in the same family', async () => {
+      const { refreshToken: first } = await registerUser();
+      const second = (await refresh(first).expect(200)).body.data.refresh_token as string;
+
+      const again = await refresh(first);
+
+      expect(again.status).toBe(200);
+      const third = again.body.data.refresh_token as string;
+      expect(third).not.toBe(second);
+      const rows = await fakePrisma.refreshToken.findMany();
+      expect(rows).toHaveLength(3);
+      expect(new Set(rows.map((r) => r.familyId)).size).toBe(1);
+      const [family] = await fakePrisma.refreshTokenFamily.findMany();
+      expect(family.revokedAt).toBeNull();
+      // The first replacement stays the link; both new tokens work.
+      expect(rows[0].replacedById).toBe(rows[1].id);
+      expect((await refresh(second)).status).toBe(200);
+      expect((await refresh(third)).status).toBe(200);
+    });
+
+    it('two concurrent refreshes with the same token both succeed', async () => {
+      const { refreshToken } = await registerUser();
+
+      const results = await Promise.all([refresh(refreshToken), refresh(refreshToken)]);
+
+      expect(results.map((r) => r.status)).toEqual([200, 200]);
+      for (const r of results) {
+        expect((await refresh(r.body.data.refresh_token)).status).toBe(200);
+      }
+    });
+
+    it('reuse after the window still revokes the family', async () => {
+      const { refreshToken: first } = await registerUser();
+      const second = (await refresh(first).expect(200)).body.data.refresh_token as string;
+      await ageRevocations(31);
+
+      expect((await refresh(first)).status).toBe(401);
+      expect((await refresh(second)).status).toBe(401);
+    });
+
+    it('reuse once the replacement has been used revokes the family, even within the window', async () => {
+      const { refreshToken: first } = await registerUser();
+      const second = (await refresh(first).expect(200)).body.data.refresh_token as string;
+      const third = (await refresh(second).expect(200)).body.data.refresh_token as string;
+
+      expect((await refresh(first)).status).toBe(401);
+      expect((await refresh(third)).status).toBe(401);
+    });
+
+    it('a logged-out token gets no grace', async () => {
+      const { refreshToken } = await registerUser();
+      await request(app).post('/api/v1/auth/logout').send({ refresh_token: refreshToken }).expect(200);
+
+      expect((await refresh(refreshToken)).status).toBe(401);
+    });
+
+    it('follows REFRESH_TOKEN_REUSE_GRACE_SECONDS, and 0 turns it off', async () => {
+      vi.stubEnv('REFRESH_TOKEN_REUSE_GRACE_SECONDS', '60');
+      const { refreshToken: a } = await registerUser();
+      await refresh(a).expect(200);
+      await ageRevocations(45);
+      expect((await refresh(a)).status).toBe(200);
+
+      vi.stubEnv('REFRESH_TOKEN_REUSE_GRACE_SECONDS', '0');
+      const login = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: 'ada@example.com', password: 'correct-horse' })
+        .expect(200);
+      const b = login.body.data.refresh_token as string;
+      await refresh(b).expect(200);
+      expect((await refresh(b)).status).toBe(401);
+    });
+  });
+
+  // With the grace window off, a concurrent reuse is treated like any other reuse.
+  it('without the grace window, only one of two concurrent refreshes succeeds', async () => {
+    vi.stubEnv('REFRESH_TOKEN_REUSE_GRACE_SECONDS', '0');
     const { refreshToken } = await registerUser();
 
     const statuses = (await Promise.all([refresh(refreshToken), refresh(refreshToken)])).map((r) => r.status);
@@ -314,7 +405,8 @@ describe('POST /api/v1/auth/refresh', () => {
     expect(statuses.sort()).toEqual([200, 401]);
   });
 
-  it('two concurrent refreshes with the same token leave no live token in the family', async () => {
+  it('without the grace window, two concurrent refreshes leave no live token in the family', async () => {
+    vi.stubEnv('REFRESH_TOKEN_REUSE_GRACE_SECONDS', '0');
     const { refreshToken } = await registerUser();
 
     const results = await Promise.all([refresh(refreshToken), refresh(refreshToken)]);
@@ -343,6 +435,7 @@ describe('POST /api/v1/auth/refresh', () => {
   };
 
   it('a concurrent reuse of the same token revokes the replacement the winner is issuing', async () => {
+    vi.stubEnv('REFRESH_TOKEN_REUSE_GRACE_SECONDS', '0');
     const { refreshToken } = await registerUser();
     const loser = pauseWinnerUntil(() => refresh(refreshToken));
 

@@ -1,6 +1,12 @@
 
 ---
 
+## Session: Express refresh reuse grace window (2026-11-13)
+
+`rotateRefreshToken` (`src/lib/tokens.ts`): when the claim finds the token already revoked, it checks under the family lock that the token has `replacedById`, `revokedAt` is within the window, and the replacement is unrevoked. If all three hold, it issues another token in the same family; otherwise it revokes the family as before. `tokens.ts` and `tests/auth.test.ts` are identical to gpp-cli's bundled copies and to cultural-intelligence-platform's API.
+
+Evidence: this repo has no test runner. The same files passed in cultural-intelligence-platform (26 files, 170 tests) and in gpp-cli (1233 passed, 7 skipped). Live against the project API: two refreshes at once with one token returned 200 and 200, and both new tokens worked. The old token replayed after the login moved on returned 401, and that login then returned 401.
+
 ## Session: Admin dashboard token renewal (2026-11-13)
 
 **Status:** COMPLETED

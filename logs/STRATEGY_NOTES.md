@@ -1,6 +1,12 @@
 
 ---
 
+## Refresh reuse grace window instead of a shared store (2026-11-13)
+
+**Decision:** The Express API templates handle simultaneous refreshes with a 30-second grace window. The admin dashboard needs no shared store to run on several servers.
+
+**Rationale:** One place, the API, covers every client and server count. Requiring the replacement to be unused keeps replay detection for an old token once the login has moved on. Cost: a racing server's extra token stays valid until it expires or the login is revoked.
+
 ## Admin dashboard renews the API token on the server (2026-11-13)
 
 **Decision:** The refresh token stays in the encrypted session cookie next to the access token. The server renews it shortly before expiry; the browser never sees either token.

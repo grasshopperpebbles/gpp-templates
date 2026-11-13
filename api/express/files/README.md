@@ -52,6 +52,7 @@ network** hostnames, not `localhost`; the root compose file sets them for the AP
 | `REDIS_URL` | Redis URL. gpp writes it into `.env` and the root compose file sets `redis://{{PROJECT_SLUG}}-redis:6379/0` for the container. Empty or unset disables Redis |
 | `JWT_SECRET` | Secret for signing JWTs. With `NODE_ENV=production` the server **exits at startup** unless it is set, is not a placeholder (the shipped value, or anything containing `change-me`/`changeme`) and is at least 32 characters (`openssl rand -hex 32`); outside production a dev-only fallback is used |
 | `JWT_EXPIRES_IN` / `REFRESH_TOKEN_EXPIRES_IN` | Access / refresh token lifetimes (default `1h` / `30d`) |
+| `REFRESH_TOKEN_REUSE_GRACE_SECONDS` | How long a just-replaced refresh token still works, so two servers refreshing at once don't end the login (default `30`, `0` turns it off) |
 | `NODE_ENV` | `development` (from `env.example.txt`) or `production` (the image default). Production restricts CORS to `CORS_ORIGINS`, hides 5xx error messages and enforces the `JWT_SECRET` check |
 | `CORS_ORIGINS` | Comma-separated allowed origins (production) |
 | `API_PORT` | Server port (default `3001`) |

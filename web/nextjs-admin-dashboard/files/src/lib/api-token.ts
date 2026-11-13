@@ -2,7 +2,9 @@
  * Server-only. The API's access token is short-lived and its refresh token is single-use:
  * presenting a used refresh token again ends that login. Requests that carry the same
  * expired session share one refresh, and a request that arrives shortly after with the
- * old cookie receives the same new pair. This holds within one server process.
+ * old cookie receives the same new pair. This holds within one server process; across
+ * several admin servers, the API's reuse grace window (REFRESH_TOKEN_REUSE_GRACE_SECONDS)
+ * lets a second server's refresh with the same token succeed too.
  */
 
 export interface ApiTokens {

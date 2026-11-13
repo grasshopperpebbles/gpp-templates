@@ -1,6 +1,11 @@
 
 ---
 
+## [Unreleased] - 2026-11-13 - Express refresh reuse grace window
+
+- **Added:** `api/express` and `api/express-mysql`: a refresh token replaced within `REFRESH_TOKEN_REUSE_GRACE_SECONDS` (default 30, `0` turns it off), whose replacement has not been used, gets another new pair in the same login instead of ending it. Reuse after the window, or after the replacement was used, still ends the login. Logged-out tokens get no grace. Documented in each README, `.env.example`, and `env.example.txt`.
+- **Changed:** The admin dashboard's `api-token.ts` comment says that renewals across several servers rely on that window.
+
 ## [Unreleased] - 2026-11-13 - Admin dashboard renews the API token
 
 **Status:** COMPLETED

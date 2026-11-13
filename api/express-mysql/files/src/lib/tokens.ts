@@ -17,6 +17,10 @@ import { ApiError } from '../middleware/error-handler.middleware.js';
  *   via `replacedById`.
  * - Presenting a revoked token again means it was copied (or replayed): the whole
  *   family is revoked, so both the thief and the real client must log in again.
+ * - Except within the reuse grace window (REFRESH_TOKEN_REUSE_GRACE_SECONDS, default 30,
+ *   0 turns it off): a token rotated moments ago whose replacement has not been used yet
+ *   gets another new pair in the same family. Two servers (or tabs) that refresh with the
+ *   same token at the same time then both succeed instead of ending the login.
  * - /auth/logout revokes the presented token.
  *
  * Each family also has a row in `refresh_token_families`. A rotation runs in one transaction
@@ -142,13 +146,37 @@ async function revokeFamily(tx: Db, familyId: string): Promise<void> {
   await tx.refreshToken.updateMany({ where: { familyId, revokedAt: null }, data: { revokedAt: now } });
 }
 
+const DEFAULT_REUSE_GRACE_SECONDS = 30;
+
+/** Read on every call, so a test (or a restart with a new value) sees the current setting. */
+function reuseGraceMs(): number {
+  const raw = process.env.REFRESH_TOKEN_REUSE_GRACE_SECONDS;
+  const seconds = raw === undefined || raw.trim() === '' ? DEFAULT_REUSE_GRACE_SECONDS : Number(raw);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 0;
+}
+
+/**
+ * A revoked token that may still be exchanged: it was rotated (not logged out) within the
+ * grace window, and its replacement is still unused. Call only while holding the family lock.
+ */
+async function withinReuseGrace(tx: Db, tokenId: string): Promise<boolean> {
+  const graceMs = reuseGraceMs();
+  if (graceMs === 0) return false;
+  const current = await tx.refreshToken.findUnique({ where: { id: tokenId } });
+  if (!current?.revokedAt || !current.replacedById) return false;
+  if (Date.now() - current.revokedAt.getTime() > graceMs) return false;
+  const replacement = await tx.refreshToken.findUnique({ where: { id: current.replacedById } });
+  return replacement !== null && replacement.revokedAt === null;
+}
+
 type Rotation =
   | { outcome: 'rotated'; user: { id: string; email: string }; refreshToken: string }
   | { outcome: 'reused' | 'family-revoked' | 'no-user' };
 
 /**
  * Exchange a refresh token for a new pair. The presented token is revoked; presenting a
- * token that is already revoked revokes its whole family. Throws 401.
+ * token that is already revoked revokes its whole family, unless it is within the reuse
+ * grace window (see withinReuseGrace). Throws 401.
  */
 export async function rotateRefreshToken(token: string): Promise<TokenPair> {
   const { sub } = verifyRefreshJwt(token);
@@ -174,7 +202,8 @@ export async function rotateRefreshToken(token: string): Promise<TokenPair> {
         where: { id: row.id, revokedAt: null },
         data: { revokedAt: new Date() },
       });
-      if (claimed.count === 0) {
+      const graceReuse = claimed.count === 0 && (await withinReuseGrace(tx, row.id));
+      if (claimed.count === 0 && !graceReuse) {
         await revokeFamily(tx, row.familyId);
         return { outcome: 'reused' };
       }
@@ -185,7 +214,10 @@ export async function rotateRefreshToken(token: string): Promise<TokenPair> {
       }
 
       const next = await issueRefreshToken(tx, user.id, row.familyId);
-      await tx.refreshToken.update({ where: { id: row.id }, data: { replacedById: next.id } });
+      // A grace reuse keeps the first replacement as the link, so the chain stays one path.
+      if (!graceReuse) {
+        await tx.refreshToken.update({ where: { id: row.id }, data: { replacedById: next.id } });
+      }
       return { outcome: 'rotated', user, refreshToken: next.token };
     })
   );
