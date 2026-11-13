@@ -1,3 +1,4 @@
+// gpp:seo-rank-math (generatePostMetadata uses src/lib/seo/rank-math.ts)
 /**
  * Post utility functions for headless CMS
  *
@@ -24,6 +25,8 @@ import {
   type PostCategoriesResponse,
   type PostTagsResponse,
 } from './graphql'
+import { SITE_CONFIG } from './config'
+import { rankMathMetadata } from './seo/rank-math'
 
 // ============================================================================
 // POST FETCHING FUNCTIONS
@@ -320,31 +323,32 @@ export function getPrimaryCategory(post: Post): { name: string; slug: string } |
 }
 
 /**
- * Build SEO metadata from post
+ * Build SEO fields from a post (Rank Math via WPGraphQL for Rank Math, with fallbacks).
  */
 export function buildPostSEO(post: Post) {
-  const seo = post.seo
-
+  const metadata = rankMathMetadata(post, { url: SITE_CONFIG.url, name: SITE_CONFIG.name })
+  const og = post.seo?.openGraph
   return {
-    title: seo?.title || post.title,
-    description: seo?.metaDesc || generateExcerpt(post.excerpt || post.content),
+    title: post.seo?.title || post.title,
+    description: (metadata.description as string) || generateExcerpt(post.excerpt || post.content),
     openGraph: {
-      title: seo?.opengraphTitle || seo?.title || post.title,
-      description: seo?.opengraphDescription || seo?.metaDesc || generateExcerpt(post.excerpt || post.content),
-      image: seo?.opengraphImage?.sourceUrl || post.featuredImage?.node?.sourceUrl,
+      title: og?.title || post.seo?.title || post.title,
+      description: og?.description || (metadata.description as string),
+      image: og?.image?.secureUrl || og?.image?.url || post.featuredImage?.node?.sourceUrl,
       type: 'article',
       publishedTime: post.date,
       modifiedTime: post.modified,
       authors: [post.author?.node?.name],
     },
-    canonical: seo?.canonical,
+    canonical: metadata.alternates?.canonical as string | undefined,
   }
 }
 
 /**
  * Generate Next.js Metadata object for a blog post
  * This function is designed to be used within a `generateMetadata` function in a page component.
- * 
+ * Rank Math fields come first; empty ones fall back to the post title and excerpt.
+ *
  * @param post - The Post object from GraphQL
  * @param siteName - The site name (defaults to SITE_CONFIG.name)
  * @param siteUrl - The site URL (defaults to SITE_CONFIG.url)
@@ -355,49 +359,11 @@ export async function generatePostMetadata(
   siteName?: string,
   siteUrl?: string
 ): Promise<import('next').Metadata> {
-  const seo = post.seo
-  const title = seo?.title || post.title
-  const description = seo?.metaDesc || generateExcerpt(post.excerpt || post.content || '', 160)
-  
-  // Get site config if not provided
-  const { SITE_CONFIG } = await import('./config')
-  const finalSiteName = siteName || SITE_CONFIG.name
-  const finalSiteUrl = siteUrl || SITE_CONFIG.url
-  
-  const canonicalUrl = seo?.canonical || `${finalSiteUrl}/blog/${post.slug}`
-  
-  // Get featured image or OG image
-  const ogImage = seo?.opengraphImage?.sourceUrl || post.featuredImage?.node?.sourceUrl
-  const images = ogImage ? [{ url: ogImage, alt: title }] : []
-  
-  // Get tags for keywords
-  const keywords = post.tags?.nodes?.map(tag => tag.name) || []
-  
-  return {
-    title: title,
-    description: description,
-    keywords: keywords.length > 0 ? keywords : undefined,
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    openGraph: {
-      title: seo?.opengraphTitle || title,
-      description: seo?.opengraphDescription || description,
-      url: canonicalUrl,
-      siteName: finalSiteName,
-      type: 'article',
-      publishedTime: post.date,
-      modifiedTime: post.modified,
-      authors: post.author?.node?.name ? [post.author.node.name] : [],
-      images: images,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: seo?.opengraphTitle || title,
-      description: seo?.opengraphDescription || description,
-      images: ogImage ? [ogImage] : [],
-    },
-  }
+  return rankMathMetadata(post, {
+    name: siteName || SITE_CONFIG.name,
+    url: siteUrl || SITE_CONFIG.url,
+    postPath: (p) => `/blog/${p.slug}`,
+  })
 }
 
 // ============================================================================

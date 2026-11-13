@@ -13,6 +13,7 @@ import {
   type ResolvedPath,
 } from '@/lib/posts'
 import { SITE_CONFIG } from '@/lib/config'
+import { PostJsonLd } from '@/components/seo/JsonLd' // gpp:seo-rank-math
 import type { Post, PostCategory } from '@/lib/graphql'
 
 interface PageProps {
@@ -82,6 +83,7 @@ function PostView({ post, resolved }: { post: Post; resolved: ResolvedPath }) {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <PostJsonLd post={post} site={{ url: SITE_CONFIG.url, name: SITE_CONFIG.name }} />
       {/* Breadcrumbs */}
       <nav className="mb-8 text-sm text-muted-foreground" aria-label="Breadcrumb">
         <ol className="flex items-center gap-2 flex-wrap">

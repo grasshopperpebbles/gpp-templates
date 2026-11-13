@@ -1,0 +1,22 @@
+{
+  "//": "SHA-256 of every released version of these Next.js headless WordPress pack files (gpp-cli templates/web and gpp-templates web/*/files history). gpp add seo replaces a project file only when its hash is listed here.",
+  "files": {
+    "src/app/api/articles/[slug]/route.ts": [
+      "52fb4818725f2ef556b0814ab8b2bf56b600c5a243c3b354212f000ed2621093"
+    ],
+    "src/app/article/[...slug]/page.tsx": [
+      "7b61059f73fb78bc34b7f33a853b1967cd8edb2b4c22a4e2a56278dde61997cd"
+    ],
+    "src/app/blog/[...slug]/page.tsx": [
+      "1da6fa7147523cbc91c067fcadd5e7d46f1ac9abd65aca4bd8ddda46aadb2e7b"
+    ],
+    "src/lib/graphql.ts": [
+      "56bec822cbacdfb1b4e50bbe808cad97de3312c7227a66bd2da8bfd725cc8019"
+    ],
+    "src/lib/posts.ts": [
+      "cd85e523d8bc92e10115a4ada0837687404ab2c99e14971e85f9d51701c4320d",
+      "d4f911a1b02e4361299171913864a447acc638ecbaf959c5fef55cc0b4643583",
+      "fbf44aad5f96de4ee69a698b8354922100b07ab693007f0cc0d504e17051d4d5"
+    ]
+  }
+}

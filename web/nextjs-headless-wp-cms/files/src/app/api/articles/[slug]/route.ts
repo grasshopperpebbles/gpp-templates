@@ -1,3 +1,4 @@
+// gpp:seo-rank-math (metaDescription reads Rank Math via WPGraphQL for Rank Math)
 import { NextResponse } from 'next/server'
 import { getPostBySlug, getPrimaryCategory, generateExcerpt } from '@/lib/posts'
 
@@ -27,7 +28,7 @@ export async function GET(
       content: post.content,
       category: category?.name || 'Uncategorized',
       metaTitle: post.seo?.title || post.title,
-      metaDescription: post.seo?.metaDesc || generateExcerpt(post.excerpt || post.content),
+      metaDescription: post.seo?.description || generateExcerpt(post.excerpt || post.content),
       keywords: post.tags?.nodes?.map((tag) => tag.name).join(', ') || '',
       publishedAt: post.date,
       updatedAt: post.modified,

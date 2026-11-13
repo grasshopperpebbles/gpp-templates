@@ -1,3 +1,6 @@
+// gpp:seo-rank-math (post SEO comes from WPGraphQL for Rank Math)
+import { RANK_MATH_SEO_FIELDS, RANK_MATH_SEO_LIST_FIELDS, type RankMathSeo } from './seo/rank-math'
+
 interface GraphQLResponse<T> {
   data?: T
   errors?: Array<{
@@ -1207,16 +1210,8 @@ export interface Post {
       slug: string
     }>
   }
-  seo?: {
-    title?: string
-    metaDesc?: string
-    opengraphTitle?: string
-    opengraphDescription?: string
-    opengraphImage?: {
-      sourceUrl: string
-    }
-    canonical?: string
-  }
+  uri?: string
+  seo?: RankMathSeo
 }
 
 export interface PostCategory {
@@ -1325,13 +1320,8 @@ export const GET_POSTS = `
             slug
           }
         }
-        seo {
-          title
-          metaDesc
-          opengraphImage {
-            sourceUrl
-          }
-        }
+        uri
+        seo { ${RANK_MATH_SEO_LIST_FIELDS} }
       }
       pageInfo {
         hasNextPage
@@ -1349,6 +1339,7 @@ export const GET_POST_BY_SLUG = `
       id
       databaseId
       title
+      slug
       content
       excerpt
       date
@@ -1394,16 +1385,8 @@ export const GET_POST_BY_SLUG = `
           slug
         }
       }
-      seo {
-        title
-        metaDesc
-        opengraphTitle
-        opengraphDescription
-        opengraphImage {
-          sourceUrl
-        }
-        canonical
-      }
+      uri
+      seo { ${RANK_MATH_SEO_FIELDS} }
     }
   }
 `
