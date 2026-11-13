@@ -1,6 +1,12 @@
 
 ---
 
+## Session: Rank Math setup script and guide (2026-11-13)
+
+**Status:** COMPLETED
+
+`add-ons/seo/rank-math` matches gpp-cli. The setup script sets `rank_math_registration_skip` and breadcrumbs. The README points at the query the post page fetches. Command behavior, tests, and the gitignore negation are in gpp-cli. `npm run check:packs` there is 1/1.
+
 ## Session: SaaS dashboard and webapp packs fixed (2026-10-30)
 
 **Status:** COMPLETED

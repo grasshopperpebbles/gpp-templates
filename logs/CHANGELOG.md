@@ -1,6 +1,12 @@
 
 ---
 
+## [Unreleased] - 2026-11-13 - Rank Math setup skips registration and turns breadcrumbs on
+
+**Status:** COMPLETED
+
+- `add-ons/seo/rank-math`: `seo-rank-math-setup.sh` sets `rank_math_registration_skip=1` and `general.breadcrumbs=on`. Without them the WPGraphQL `seo` field errors, or a query that selects `breadcrumbs` fails. The guide tells you to edit the query the post page's `generateMetadata` calls (`lib/graphql.ts`, or a content source such as `src/content/sources/wordpress.ts`). Same files in gpp-cli. The gitignore negation that commits REST Meta for Rank Math lives in the gpp-cli command.
+
 ## [Unreleased] - 2026-10-30 - SaaS dashboard and webapp packs keep the API token on the server
 
 **Status:** COMPLETED

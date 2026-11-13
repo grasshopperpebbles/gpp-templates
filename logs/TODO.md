@@ -3,6 +3,10 @@
 
 ## gpp-templates repository
 
+### Rank Math SEO add-on (2026-11-13)
+
+- [x] `add-ons/seo/rank-math`: setup script sets `rank_math_registration_skip=1` and `general.breadcrumbs=on`. The guide points at the query the post page fetches. Identical to gpp-cli. The gitignore negation is in the gpp-cli command.
+
 **Repository:** [grasshopperpebbles/gpp-templates](https://github.com/grasshopperpebbles/gpp-templates)
 
 This repo holds extended templates for GPP CLI. Install with:

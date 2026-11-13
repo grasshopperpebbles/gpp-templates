@@ -2,8 +2,9 @@
 # gpp add seo rank-math: WordPress side. Runs inside the WordPress container, safe to re-run.
 #   docker compose exec -T <wordpress-service> bash -c "$(cat seo-rank-math-setup.sh)"
 # Installs and activates WPGraphQL, Rank Math, WPGraphQL for Rank Math and REST Meta for Rank Math,
-# makes Article the default schema for posts, turns on Rank Math's headless support, and turns off
-# Rank Math's sitemap (the Next.js app serves sitemap.xml). Exits 1 if a plugin could not be set up.
+# makes Article the default schema for posts, turns on Rank Math's headless support and breadcrumbs,
+# skips the registration wizard (rank_math_registration_skip), and turns off Rank Math's sitemap
+# (the Next.js app serves sitemap.xml). Exits 1 if a plugin could not be set up.
 set -u
 
 WPGRAPHQL_RANK_MATH_ZIP="https://github.com/AxeWP/wp-graphql-rank-math/releases/download/0.3.4/wp-graphql-rank-math.zip"
@@ -57,8 +58,10 @@ if wpc plugin is-active seo-by-rank-math >/dev/null 2>&1; then
   echo "[gpp] Configuring Rank Math..."
   wpc eval '
     update_option( "rank_math_setup_completed", true );
+    update_option( "rank_math_registration_skip", "1" );
     $general = get_option( "rank-math-options-general", array() );
     $general["headless_support"] = "on";
+    $general["breadcrumbs"] = "on";
     update_option( "rank-math-options-general", $general );
     $titles = get_option( "rank-math-options-titles", array() );
     $titles["pt_post_default_rich_snippet"] = "article";
@@ -67,7 +70,7 @@ if wpc plugin is-active seo-by-rank-math >/dev/null 2>&1; then
     if ( class_exists( "\\RankMath\\Helper" ) ) {
       \RankMath\Helper::update_modules( array( "rich-snippet" => "on", "sitemap" => "off" ) );
     }
-    echo "Rank Math: headless support on, posts default to Article schema, sitemap off.\n";
+    echo "Rank Math: headless support on, breadcrumbs on, registration skipped, posts default to Article schema, sitemap off.\n";
   ' || failed+=("rank-math-settings")
 fi
 

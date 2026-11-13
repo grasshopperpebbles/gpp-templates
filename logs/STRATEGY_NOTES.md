@@ -1,6 +1,12 @@
 
 ---
 
+## Rank Math add-on: two settings and the live query (2026-11-13)
+
+**Decision:** The bundled SEO add-on sets `rank_math_registration_skip` and `general.breadcrumbs` in `seo-rank-math-setup.sh`, and the guide names the query the post page's `generateMetadata` calls. These two files stay identical to gpp-cli. Tracking `rest-meta-for-rank-math` in git is a gpp-cli command behavior, not a pack file.
+
+**Rationale:** The GP run showed the `seo` field errors without the registration skip, and `breadcrumbs` is absent from the schema until that module is on. GP's article pages do not fetch through `lib/graphql.ts`.
+
 ## Web packs keep API tokens on the server (2026-10-29)
 
 **Decision:** a Next pack that signs in with NextAuth keeps the API token in the JWT cookie only. The session callback never exposes it, and browser code calls same-origin routes that add it on the server and refuse cross-origin writes. Applied to `nextjs-admin-dashboard` (2026-10-29), `nextjs-saas-dashboard` and `nextjs-webapp` (2026-10-30), with one shared `src/lib/forward.ts`.

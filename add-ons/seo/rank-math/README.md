@@ -8,7 +8,7 @@ Added by `gpp add seo rank-math`. Run it again at any time. It only creates miss
 **WordPress** (in the CMS app):
 
 - `wp-content/plugins/rest-meta-for-rank-math/`: exposes Rank Math's per-post fields in the core REST API.
-- `scripts/seo-rank-math-setup.sh`: installs and activates WPGraphQL, Rank Math SEO, WPGraphQL for Rank Math (0.3.4 from GitHub) and REST Meta for Rank Math. It turns on Rank Math's headless support, makes Article the default schema for posts, and turns off Rank Math's sitemap. `gpp add seo` runs the script when the WordPress container is running. Otherwise, run it yourself:
+- `scripts/seo-rank-math-setup.sh`: installs and activates WPGraphQL, Rank Math SEO, WPGraphQL for Rank Math (0.3.4 from GitHub) and REST Meta for Rank Math. It turns on Rank Math's headless support and breadcrumbs, sets `rank_math_registration_skip` so the `seo` field does not error, makes Article the default schema for posts, and turns off Rank Math's sitemap. `gpp add seo` runs the script when the WordPress container is running. Otherwise, run it yourself:
 
   ```bash
   docker compose up -d
@@ -43,7 +43,7 @@ Schema: don't write `rank_math_rich_snippet` per post. In current Rank Math it i
 
 `gpp add seo` replaces the pack's post query, SEO helpers and post pages only when they are byte-for-byte a version that gpp shipped. If you have changed one, make these edits yourself.
 
-**1. The post query** (`lib/graphql.ts` or wherever the post is fetched). Replace Yoast-style fields (`metaDesc`, `opengraphTitle`, `opengraphDescription`, `opengraphImage`, `canonical`) with the Rank Math selection, and ask for `uri` and `slug`:
+**1. The query the post page actually uses.** Find the function that page's `generateMetadata` calls, and edit the query it runs. In a stock gpp pack that file is `lib/graphql.ts`. In a project with a content layer it is the source the page calls, for example `src/content/sources/wordpress.ts`. Files that still mention Yoast field names may be unused. Replace those names (`metaDesc`, `opengraphTitle`, `opengraphDescription`, `opengraphImage`, `canonical`) with the Rank Math selection, and ask for `uri` and `slug`:
 
 ```ts
 import { RANK_MATH_SEO_FIELDS, RANK_MATH_SEO_LIST_FIELDS, type RankMathSeo } from './seo/rank-math'
