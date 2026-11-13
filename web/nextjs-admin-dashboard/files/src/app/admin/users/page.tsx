@@ -9,7 +9,7 @@ export default function UsersManagementPage() {
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
-    queryFn: () => apiClient.get<User[]>("/api/admin/users"),
+    queryFn: () => apiClient.get<User[]>("/api/v1/users"),
   });
 
   if (isLoading) {

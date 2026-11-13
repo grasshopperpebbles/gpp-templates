@@ -3,6 +3,12 @@
 
 ## gpp-templates repository
 
+### Admin dashboard beside a studio (2026-11-13)
+
+- [x] First sign-in no longer signs out when NextAuth `update()` is empty.
+- [x] User page calls `/api/v1/users`. The dev script writes `NEXTAUTH_SECRET` and sets `NEXTAUTH_URL` to the bound port.
+- [x] Next packs that pin port 3000 check that the port is free before `next dev`.
+
 ### Rank Math SEO add-on (2026-11-13)
 
 - [x] `add-ons/seo/rank-math`: setup script sets `rank_math_registration_skip=1` and `general.breadcrumbs=on`. The guide points at the query the post page fetches. Identical to gpp-cli. The gitignore negation is in the gpp-cli command.

@@ -53,6 +53,8 @@ cp env.example.txt .env.local
 API_URL=http://api:4000/api/v1
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
+# `npm run dev` replaces a placeholder secret and sets NEXTAUTH_URL to the
+# port Next binds. The default port is 3000. PORT=3013 npm run dev uses 3013.
 ```
 
 4. **Generate CRUD operations** (required):

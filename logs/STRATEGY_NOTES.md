@@ -1,6 +1,12 @@
 
 ---
 
+## Admin dashboard session matches the port Next binds (2026-11-13)
+
+**Decision:** The admin pack does not call NextAuth `update()` to judge the first sign-in. The dev script writes `NEXTAUTH_SECRET` into `.env.local` and sets `NEXTAUTH_URL` to the port Next binds. The default stays 3000. Account users are fetched at `/api/v1/users`.
+
+**Rationale:** `update()` is empty until a session already exists, so a successful login was signed out. NextAuth assumes `http://localhost:3000` when `NEXTAUTH_URL` is unset, and the cookie cannot be read from another port. The gpp-cli command that registers `platforms.admin` is recorded there.
+
 ## Rank Math add-on: two settings and the live query (2026-11-13)
 
 **Decision:** The bundled SEO add-on sets `rank_math_registration_skip` and `general.breadcrumbs` in `seo-rank-math-setup.sh`, and the guide names the query the post page's `generateMetadata` calls. These two files stay identical to gpp-cli. Tracking `rest-meta-for-rank-math` in git is a gpp-cli command behavior, not a pack file.

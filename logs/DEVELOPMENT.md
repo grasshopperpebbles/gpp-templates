@@ -1,6 +1,12 @@
 
 ---
 
+## Session: Admin dashboard login and the session port (2026-11-13)
+
+**Status:** COMPLETED
+
+The generated admin app signed out a successful admin login, and the session cookie was written for port 3000 while the server was on another port. `AuthContext` no longer uses `update()` on the first sign-in. `scripts/dev.cjs` checks the port, writes `NEXTAUTH_SECRET`, and sets `NEXTAUTH_URL` to the port Next binds. User pages call `/api/v1/users`. The other Next packs that pin `-p 3000` check the port first. Command behavior and tests are in gpp-cli.
+
 ## Session: Rank Math setup script and guide (2026-11-13)
 
 **Status:** COMPLETED

@@ -1,6 +1,14 @@
 
 ---
 
+## [Unreleased] - 2026-11-13 - Admin dashboard login, user route, and dev port
+
+**Status:** COMPLETED
+
+- `web/nextjs-admin-dashboard`: the first sign-in no longer calls NextAuth `update()` and signs the user out when that call is empty. `authorize()` still rejects a non-admin. The stock user page calls `/api/v1/users`, and `src/app/api/v1/[...path]` forwards that to `<API_URL>/<path>`.
+- `npm run dev` (`scripts/dev.cjs`) checks the listen port, writes a real `NEXTAUTH_SECRET` into `.env.local` when the value is missing or a placeholder, and sets `NEXTAUTH_URL` to the port Next binds. Default port stays 3000. `PORT=3013` uses 3013 for the server and the cookie.
+- `nextjs-webapp`, `nextjs-saas-dashboard`, and `nextjs-app-landing` check that port 3000 is free before `next dev` (`scripts/ensure-port.cjs`). Same copies of webapp and saas-dashboard are in gpp-cli.
+
 ## [Unreleased] - 2026-11-13 - Rank Math setup skips registration and turns breadcrumbs on
 
 **Status:** COMPLETED

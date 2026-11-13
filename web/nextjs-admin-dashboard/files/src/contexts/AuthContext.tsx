@@ -48,18 +48,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         redirect: false,
       });
 
-      if (!result || result.error) {
+      if (!result || result.error || result.ok === false) {
         throw new ApiClientError(result?.error || "Login failed");
       }
-
-      const updated = await update();
-      const nextRole = updated?.user?.role ?? session?.user?.role;
-      if (nextRole !== "admin") {
-        await signOut({ redirect: false });
-        throw new Error("Access denied. Admin privileges required.");
-      }
+      // authorize() already returns null unless the account is an admin, and that
+      // comes back as result.error. update() returns nothing until this client
+      // already has a session, so its empty result is not "not an admin".
     },
-    [session?.user?.role, update]
+    []
   );
 
   const logout = useCallback(async () => {
