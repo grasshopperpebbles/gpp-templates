@@ -1,0 +1,35 @@
+{
+  "name": "seo",
+  "displayName": "Rank Math SEO (headless WordPress)",
+  "description": "Per-post Rank Math SEO for headless WordPress + Next.js: REST access to the fields, WPGraphQL for Rank Math, Next.js metadata, JSON-LD and sitemap",
+  "version": "1.0.0",
+  "platforms": ["cms", "web"],
+  "variants": {
+    "seo": ["rank-math"],
+    "cms": ["cms-only", "cms-ecommerce", "ecommerce-cms", "ecommerce-only"],
+    "web": ["nextjs-headless-wp-cms", "nextjs-headless-wp-full", "nextjs-headless-wp-ecommerce"]
+  },
+  "wordpressPlugins": {
+    "wp-graphql": "wordpress.org",
+    "seo-by-rank-math": "wordpress.org",
+    "wp-graphql-rank-math": "https://github.com/AxeWP/wp-graphql-rank-math/releases/download/0.3.4/wp-graphql-rank-math.zip",
+    "rest-meta-for-rank-math": "bundled (rank-math/wordpress/rest-meta-for-rank-math)"
+  },
+  "files": {
+    "cms": {
+      "rank-math/wordpress/rest-meta-for-rank-math/": "wp-content/plugins/rest-meta-for-rank-math/",
+      "rank-math/wordpress/seo-rank-math-setup.sh": "scripts/seo-rank-math-setup.sh"
+    },
+    "web": {
+      "rank-math/web/src/lib/seo/rank-math.ts": "src/lib/seo/rank-math.ts",
+      "rank-math/web/src/components/seo/JsonLd.tsx": "src/components/seo/JsonLd.tsx",
+      "rank-math/web/app/sitemap.ts": "<app>/sitemap.ts",
+      "rank-math/web/app/robots.ts": "<app>/robots.ts",
+      "rank-math/README.md": "docs/SEO_RANK_MATH.md"
+    }
+  },
+  "instructions": {
+    "command": "gpp add seo rank-math [--dry-run] [--force]",
+    "guide": "docs/SEO_RANK_MATH.md in the web app"
+  }
+}

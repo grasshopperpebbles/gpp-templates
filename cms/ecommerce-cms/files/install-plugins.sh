@@ -221,13 +221,32 @@ install_plugin "jwt-authentication-for-wp-rest-api" "JWT Authentication"
 
 # SEO - Rank Math with GraphQL support
 install_plugin "seo-by-rank-math" "Rank Math SEO"
-install_github_plugin "AxeWP/wp-graphql-rank-math" "wp-graphql-rank-math" "v0.3.4" "WPGraphQL Rank Math"
+install_github_plugin "AxeWP/wp-graphql-rank-math" "wp-graphql-rank-math" "0.3.4" "WPGraphQL Rank Math"
 
 # Configure Rank Math
 if wp plugin is-active seo-by-rank-math --allow-root --quiet 2>/dev/null; then
     echo "⏳ Configuring Rank Math SEO..."
     wp eval 'update_option("rank_math_setup_completed", true);' --allow-root --quiet 2>/dev/null || true
+    # Headless SEO (gpp add seo rank-math): headless support on, posts default to Article schema,
+    # Rank Math sitemap off (the Next.js app serves sitemap.xml).
+    wp eval '
+      $general = get_option( "rank-math-options-general", array() );
+      $general["headless_support"] = "on";
+      update_option( "rank-math-options-general", $general );
+      $titles = get_option( "rank-math-options-titles", array() );
+      $titles["pt_post_default_rich_snippet"] = "article";
+      $titles["pt_post_default_article_type"] = "Article";
+      update_option( "rank-math-options-titles", $titles );
+      if ( class_exists( "\\RankMath\\Helper" ) ) {
+        \RankMath\Helper::update_modules( array( "rich-snippet" => "on", "sitemap" => "off" ) );
+      }
+    ' --allow-root --quiet 2>/dev/null || echo "⚠️  Could not apply Rank Math headless settings"
     echo "✅ Rank Math configured"
+fi
+
+# REST Meta for Rank Math: Rank Math SEO fields in the REST API (bundled in wp-content/plugins)
+if wp plugin is-installed rest-meta-for-rank-math --allow-root --quiet 2>/dev/null; then
+    wp plugin activate rest-meta-for-rank-math --allow-root --quiet && echo "✅ REST Meta for Rank Math activated" || true
 fi
 
 # Security
