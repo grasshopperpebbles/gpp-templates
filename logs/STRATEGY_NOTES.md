@@ -1,6 +1,12 @@
 
 ---
 
+## Admin dashboard renews the API token on the server (2026-11-13)
+
+**Decision:** The refresh token stays in the encrypted session cookie next to the access token. The server renews it shortly before expiry; the browser never sees either token.
+
+**Rationale:** The session lasts 30 days and the API token 1 hour. The Express template's refresh tokens are single-use with reuse detection, so concurrent renewals must share one exchange. Several server instances would need a shared store for that; a single instance does not.
+
 ## Admin dashboard session matches the port Next binds (2026-11-13)
 
 **Decision:** The admin pack does not call NextAuth `update()` to judge the first sign-in. The dev script writes `NEXTAUTH_SECRET` into `.env.local` and sets `NEXTAUTH_URL` to the port Next binds. The default stays 3000. Account users are fetched at `/api/v1/users`.

@@ -1,5 +1,7 @@
-import { getToken } from "next-auth/jwt";
+import { encode, getToken, type JWT } from "next-auth/jwt";
 import { type NextRequest, NextResponse } from "next/server";
+import { expiresSoon, refreshApiTokens } from "@/lib/api-token";
+import { API_URL, authOptions } from "@/lib/auth-config";
 
 /**
  * Server-only: forwards a browser request to the backend with the signed-in
@@ -25,6 +27,17 @@ function refuse(status: number, message: string) {
   return NextResponse.json({ message }, { status, headers: { "cache-control": "no-store" } });
 }
 
+/** Same cookie name and lifetime that NextAuth and getToken() use. */
+async function saveSession(response: NextResponse, token: JWT) {
+  const secure = process.env.NEXTAUTH_URL ? process.env.NEXTAUTH_URL.startsWith("https://") : !!process.env.VERCEL;
+  const maxAge = authOptions.session?.maxAge ?? 30 * 24 * 60 * 60;
+  response.cookies.set(
+    `${secure ? "__Secure-" : ""}next-auth.session-token`,
+    await encode({ token, secret: process.env.NEXTAUTH_SECRET!, maxAge }),
+    { httpOnly: true, sameSite: "lax", path: "/", secure, maxAge },
+  );
+}
+
 export async function forwardToApi(request: NextRequest, { base, path = [], requireAdmin = false, allowAnonymous = false }: ForwardOptions) {
   // "." and ".." would let a caller step outside `base` on the backend.
   if (path.some((segment) => segment === "." || segment === "..")) {
@@ -39,7 +52,15 @@ export async function forwardToApi(request: NextRequest, { base, path = [], requ
     }
   }
 
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  let token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  // getToken() reads the cookie without running the jwt callback, so renewal happens here too.
+  let renewed: JWT | null = null;
+  if (token?.accessToken && token.refreshToken && expiresSoon(token.accessToken)) {
+    const tokens = await refreshApiTokens(API_URL, token.refreshToken);
+    if (!tokens) return refuse(401, "Session expired. Sign in again.");
+    token = { ...token, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+    renewed = token;
+  }
   const accessToken = token?.accessToken;
   if (requireAdmin && (!accessToken || token?.role !== "admin")) {
     return refuse(401, "Not signed in");
@@ -74,5 +95,7 @@ export async function forwardToApi(request: NextRequest, { base, path = [], requ
     const value = upstream.headers.get(name);
     if (value) responseHeaders.set(name, value);
   }
-  return new NextResponse(upstream.body, { status: upstream.status, headers: responseHeaders });
+  const response = new NextResponse(upstream.body, { status: upstream.status, headers: responseHeaders });
+  if (renewed) await saveSession(response, renewed);
+  return response;
 }

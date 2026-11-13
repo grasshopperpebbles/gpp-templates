@@ -1,6 +1,14 @@
 
 ---
 
+## Session: Admin dashboard token renewal (2026-11-13)
+
+**Status:** COMPLETED
+
+Found in cultural-intelligence-platform: after an hour the Users page showed "Error loading users"; the forwarder returned the API's 401 "Token has expired" while the NextAuth session was still valid. `forward.ts` reads the cookie with `getToken()`, which does not run the jwt callback, so renewal is in both places through a shared helper. A refresh exchange is de-duplicated per refresh token, and its result is reused for 60 seconds by requests still carrying the old cookie. This holds within one server process.
+
+Evidence (API started with `JWT_EXPIRES_IN=75s`): signed in at 18:50:55; three parallel `/api/v1/users` calls at 18:51:34 all 200; `refresh_tokens` showed one rotation at 18:51:20 in the same family. A call at 18:53:37, past the 60-second reuse window, returned 200 and rotated again from the newer token, so the renewed cookie was stored. Admin `npm run build` passed.
+
 ## Session: Admin dashboard login and the session port (2026-11-13)
 
 **Status:** COMPLETED

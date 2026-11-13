@@ -1,5 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { expiresSoon, refreshApiTokens } from "@/lib/api-token";
 
 /** Backend API base URL, used on the server only (sign-in and the /api/admin forwarder). */
 export const API_URL = (
@@ -10,7 +11,7 @@ export const API_URL = (
 ).replace(/\/$/, "");
 
 type ApiUser = { id: string | number; email: string; name?: string | null; role?: string };
-type LoginResponse = { access_token?: string; token?: string; user?: ApiUser };
+type LoginResponse = { access_token?: string; token?: string; refresh_token?: string; user?: ApiUser };
 
 /** The Express API packs wrap responses in `{ success, data }`; FastAPI returns the body as is. */
 function unwrap<T>(body: unknown): T {
@@ -78,6 +79,7 @@ export const authOptions: NextAuthOptions = {
             role: user.role || "user",
             // Store the API token for making authenticated API requests
             accessToken,
+            refreshToken: data.refresh_token,
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -104,8 +106,21 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.role = user.role;
         // The API token stays in the encrypted, HTTP-only session cookie.
-        // Only server code (src/app/api/admin) reads it.
+        // Only server code (src/lib/forward.ts) reads it.
         token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
+        return token;
+      }
+      // The session outlives the API token; renew it before it lapses.
+      if (token.accessToken && token.refreshToken && expiresSoon(token.accessToken)) {
+        const tokens = await refreshApiTokens(API_URL, token.refreshToken);
+        if (tokens) {
+          token.accessToken = tokens.accessToken;
+          token.refreshToken = tokens.refreshToken;
+        } else {
+          delete token.accessToken;
+          delete token.refreshToken;
+        }
       }
       return token;
     },

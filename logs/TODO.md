@@ -8,6 +8,8 @@
 - [x] First sign-in no longer signs out when NextAuth `update()` is empty.
 - [x] User page calls `/api/v1/users`. The dev script writes `NEXTAUTH_SECRET` and sets `NEXTAUTH_URL` to the bound port.
 - [x] Next packs that pin port 3000 check that the port is free before `next dev`.
+- [x] Session keeps the API refresh token and renews the access token before it expires (jwt callback and forwarder).
+- [ ] Token renewal de-duplicates within one server process only; several instances need a shared store.
 
 ### Rank Math SEO add-on (2026-11-13)
 

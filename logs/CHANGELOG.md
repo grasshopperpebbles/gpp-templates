@@ -1,6 +1,12 @@
 
 ---
 
+## [Unreleased] - 2026-11-13 - Admin dashboard renews the API token
+
+**Status:** COMPLETED
+
+- `web/nextjs-admin-dashboard`: the session kept the API access token for 30 days but dropped the refresh token, so every API call failed once the access token expired (1 hour on the Express template). Sign-in now keeps `refresh_token`. The jwt callback and `src/lib/forward.ts` renew the token at `<API_URL>/auth/refresh` in its last minute, and the forwarder writes the renewed session cookie. New `src/lib/api-token.ts` makes requests that carry the same expired session share one refresh, because the Express template revokes the whole login when a refresh token is presented twice.
+
 ## [Unreleased] - 2026-11-13 - Admin dashboard login, user route, and dev port
 
 **Status:** COMPLETED

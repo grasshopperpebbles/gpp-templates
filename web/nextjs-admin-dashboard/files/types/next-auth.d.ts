@@ -17,6 +17,7 @@ declare module "next-auth" {
     name?: string | null;
     role?: "user" | "admin";
     accessToken?: string;
+    refreshToken?: string;
   }
 }
 
@@ -27,5 +28,6 @@ declare module "next-auth/jwt" {
     name?: string | null;
     role?: "user" | "admin";
     accessToken?: string;
+    refreshToken?: string;
   }
 }
