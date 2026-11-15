@@ -53,6 +53,7 @@ services:
       APP_NAME: ${SITE_NAME:-Strapi Dev}
       APP_ENV: development
       APP_KEY: ${STRAPI_APP_KEY:-}
+      APP_KEYS: ${STRAPI_APP_KEY:-}
       API_TOKEN_SALT: ${STRAPI_API_TOKEN_SALT:-}
       ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET:-}
       TRANSFER_TOKEN_SALT: ${STRAPI_TRANSFER_TOKEN_SALT:-}
@@ -70,7 +71,7 @@ services:
 
       # CORS
       CORS_ENABLED: true
-      CORS_ORIGIN: ${FRONTEND_URL:-http://localhost:3001}
+      CORS_ORIGIN: ${FRONTEND_URL:-http://localhost:3004}
 
       # Timezone
       TZ: ${TIMEZONE:-America/New_York}
