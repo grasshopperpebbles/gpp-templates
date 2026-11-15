@@ -1,6 +1,10 @@
 
 ---
 
+## Session: Pack dot-files survive npm (2026-11-15)
+
+`git mv` of the 31 pack-content `.gitignore` files under `*/*/files/` and the npm-package add-on's `.npmignore`. The repo's own `.gitignore` and `.specstory/.gitignore` keep their names. gpp-cli's bundled packs got the same renames; `npm run check:packs` in gpp-cli passes against this branch.
+
 ## Session: Express refresh reuse grace window (2026-11-13)
 
 `rotateRefreshToken` (`src/lib/tokens.ts`): when the claim finds the token already revoked, it checks under the family lock that the token has `replacedById`, `revokedAt` is within the window, and the replacement is unrevoked. If all three hold, it issues another token in the same family; otherwise it revokes the family as before. `tokens.ts` and `tests/auth.test.ts` are identical to gpp-cli's bundled copies and to cultural-intelligence-platform's API.

@@ -120,6 +120,15 @@ template-name/
 └── postInstall.json  # Optional: post-install actions
 ```
 
+### Dot-files npm strips: `_gitignore` and `_npmignore`
+
+Store a pack's `.gitignore` as `_gitignore` and its `.npmignore` as `_npmignore`. npm removes
+every nested `.gitignore` and `.npmignore` when gpp-cli is published (a nested `.npmignore` also
+hides the files next to it), so packs bundled in the CLI would lose them. gpp writes them into the
+project as `.gitignore` and `.npmignore`. A pack that still holds `.gitignore` is copied as it is,
+and when a folder holds both names, `.gitignore` wins. gpp-cli older than v0.9.110 writes a
+literal `_gitignore`. Other dot-files (`.dockerignore`, `.env.example`, `.nvmrc`) keep their names.
+
 ## Usage After Installation
 
 Once installed, use templates with:

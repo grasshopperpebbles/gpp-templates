@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-15 - Pack dot-files stored as `_gitignore` / `_npmignore`
+
+- **Changed:** Every pack `files/.gitignore` (31 packs) is now `files/_gitignore`, and `add-ons/npm-package/api/express/.npmignore` is now `_npmignore`. npm strips nested `.gitignore` and `.npmignore` files from the published gpp-cli package, so the bundled copies were lost. gpp-cli v0.9.110 writes them into projects as `.gitignore` and `.npmignore`. The README's Template Structure section documents the convention. Same renames in gpp-cli's bundled `templates/`.
+
 ## [Unreleased] - 2026-11-13 - Express refresh reuse grace window
 
 - **Added:** `api/express` and `api/express-mysql`: a refresh token replaced within `REFRESH_TOKEN_REUSE_GRACE_SECONDS` (default 30, `0` turns it off), whose replacement has not been used, gets another new pair in the same login instead of ending it. Reuse after the window, or after the replacement was used, still ends the login. Logged-out tokens get no grace. Documented in each README, `.env.example`, and `env.example.txt`.

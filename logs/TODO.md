@@ -3,6 +3,10 @@
 
 ## gpp-templates repository
 
+### Pack dot-files survive npm (2026-11-15)
+
+- [x] Pack `.gitignore` / `.npmignore` stored as `_gitignore` / `_npmignore`; gpp-cli v0.9.110 writes the dot names.
+
 ### Admin dashboard beside a studio (2026-11-13)
 
 - [x] First sign-in no longer signs out when NextAuth `update()` is empty.
