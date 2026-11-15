@@ -1,6 +1,12 @@
 
 ---
 
+## Pack dot-files are stored as `_gitignore` / `_npmignore` (2026-11-15)
+
+**Decision:** Packs store `.gitignore` as `_gitignore` and `.npmignore` as `_npmignore`; gpp-cli renames them when it writes a project (the create-vite convention).
+
+**Rationale:** npm always drops nested `.gitignore` and `.npmignore` from a published package, even when `files` names them, and a nested `.npmignore` hides its siblings. Both repos must hold identical trees for the drift check. Cost: gpp-cli older than v0.9.110 installing packs from this repo writes a literal `_gitignore`.
+
 ## Refresh reuse grace window instead of a shared store (2026-11-13)
 
 **Decision:** The Express API templates handle simultaneous refreshes with a 30-second grace window. The admin dashboard needs no shared store to run on several servers.
