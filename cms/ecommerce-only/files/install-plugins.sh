@@ -130,7 +130,7 @@ install_github_plugin() {
     local plugin_slug=$2
     local version=$3
     local plugin_name=$4
-    local plugins_dir="/var/www/html/wp-content/plugins"
+    local plugins_dir="${PLUGINS_DIR:-/var/www/html/wp-content/plugins}"
 
     echo "📦 Installing $plugin_name from GitHub..."
 
@@ -145,7 +145,9 @@ install_github_plugin() {
         fi
     fi
 
-    local temp_zip="${plugins_dir}/temp_${plugin_slug}.zip"
+    local work_dir
+    work_dir=$(mktemp -d)
+    local temp_zip="${work_dir}/${plugin_slug}.zip"
     local download_success=false
 
     # Try release asset
@@ -164,26 +166,31 @@ install_github_plugin() {
 
     if [ "$download_success" = false ]; then
         echo "❌ Failed to download $plugin_name from GitHub"
-        rm -f "$temp_zip" 2>/dev/null
+        rm -rf "$work_dir" 2>/dev/null
         return 1
     fi
 
-    # Extract
-    cd "$plugins_dir"
-    rm -rf "$plugin_slug" 2>/dev/null
-    unzip -oq "$temp_zip"
+    # Extract into a scratch folder. Some release zips are flat (no top folder), so unzipping
+    # straight into plugins/ would spill files there. If the zip holds exactly one directory
+    # and nothing else, that directory is the plugin; otherwise the scratch folder is.
+    local extract_dir="${work_dir}/extract"
+    mkdir -p "$extract_dir"
+    unzip -oq "$temp_zip" -d "$extract_dir"
 
-    # Find and rename extracted directory
-    local repo_name="${repo#*/}"
-    local version_no_v="${version#v}"
-    for dir_pattern in "$plugin_slug" "${repo_name}-${version_no_v}" "${repo_name}-${version}"; do
-        if [ -d "$dir_pattern" ] && [ "$dir_pattern" != "$plugin_slug" ]; then
-            mv "$dir_pattern" "$plugin_slug"
-            break
-        fi
+    local entries=("$extract_dir"/* "$extract_dir"/.[!.]*)
+    local found=()
+    local e
+    for e in "${entries[@]}"; do
+        [ -e "$e" ] && found+=("$e")
     done
 
-    rm -f "$temp_zip"
+    rm -rf "${plugins_dir:?}/${plugin_slug}" 2>/dev/null
+    if [ "${#found[@]}" -eq 1 ] && [ -d "${found[0]}" ]; then
+        mv "${found[0]}" "${plugins_dir}/${plugin_slug}"
+    else
+        mv "$extract_dir" "${plugins_dir}/${plugin_slug}"
+    fi
+    rm -rf "$work_dir"
 
     # Install composer dependencies if needed
     if [ -f "${plugins_dir}/${plugin_slug}/composer.json" ]; then
@@ -215,7 +222,10 @@ echo "=================================="
 
 # WooCommerce (always enabled for ecommerce-only)
 install_plugin "woocommerce" "WooCommerce" "9.3.3"
-install_plugin "woocommerce-gateway-stripe" "WooCommerce Stripe Gateway"
+# Pinned: the image is wordpress:6.6 and the newest releases of this plugin (11.x, WordPress 6.9+)
+# are refused by wp-cli ("does not work with your version of WordPress"), so nothing installs.
+# 9.9.3 is the newest 9.x release that still supports WordPress 6.6 (verified).
+install_plugin "woocommerce-gateway-stripe" "WooCommerce Stripe Gateway" "9.9.3"
 install_plugin "woocommerce-paypal-payments" "WooCommerce PayPal Payments"
 
 # Advanced Custom Fields (required by WPGraphQL ACF)
@@ -231,7 +241,8 @@ install_plugin "wpgraphql-smart-cache" "WPGraphQL Smart Cache"
 install_plugin "jwt-authentication-for-wp-rest-api" "JWT Authentication"
 
 # SEO - Rank Math with GraphQL support
-install_plugin "seo-by-rank-math" "Rank Math SEO"
+# Pinned for the same reason: Rank Math 1.0.275+ requires WordPress 6.7, the image has 6.6.
+install_plugin "seo-by-rank-math" "Rank Math SEO" "1.0.270"
 install_github_plugin "AxeWP/wp-graphql-rank-math" "wp-graphql-rank-math" "0.3.4" "WPGraphQL Rank Math"
 
 # Configure Rank Math
@@ -281,8 +292,10 @@ install_plugin "amazon-s3-and-cloudfront" "WP Offload Media Lite"
 
 # WooCommerce extras
 install_plugin "woocommerce-pdf-invoices-packing-slips" "PDF Invoices & Packing Slips"
-install_plugin "yith-woocommerce-wishlist" "YITH WooCommerce Wishlist"
-install_plugin "woo-variation-swatches" "Variation Swatches for WooCommerce"
+# Pinned: 4.11+ needs WordPress 6.7+, the image has 6.6.
+install_plugin "yith-woocommerce-wishlist" "YITH WooCommerce Wishlist" "4.10.0"
+# Pinned: 2.6+ needs WordPress 6.8+, the image has 6.6.
+install_plugin "woo-variation-swatches" "Variation Swatches for WooCommerce" "2.5.0"
 install_plugin "wp-smushit" "Smush Image Optimization"
 install_plugin "woocommerce-advanced-free-shipping" "Advanced Free Shipping"
 install_plugin "flexible-shipping" "Flexible Shipping"
@@ -291,7 +304,8 @@ install_plugin "customer-reviews-woocommerce" "Customer Reviews for WooCommerce"
 
 # Development helpers
 install_plugin "query-monitor" "Query Monitor"
-install_plugin "duplicate-post" "Duplicate Post"
+# Pinned: 4.6+ needs WordPress 6.8+, the image has 6.6.
+install_plugin "duplicate-post" "Duplicate Post" "4.5"
 
 # Activate custom plugins (E-commerce focused - no CMS plugins)
 if [ -d "/var/www/html/wp-content/plugins/headless-config" ]; then
@@ -439,13 +453,15 @@ echo ""
 echo "🔑 Creating WooCommerce API keys..."
 echo "==================================="
 
-API_KEY_EXISTS=$(wp db query "SELECT COUNT(*) FROM wp_woocommerce_api_keys WHERE description = 'Local Development'" --skip-column-names --allow-root --quiet 2>/dev/null || echo "0")
+# wp eval + $wpdb, not "wp db query": the wordpress image has no mysql client, so "wp db query" fails there.
+API_KEY_EXISTS=$(wp eval 'global $wpdb; echo (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}woocommerce_api_keys WHERE description = \"Local Development\"" );' --allow-root --quiet 2>/dev/null | tail -n 1)
+API_KEY_EXISTS="${API_KEY_EXISTS:-0}"
 
 if [ "$API_KEY_EXISTS" = "0" ]; then
     CONSUMER_KEY="ck_$(openssl rand -hex 20)"
     CONSUMER_SECRET="cs_$(openssl rand -hex 20)"
 
-    wp db query "INSERT INTO wp_woocommerce_api_keys (user_id, description, permissions, consumer_key, consumer_secret, truncated_key) VALUES (1, 'Local Development', 'read_write', '$CONSUMER_KEY', '$CONSUMER_SECRET', '$(echo $CONSUMER_KEY | rev | cut -c1-7 | rev)')" --allow-root --quiet
+    GPP_CK="$CONSUMER_KEY" GPP_CS="$CONSUMER_SECRET" wp eval 'global $wpdb; $wpdb->insert( $wpdb->prefix . "woocommerce_api_keys", array( "user_id" => 1, "description" => "Local Development", "permissions" => "read_write", "consumer_key" => getenv( "GPP_CK" ), "consumer_secret" => getenv( "GPP_CS" ), "truncated_key" => substr( getenv( "GPP_CK" ), -7 ) ) );' --allow-root --quiet
 
     echo "✅ WooCommerce API keys created:"
     echo "   Consumer Key: $CONSUMER_KEY"
