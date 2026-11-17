@@ -1,11 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { useSession, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import {
   Sheet,
   SheetContent,
@@ -14,32 +12,11 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Menu,
-  Search,
-  ShoppingCart,
-  User,
-  X,
-  LogOut,
-  Settings,
-  Package,
-  UserCheck
-} from 'lucide-react'
-import { useCart } from '@/store/cart'
-import { CartDrawer } from './cart-drawer'
+import { Menu, Search, X } from 'lucide-react'
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Products', href: '/products' },
-  { name: 'Categories', href: '/products/categories' },
+  { name: 'Blog', href: '/blog' },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
 ]
@@ -47,22 +24,12 @@ const navigation = [
 export function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [mounted, setMounted] = useState(false)
-  const { getTotalItems, setIsOpen } = useCart()
-  const { data: session, status } = useSession()
-
-  const totalItems = getTotalItems()
-
-  // Only show cart count after client-side hydration to avoid mismatch
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      // Navigate to products page with search query parameter
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery.trim())}`
+      // Navigate to blog page with search query parameter
+      window.location.href = `/blog?search=${encodeURIComponent(searchQuery.trim())}`
       setSearchQuery('')
       setIsSearchOpen(false)
     }
@@ -76,8 +43,8 @@ export function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="mr-6 flex items-center gap-2">
               {/* TODO: Add your logo here */}
-              {/* Example: <img src="/logos/your-logo.svg" alt="Your Store" className="h-10 w-auto" /> */}
-              <span className="text-xl font-bold">My Store</span>
+              {/* Example: <img src="/logos/your-logo.svg" alt="Your Site" className="h-10 w-auto" /> */}
+              <span className="text-xl font-bold">My Site</span>
             </Link>
           </div>
 
@@ -103,7 +70,7 @@ export function Navbar() {
                   <form onSubmit={handleSearch} className="flex items-center">
                     <Input
                       type="search"
-                      placeholder="Search products..."
+                      placeholder="Search articles..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-64"
@@ -160,83 +127,6 @@ export function Navbar() {
               <span className="sr-only">Search</span>
             </Button>
 
-            {/* Cart Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="relative"
-              onClick={() => setIsOpen(true)}
-            >
-              <ShoppingCart className="h-4 w-4" />
-              {mounted && totalItems > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-xs"
-                >
-                  {totalItems > 99 ? '99+' : totalItems}
-                </Badge>
-              )}
-              <span className="sr-only">Shopping cart</span>
-            </Button>
-
-            {/* User Account */}
-            {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="relative">
-                    <UserCheck className="h-4 w-4" />
-                    <span className="sr-only">Account menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {session.user?.firstName || session.user?.name || 'User'}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {session.user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/my-account" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      My Account
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/my-account/orders" className="cursor-pointer">
-                      <Package className="mr-2 h-4 w-4" />
-                      Orders
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/my-account/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer text-red-600 focus:text-red-600"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">
-                  <User className="h-4 w-4" />
-                  <span className="sr-only">Sign in</span>
-                </Link>
-              </Button>
-            )}
-
             {/* Mobile Menu */}
             <Sheet>
               <SheetTrigger asChild>
@@ -253,7 +143,7 @@ export function Navbar() {
                 <SheetHeader>
                   <SheetTitle>Menu</SheetTitle>
                   <SheetDescription>
-                    Navigate through our store
+                    Navigate through our site
                   </SheetDescription>
                 </SheetHeader>
                 <nav className="flex flex-col space-y-4 mt-4">
@@ -266,50 +156,6 @@ export function Navbar() {
                       {item.name}
                     </Link>
                   ))}
-                  
-                  <div className="border-t pt-4 mt-6">
-                    {session ? (
-                      <>
-                        <div className="mb-4">
-                          <p className="text-sm font-medium">
-                            {session.user?.firstName || session.user?.name || 'User'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {session.user?.email}
-                          </p>
-                        </div>
-                        <Link
-                          href="/my-account"
-                          className="flex items-center text-lg font-medium transition-colors hover:text-primary mb-2"
-                        >
-                          <User className="mr-2 h-4 w-4" />
-                          My Account
-                        </Link>
-                        <Link
-                          href="/my-account/orders"
-                          className="flex items-center text-lg font-medium transition-colors hover:text-primary mb-2"
-                        >
-                          <Package className="mr-2 h-4 w-4" />
-                          Orders
-                        </Link>
-                        <button
-                          onClick={() => signOut({ callbackUrl: '/' })}
-                          className="flex items-center text-lg font-medium transition-colors hover:text-primary text-red-600 w-full text-left"
-                        >
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Sign out
-                        </button>
-                      </>
-                    ) : (
-                      <Link
-                        href="/login"
-                        className="flex items-center text-lg font-medium transition-colors hover:text-primary"
-                      >
-                        <User className="mr-2 h-4 w-4" />
-                        Sign in
-                      </Link>
-                    )}
-                  </div>
                 </nav>
               </SheetContent>
             </Sheet>
@@ -322,7 +168,7 @@ export function Navbar() {
             <form onSubmit={handleSearch} className="flex items-center space-x-2">
               <Input
                 type="search"
-                placeholder="Search products..."
+                placeholder="Search articles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1"
@@ -336,8 +182,6 @@ export function Navbar() {
         )}
       </div>
 
-      {/* Cart Drawer */}
-      <CartDrawer />
     </header>
   )
 }
