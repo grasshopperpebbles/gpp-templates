@@ -21,7 +21,7 @@ declare global {
 const DEV_JWT_SECRET = 'dev-secret-change-in-production';
 const MIN_PRODUCTION_SECRET_LENGTH = 32;
 const KNOWN_PLACEHOLDERS = [
-  'change-me-in-production-use-a-long-random-string', // .env.example / env.example.txt
+  'change-me-in-production-use-a-long-random-string', // older .env.example / env.example.txt (now gpp:generate-secret)
   'your-secret-key-change-in-production', // older env.example.txt
   DEV_JWT_SECRET,
 ];
