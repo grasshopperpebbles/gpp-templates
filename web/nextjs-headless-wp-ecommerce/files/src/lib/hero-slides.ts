@@ -1,6 +1,4 @@
 import { cache } from "react";
-import { env } from "@/lib/env";
-import { wpGraphql } from "@/lib/clients/wp";
 
 export interface HeroSlide {
   title: string;
@@ -57,12 +55,21 @@ interface HeroSlidesResponse {
 }
 
 export const getHeroSlides = cache(async (): Promise<HeroSlide[]> => {
-  if (!env.wpGraphqlEndpoint) {
+  const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT;
+  if (!endpoint) {
     return [];
   }
 
   try {
-    const res = await wpGraphql<HeroSlidesResponse>(HERO_SLIDES_QUERY);
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: HERO_SLIDES_QUERY }),
+    });
+    if (!response.ok) {
+      return [];
+    }
+    const res = (await response.json()) as HeroSlidesResponse;
     return res.data.heroSlides.nodes.map((node) => ({
       title: node.title,
       subtitle: node.heroSlideFields.heroSubtitle || null,
