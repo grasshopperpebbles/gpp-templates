@@ -71,7 +71,7 @@ export class GraphQLClient {
 }
 
 export const graphqlClient = new GraphQLClient(
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || 'http://localhost:1337/graphql'
+  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || 'http://localhost:1338/graphql'
 )
 
 // Set API token from environment if available

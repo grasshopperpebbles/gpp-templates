@@ -214,7 +214,7 @@ export class StrapiClient {
 
 // Create default client instance
 export const strapiClient = new StrapiClient(
-  process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
+  process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1338'
 )
 
 // Set API token from environment if available
