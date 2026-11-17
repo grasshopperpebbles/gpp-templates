@@ -11,10 +11,8 @@ import { Facebook, Instagram, Twitter, Mail, CreditCard, Lock, Truck, RefreshCcw
 
 const footerNavigation = {
   shop: [
-    { name: 'All Products', href: '/products' },
-    { name: 'Categories', href: '/products/categories' },
-    { name: 'New Arrivals', href: '/products/new-arrivals' },
-    { name: 'Sale', href: '/products/sale' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Articles', href: '/articles' },
   ],
   support: [
     { name: 'Contact Us', href: '/contact' },

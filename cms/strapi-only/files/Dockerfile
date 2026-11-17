@@ -20,6 +20,9 @@ RUN CI=true npm install --legacy-peer-deps
 # Copy application files (excluding start-strapi.sh which we'll copy separately)
 COPY . .
 
+# Stamp the installed dependencies (start-strapi.sh installs again only when this no longer matches)
+RUN cat package.json package-lock.json 2>/dev/null | sha256sum | cut -d' ' -f1 > node_modules/.gpp-deps-stamp
+
 # Copy startup scripts to /usr/local/bin (not in /opt/app to avoid volume mount override)
 COPY start-strapi.sh /usr/local/bin/start-strapi.sh
 COPY scripts/strapi-first-start.sh /usr/local/bin/strapi-first-start.sh

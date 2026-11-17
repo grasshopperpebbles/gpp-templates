@@ -3,9 +3,6 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { CartHydration } from '@/components/cart-hydration'
-import { SessionProvider } from '@/components/session-provider'
-import { PriceDropNotifications } from '@/components/price-drop-notifications'
 import { CookieConsentBanner } from '@/components/cookie-consent-banner'
 import { SITE_CONFIG } from '@/lib/config'
 import { GoogleAnalytics } from '@next/third-parties/google'
@@ -20,7 +17,7 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_CONFIG.name}`,
   },
   description: SITE_CONFIG.description,
-  keywords: ['e-commerce', 'online store', 'shopping', 'products'],
+  keywords: ['blog', 'articles', 'content'],
   authors: [{ name: SITE_CONFIG.name }],
   creator: SITE_CONFIG.name,
   openGraph: {
@@ -79,9 +76,6 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <SessionProvider>
-          <CartHydration />
-          <PriceDropNotifications />
           <div className="flex min-h-screen flex-col">
             <Navbar />
             <main className="flex-1">
@@ -104,7 +98,6 @@ export default async function RootLayout({
               }}
             />
           )}
-        </SessionProvider>
       </body>
     </html>
   )

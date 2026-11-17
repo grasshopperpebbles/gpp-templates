@@ -34,7 +34,7 @@ PROJECT_SLUG=${PROJECT_SLUG}
 
 SITE_NAME=Strapi Development
 STRAPI_URL=http://localhost:1338
-FRONTEND_URL=http://localhost:3001
+FRONTEND_URL=http://localhost:3004
 
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=admin
