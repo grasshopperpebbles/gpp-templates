@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodType, ZodError } from 'zod';
 import { ApiError } from './error-handler.middleware.js';
 
 /**
  * Validation middleware using Zod schemas
  * Validates request body, query, or params
  */
-export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' = 'body') {
+export function validate(schema: ZodType, source: 'body' | 'query' | 'params' = 'body') {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
       const data = source === 'body' ? req.body : source === 'query' ? req.query : req.params;
@@ -24,7 +24,7 @@ export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' 
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const validationErrors = error.errors.map((err) => ({
+        const validationErrors = error.issues.map((err) => ({
           field: err.path.join('.'),
           message: err.message,
           code: err.code,
@@ -43,9 +43,9 @@ export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' 
  * Validate multiple sources at once
  */
 export function validateMultiple(validators: {
-  body?: ZodSchema;
-  query?: ZodSchema;
-  params?: ZodSchema;
+  body?: ZodType;
+  query?: ZodType;
+  params?: ZodType;
 }) {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
@@ -61,7 +61,7 @@ export function validateMultiple(validators: {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const validationErrors = error.errors.map((err) => ({
+        const validationErrors = error.issues.map((err) => ({
           field: err.path.join('.'),
           message: err.message,
           code: err.code,

@@ -1,6 +1,10 @@
 
 ---
 
+## Packs share one zod major (2026-11-20)
+
+- All packs that use zod are on zod 4 with the same floor, so add-ons and generated code (`gpp admin generate-crud`) target one API.
+
 ## Pack dot-files are stored as `_gitignore` / `_npmignore` (2026-11-15)
 
 **Decision:** Packs store `.gitignore` as `_gitignore` and `.npmignore` as `_npmignore`; gpp-cli renames them when it writes a project (the create-vite convention).

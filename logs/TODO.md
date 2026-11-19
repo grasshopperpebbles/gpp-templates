@@ -3,6 +3,10 @@
 
 ## gpp-templates repository
 
+### Packs on zod 4 (2026-11-20)
+
+- [x] express, express-mysql, nextjs-webapp moved to zod 4; all zod packs on `^4.6.7`; express validation middleware reads `.issues` (gpp-cli v0.9.127).
+
 ### Pack dot-files survive npm (2026-11-15)
 
 - [x] Pack `.gitignore` / `.npmignore` stored as `_gitignore` / `_npmignore`; gpp-cli v0.9.110 writes the dot names.

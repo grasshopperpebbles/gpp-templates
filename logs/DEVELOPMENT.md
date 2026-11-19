@@ -1,6 +1,10 @@
 
 ---
 
+## Session: Packs on zod 4 (2026-11-20)
+
+Mirrors gpp-cli v0.9.127 (`check:packs` passes). Each pack was installed in a scratch copy on zod 4.6.7: express and express-mysql `tsc` clean and 90/90 tests, express with the auth-flows add-on `tsc` clean, nextjs-webapp `tsc` clean.
+
 ## Session: Pack dot-files survive npm (2026-11-15)
 
 `git mv` of the 31 pack-content `.gitignore` files under `*/*/files/` and the npm-package add-on's `.npmignore`. The repo's own `.gitignore` and `.specstory/.gitignore` keep their names. gpp-cli's bundled packs got the same renames; `npm run check:packs` in gpp-cli passes against this branch.

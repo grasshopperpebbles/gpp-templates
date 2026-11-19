@@ -1,6 +1,11 @@
 
 ---
 
+## [Unreleased] - 2026-11-20 - Packs on zod 4
+
+- **Changed:** `api/express`, `api/express-mysql` and `web/nextjs-webapp` use zod `^4.6.7` (were zod 3); the headless WordPress, Strapi and SaaS dashboard packs go from `^4.1.8` to `^4.6.7` (GHSA-mrhx-c7xc-m3w5). `web/nextjs-webapp` `@hookform/resolvers` is `^5.2.2`.
+- **Fixed:** the express validation middlewares read `ZodError.errors` (gone in zod 4, so bad input was a 500); they read `.issues` and type schemas as `ZodType`. Same change in gpp-cli v0.9.127.
+
 ## [Unreleased] - 2026-11-15 - Pack dot-files stored as `_gitignore` / `_npmignore`
 
 - **Changed:** Every pack `files/.gitignore` (31 packs) is now `files/_gitignore`, and `add-ons/npm-package/api/express/.npmignore` is now `_npmignore`. npm strips nested `.gitignore` and `.npmignore` files from the published gpp-cli package, so the bundled copies were lost. gpp-cli v0.9.110 writes them into projects as `.gitignore` and `.npmignore`. The README's Template Structure section documents the convention. Same renames in gpp-cli's bundled `templates/`.
