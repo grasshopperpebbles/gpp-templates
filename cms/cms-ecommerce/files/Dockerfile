@@ -1,4 +1,4 @@
-FROM wordpress:6.6-php8.3-apache
+FROM wordpress:7-php8.3-apache
 
 # Install Redis PHP extension for object caching
 RUN pecl install redis-6.0.2 \

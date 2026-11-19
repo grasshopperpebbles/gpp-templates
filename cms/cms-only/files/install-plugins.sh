@@ -401,9 +401,11 @@ echo "💾 Configuring Redis cache..."
 echo "============================="
 
 if wp plugin is-active redis-cache --allow-root --quiet 2>/dev/null; then
-    wp config set WP_REDIS_HOST "${REDIS_HOST:-redis}" --type=constant --allow-root --quiet 2>/dev/null || true
-    wp config set WP_REDIS_PORT 6379 --type=constant --allow-root --quiet 2>/dev/null || true
-    wp config set WP_REDIS_DATABASE 0 --type=constant --allow-root --quiet 2>/dev/null || true
+    # docker-compose.yml defines WP_REDIS_* (WORDPRESS_CONFIG_EXTRA); copies in wp-config.php
+    # (written by an earlier setup) made every request warn "already defined".
+    for constant in WP_REDIS_HOST WP_REDIS_PORT WP_REDIS_DATABASE; do
+        wp config delete "$constant" --type=constant --allow-root --quiet 2>/dev/null || true
+    done
     wp redis enable --allow-root --quiet 2>/dev/null || true
     echo "✅ Redis cache configured and enabled"
 else
