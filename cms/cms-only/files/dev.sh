@@ -19,6 +19,10 @@ echo "=========================================="
 WP_SVC="{{GPP_APP_KEY_PREFIX}}-wordpress"
 DB_SVC="{{GPP_APP_KEY_PREFIX}}-db"
 
+# The published WordPress port (docker-compose.yml publishes ${WP_PORT:-8081}), read from .env
+WP_PORT="$(grep -E '^WP_PORT=' .env 2>/dev/null | tail -1 | cut -d= -f2)"
+WP_PORT="${WP_PORT:-8081}"
+
 # Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}❌ Docker is not running. Please start Docker first.${NC}"
@@ -63,10 +67,10 @@ done
 echo ""
 
 # Now wait for WordPress to respond
-echo -e "${YELLOW}   Waiting for WordPress to respond on port 8080...${NC}"
+echo -e "${YELLOW}   Waiting for WordPress to respond on port ${WP_PORT}...${NC}"
 timeout=180  # Increased to 3 minutes
 attempt=0
-while ! curl -s --connect-timeout 5 http://localhost:8080 > /dev/null && [ $timeout -gt 0 ]; do
+while ! curl -s --connect-timeout 5 http://localhost:${WP_PORT} > /dev/null && [ $timeout -gt 0 ]; do
     printf "."
     sleep 2
     timeout=$((timeout - 2))
@@ -93,8 +97,8 @@ if [ $timeout -le 0 ]; then
     docker compose logs --tail=50 "$WP_SVC"
     echo ""
     echo -e "${YELLOW}💡 Common issues and solutions:${NC}"
-    echo "   1. Port 8080 already in use:"
-    echo -e "      ${GREEN}lsof -i :8080${NC} (check what's using the port)"
+    echo "   1. Port ${WP_PORT} already in use:"
+    echo -e "      ${GREEN}lsof -i :${WP_PORT}${NC} (check what's using the port)"
     echo -e "      ${GREEN}docker compose down && docker compose up -d${NC} (restart containers)"
     echo ""
     echo "   2. Database connection issues:"
@@ -128,8 +132,8 @@ echo -e "${GREEN}🎉 Development environment is ready!${NC}"
 echo "======================================="
 echo ""
 echo -e "${BLUE}🌐 Available URLs:${NC}"
-echo -e "   📱 WordPress Admin:  ${GREEN}http://localhost:8080/wp-admin${NC}"
-echo -e "   🔍 GraphQL Explorer: ${GREEN}http://localhost:8080/graphql${NC}"
+echo -e "   📱 WordPress Admin:  ${GREEN}http://localhost:${WP_PORT}/wp-admin${NC}"
+echo -e "   🔍 GraphQL Explorer: ${GREEN}http://localhost:${WP_PORT}/graphql${NC}"
 echo -e "   🗄️  phpMyAdmin:       ${GREEN}http://localhost:9090${NC}"
 echo -e "   🖥️  Frontend:         ${GREEN}http://localhost:3000${NC} (when Next.js is running)"
 echo ""
@@ -145,7 +149,7 @@ echo "   2. Seed your WooCommerce store:"
 echo -e "      ${YELLOW}npm run seed:woo${NC}"
 echo ""
 echo "   3. Test GraphQL at:"
-echo -e "      ${GREEN}http://localhost:8080/graphql${NC}"
+echo -e "      ${GREEN}http://localhost:${WP_PORT}/graphql${NC}"
 echo ""
 echo -e "${BLUE}🛠️  Useful Commands:${NC}"
 echo -e "   📊 View logs:        ${YELLOW}docker compose logs -f${NC}"
