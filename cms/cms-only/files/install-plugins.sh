@@ -35,12 +35,6 @@ echo "  Mode: CMS Only (no WooCommerce)"
 echo "================================================="
 
 # Check if WordPress is accessible
-echo "⏳ Verifying WordPress accessibility..."
-if curl -s -o /dev/null "$SITE_URL"; then
-    echo "✅ WordPress is ready!"
-else
-    echo "⚠️  WordPress may not be fully accessible yet, but continuing..."
-fi
 
 # Install WP-CLI if not present
 if ! command -v wp &> /dev/null; then
@@ -59,6 +53,8 @@ fi
 #-------------------------------------------------------------------------------
 # Install WordPress Core
 #-------------------------------------------------------------------------------
+
+FAILED_PLUGINS=()
 
 install_wordpress() {
     echo "⏳ Checking WordPress installation..."
@@ -79,7 +75,42 @@ install_wordpress() {
     fi
 }
 
+#-------------------------------------------------------------------------------
+# Wait for the database (MariaDB can take a while on a first start)
+#-------------------------------------------------------------------------------
+# The WordPress image has no mysql client, so PHP's mysqli asks the database directly,
+# with the same settings WordPress uses (WORDPRESS_DB_* from docker-compose.yml).
+
+db_ready() {
+    php -r '
+        $host = getenv("WORDPRESS_DB_HOST") ?: "localhost";
+        $port = 3306;
+        if (strpos($host, ":") !== false) { [$host, $port] = explode(":", $host, 2); }
+        mysqli_report(MYSQLI_REPORT_OFF);
+        $db = @new mysqli($host, getenv("WORDPRESS_DB_USER") ?: "", getenv("WORDPRESS_DB_PASSWORD") ?: "", getenv("WORDPRESS_DB_NAME") ?: "", (int) $port);
+        exit($db->connect_errno ? 1 : 0);
+    ' >/dev/null 2>&1
+}
+
+DB_WAIT_SECONDS="${DB_WAIT_SECONDS:-180}"
+echo "⏳ Waiting for the database (up to ${DB_WAIT_SECONDS}s)..."
+waited=0
+until db_ready; do
+    if [ "$waited" -ge "$DB_WAIT_SECONDS" ]; then
+        echo "❌ The database did not answer within ${DB_WAIT_SECONDS}s. Nothing was installed." >&2
+        echo "   Check it with: docker compose ps   and   docker compose logs" >&2
+        exit 1
+    fi
+    sleep 3
+    waited=$((waited + 3))
+done
+echo "✅ Database is ready"
+
 install_wordpress
+
+# Permalinks right after install: with "Plain", /wp-json/ and pretty URLs serve the home page.
+echo "🔗 Setting permalinks to /%postname%/..."
+wp rewrite structure '/%postname%/' --hard --allow-root --quiet
 
 #-------------------------------------------------------------------------------
 # Plugin Installation Helper
@@ -109,6 +140,7 @@ install_plugin() {
             echo "✅ $plugin_name installed and activated"
         else
             echo "❌ Failed to install $plugin_name"
+            FAILED_PLUGINS+=("$plugin_name")
         fi
     fi
 }
@@ -154,7 +186,8 @@ install_github_plugin() {
     if [ "$download_success" = false ]; then
         echo "❌ Failed to download $plugin_name from GitHub"
         rm -f "$temp_zip" 2>/dev/null
-        return 1
+        FAILED_PLUGINS+=("$plugin_name")
+        return 0
     fi
 
     # Extract
@@ -292,8 +325,7 @@ echo "⚙️  Configuring WordPress settings..."
 echo "===================================="
 
 # Set permalinks
-wp rewrite structure '/%postname%/' --allow-root --quiet 2>/dev/null || true
-wp rewrite flush --allow-root --quiet 2>/dev/null || true
+wp rewrite flush --hard --allow-root --quiet
 echo "✅ Permalinks configured"
 
 # Configure site settings
@@ -422,6 +454,17 @@ if [ ! -z "$MENU_ID" ]; then
     wp menu location assign $MENU_ID primary --allow-root --quiet 2>/dev/null || true
     echo "✅ Primary navigation menu created"
 fi
+
+if [ "${#FAILED_PLUGINS[@]}" -gt 0 ]; then
+    echo "" >&2
+    echo "❌ Setup finished, but these plugins failed to install:" >&2
+    for name in "${FAILED_PLUGINS[@]}"; do echo "   - $name" >&2; done
+    echo "   Run this script again once the cause is fixed (it skips what is already installed)." >&2
+    exit 1
+fi
+
+# Mark the site as set up (dev.sh then skips this script on later starts).
+touch /var/www/html/.gpp-setup-done
 
 #-------------------------------------------------------------------------------
 # Setup Complete

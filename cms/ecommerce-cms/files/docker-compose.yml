@@ -49,6 +49,9 @@ services:
       WORDPRESS_DB_USER: ${MYSQL_USER:-wp}
       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-wp}
       WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-wordpress}
+      # The image defines WP_DEBUG itself from WORDPRESS_DEBUG (any non-empty value is on;
+      # empty is off). Defining WP_DEBUG again below would warn on every request.
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG-1}
 
       # Pass through to install-plugins.sh
       SITE_NAME: ${SITE_NAME:-My Store}
@@ -73,7 +76,6 @@ services:
       # WordPress Config Extra
       WORDPRESS_CONFIG_EXTRA: |
         /* Debug Settings */
-        define('WP_DEBUG', ${WP_DEBUG:-true});
         define('WP_DEBUG_LOG', ${WP_DEBUG_LOG:-true});
         define('WP_DEBUG_DISPLAY', ${WP_DEBUG_DISPLAY:-false});
         define('WP_MEMORY_LIMIT', '${PHP_MEMORY_LIMIT:-512M}');

@@ -120,9 +120,15 @@ echo -e "${GREEN}✅ WordPress is ready!${NC}"
 
 # Run plugin installation script
 echo -e "${YELLOW}🔌 Installing and configuring plugins...${NC}"
+# install-plugins.sh leaves /var/www/html/.gpp-setup-done in the WordPress volume when it
+# succeeds, so later starts skip it; `docker compose down -v` (a fresh site) or
+# `./dev.sh --setup` runs it again. -T: works without a terminal (gpp start, the desktop app).
 if [ -f "install-plugins.sh" ]; then
-    chmod +x install-plugins.sh
-    docker compose exec "$WP_SVC" bash /usr/local/bin/install-plugins.sh
+    if [ "${1:-}" != "--setup" ] && docker compose exec -T "$WP_SVC" test -f /var/www/html/.gpp-setup-done 2>/dev/null; then
+        echo -e "${GREEN}✅ WordPress is already set up (./dev.sh --setup runs the setup again)${NC}"
+    else
+        docker compose exec -T "$WP_SVC" bash /usr/local/bin/install-plugins.sh
+    fi
 else
     echo -e "${YELLOW}⚠️  install-plugins.sh not found, skipping plugin setup${NC}"
 fi
