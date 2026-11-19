@@ -255,6 +255,25 @@ test('assessLog refuses when an undated section would be archived, even with --f
   assert.match(a.reason, /undated section/);
 });
 
+test('assessLog ignores headings inside fenced code blocks', () => {
+  const fenced = (i) =>
+    i % 2 === 0
+      ? ['```bash', '# install the tools', 'npm ci', '```']
+      : ['~~~md', '## Usage', '```', '### not a fence close', '~~~'];
+  const a = assessLog(bigLog(300, 20, fenced).join('\n'));
+  assert.equal(a.action, 'archive', a.reason);
+  assert.equal(a.order, 'newest-first');
+});
+
+test('assessLog never cuts at a dated heading inside a fenced code block', () => {
+  const fenced = () => ['```md', '## Example entry (2001-01-01)', '```'];
+  const a = assessLog(bigLog(300, 20, fenced).join('\n'));
+  assert.equal(a.action, 'archive', a.reason);
+  const fences = (part) => part.filter((l) => l.startsWith('```')).length;
+  assert.equal(fences(a.plan.keep) % 2, 0, 'live side has whole code blocks');
+  assert.equal(fences(a.plan.archive) % 2, 0, 'archive side has whole code blocks');
+});
+
 test('renderSplit gzip round-trip: archive holds the oldest entries, live keeps the newest', () => {
   const lines = bigLog(300, 20);
   const a = assessLog(lines.join('\n'));

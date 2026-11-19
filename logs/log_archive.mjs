@@ -22,6 +22,8 @@
  *   just below the last entry holding one (`keptForOpenItems`; the live file may then be
  *   over the limit). If open items reach the oldest entry there is nothing to archive
  *   (action 'nothing'). `force` keeps the fitting cut and archives the open items.
+ * - Lines inside fenced code blocks (``` or ~~~) are never headings: a `# comment` in a
+ *   code sample is not a section, and the cut never lands inside a code block.
  * - Refuse when an undated section (a heading at entry level or above with no date, such
  *   as a roadmap) would be archived: that is not history.
  */
@@ -43,6 +45,30 @@ const POINTER_BYTES = 200;
 const DATE_RE = /\d{4}-\d{2}-\d{2}/;
 const HEADING_RE = /^(#{1,3})\s+\S/;
 const RULE_RE = /^={20,}\s*$/;
+const FENCE_RE = /^ {0,3}(`{3,}|~{3,})/;
+
+/**
+ * For each line, whether it is part of a fenced code block (the fence lines included).
+ * A block closes on a fence of the same character, at least as long, with nothing after
+ * it; an unclosed block runs to the end, as in CommonMark.
+ */
+export function fencedLines(lines) {
+  const inFence = new Array(lines.length).fill(false);
+  let open = null;
+  for (let i = 0; i < lines.length; i += 1) {
+    const m = (lines[i] ?? '').match(FENCE_RE);
+    if (open) {
+      inFence[i] = true;
+      if (m && m[1][0] === open[0] && m[1].length >= open.length && lines[i].trim() === m[1]) {
+        open = null;
+      }
+    } else if (m) {
+      inFence[i] = true;
+      open = m[1];
+    }
+  }
+  return inFence;
+}
 
 /**
  * The heading that starts at line i, or null. A `====` rule counts as level 2 when it
@@ -69,7 +95,9 @@ export function headingAt(lines, i) {
  */
 export function findEntries(lines) {
   const all = [];
+  const fenced = fencedLines(lines);
   for (let i = 0; i < lines.length; i += 1) {
+    if (fenced[i]) continue;
     const h = headingAt(lines, i);
     if (h) all.push(h);
   }
@@ -212,7 +240,9 @@ export function countOpenTasks(lines) {
 /** Headings at entry level or above with no date, i.e. sections that are not history. */
 export function undatedSections(lines, level) {
   const found = [];
+  const fenced = fencedLines(lines);
   for (let i = 0; i < lines.length; i += 1) {
+    if (fenced[i]) continue;
     const h = headingAt(lines, i);
     if (h && h.level <= level && !h.date) found.push(lines[i].trim());
   }
