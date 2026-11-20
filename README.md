@@ -156,6 +156,10 @@ Update all templates:
 gpp template install /path/to/gpp-templates --all --force
 ```
 
+## Templates bundled with GPP CLI
+
+GPP CLI ships some of these templates (and `recipes/`) inside its own package, so a fresh machine works offline. This repo is the only place they are edited: GPP CLI copies them from a pinned commit of this repo with `npm run templates:sync`. Adding a template here needs no GPP CLI change; bundling one into the CLI is done in GPP CLI.
+
 ## Template Locations
 
 - User-installed templates: `~/.gpp/templates/`

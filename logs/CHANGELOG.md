@@ -1,6 +1,12 @@
 
 ---
 
+## [Unreleased] - 2026-11-20 - Source of truth for the packs gpp-cli bundles
+
+- **Changed:** this repo is now the only place the packs, `recipes/` and WordPress plugin files that gpp-cli bundles are edited; gpp-cli copies them from a pinned commit (`npm run templates:sync`, gpp-cli v0.9.131). CLAUDE.md (the rule, flipped from "gpp-cli is the source of truth") and a README section.
+- **Added:** `cms/headless-site-options.php` (was only in gpp-cli).
+- **Removed:** `gpp/` (AI-instruction files) and `templates/baas/` (Firebase and Supabase Docker files): gpp-cli's internals, which only gpp-cli reads; its copies were newer except `gpp-ai.json`'s `video` entry, now in gpp-cli.
+
 ## [Unreleased] - 2026-11-20 - Packs on zod 4
 
 - **Changed:** `api/express`, `api/express-mysql` and `web/nextjs-webapp` use zod `^4.6.7` (were zod 3); the headless WordPress, Strapi and SaaS dashboard packs go from `^4.1.8` to `^4.6.7` (GHSA-mrhx-c7xc-m3w5). `web/nextjs-webapp` `@hookform/resolvers` is `^5.2.2`.

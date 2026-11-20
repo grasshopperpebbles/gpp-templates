@@ -1,6 +1,10 @@
 
 ---
 
+## Session: Source of truth for the packs gpp-cli bundles (2026-11-20)
+
+Branch `chore/one-source-template-packs`. Spec and plan are in gpp-cli (`docs/superpowers/specs/2026-11-20-one-source-template-packs-design.md`). `gpp/` and `templates/baas/` compared with gpp-cli's copies and removed (the operator chose, file by file, what to keep). `cms/headless-site-options.php` copied from gpp-cli; `gpp template install --all` into a temp HOME does not list it as a pack. gpp-cli's first sync from this branch (`d9a7c59`) changed no pack file, and `--verify` found nothing else shared.
+
 ## Session: Packs on zod 4 (2026-11-20)
 
 Mirrors gpp-cli v0.9.127 (`check:packs` passes). Each pack was installed in a scratch copy on zod 4.6.7: express and express-mysql `tsc` clean and 90/90 tests, express with the auth-flows add-on `tsc` clean, nextjs-webapp `tsc` clean.

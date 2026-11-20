@@ -3,6 +3,11 @@
 
 ## gpp-templates repository
 
+### This repo is the source of truth for the packs gpp-cli bundles (2026-11-20)
+
+- [x] gpp-cli bundles 35 packs, `recipes/` and the `gp-*` plugin files from a pinned commit of this repo (`npm run templates:sync` there; gpp-cli v0.9.131). `cms/headless-site-options.php` moved here. `gpp/` and `templates/baas/` removed (gpp-cli internals; gpp-cli owns them). CLAUDE.md and README say so.
+- [ ] The `gp-*` plugins are copied in four WordPress packs here (`cms-ecommerce`, `cms-only`, `ecommerce-cms`, `ecommerce-only`); nothing checks they stay identical. A check, or one shared folder.
+
 ### Packs on zod 4 (2026-11-20)
 
 - [x] express, express-mysql, nextjs-webapp moved to zod 4; all zod packs on `^4.6.7`; express validation middleware reads `.issues` (gpp-cli v0.9.127).

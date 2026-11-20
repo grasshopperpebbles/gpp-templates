@@ -1,6 +1,10 @@
 
 ---
 
+## gpp-cli bundles a pinned copy of this repo (2026-11-20)
+
+- The packs gpp-cli ships are edited here only; gpp-cli copies them from a pinned commit and rejects hand edits, so the two repos can't drift. Adding a template here never needs a gpp-cli change.
+
 ## Packs share one zod major (2026-11-20)
 
 - All packs that use zod are on zod 4 with the same floor, so add-ons and generated code (`gpp admin generate-crud`) target one API.
