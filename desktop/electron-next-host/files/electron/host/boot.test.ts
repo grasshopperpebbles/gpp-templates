@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { boot, type BootDeps, type BootEvent } from './boot';
 import { DockerNotRunningError } from './compose';
 import type { HostConfig } from './config';
+import { DEFAULT_THEME } from './theme';
 import { WebServerExitedError, WebServerTimeoutError, type WebServer } from './webServer';
 
 const cfg: HostConfig = {
@@ -18,6 +19,7 @@ const cfg: HostConfig = {
   compose: { file: '/app/docker-compose.yml', services: [], waitTimeoutMs: 120_000 },
   api: { url: 'http://localhost:8000', corsOrigin: 'http://localhost:3010' },
   projectRoot: '/app',
+  theme: DEFAULT_THEME,
 };
 
 const server: WebServer = { url: 'http://localhost:3010', stop: async () => undefined, isRunning: () => true };

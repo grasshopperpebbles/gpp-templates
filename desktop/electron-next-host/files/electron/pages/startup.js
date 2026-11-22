@@ -8,6 +8,22 @@
     cors: 'Checking the API allows this app',
   };
   const MARKS = { running: '…', done: '✓', failed: '✗', warning: '!' };
+  // host.config.json theme keys (passed in the page query by main.ts) → startup.css variables
+  const THEME_VARS = {
+    background: '--background',
+    panel: '--panel',
+    text: '--text',
+    muted: '--muted',
+    accent: '--accent',
+    accentText: '--accent-text',
+    error: '--error',
+  };
+
+  const query = new URLSearchParams(window.location.search);
+  for (const [key, name] of Object.entries(THEME_VARS)) {
+    const colour = query.get(key);
+    if (colour && /^#[0-9a-fA-F]{6}$/.test(colour)) document.documentElement.style.setProperty(name, colour);
+  }
 
   const stepsEl = document.getElementById('steps');
   const titleEl = document.getElementById('title');

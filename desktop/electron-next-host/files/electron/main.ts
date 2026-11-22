@@ -133,7 +133,7 @@ function start(): void {
       width: state.width,
       height: state.height,
       show: false,
-      backgroundColor: '#171b21',
+      backgroundColor: cfg.theme.background,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -171,7 +171,8 @@ function start(): void {
       if (isStartupUrl(window.webContents.getURL(), pagesDir)) session.replay();
     });
 
-    void window.loadFile(startupFile);
+    // The startup page reads its colours from the query (its CSP allows no inline style)
+    void window.loadFile(startupFile, { query: { ...cfg.theme } });
     return window;
   }
 

@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { HostConfigError, loadHostConfig } from './config';
+import { DEFAULT_THEME } from './theme';
 
 const baseWeb = { path: '../web', port: 3010, portEnv: 'X_PORT', websitePort: 3000, distDir: '.next-desktop' };
 
@@ -141,5 +142,28 @@ describe('loadHostConfig', () => {
       const file = writeConfig({ web: { ...baseWeb, [key]: 0 } });
       expect(() => loadHostConfig(file, {}, () => ({}))).toThrow(new RegExp(key));
     }
+  });
+
+  it('theme defaults to the console colours when the block is absent', () => {
+    const file = writeConfig({ web: baseWeb, compose: null, api: null });
+    expect(loadHostConfig(file, {}).theme).toEqual(DEFAULT_THEME);
+    expect(DEFAULT_THEME.background).toBe('#171b21');
+  });
+
+  it('theme keeps given colours and fills the rest from the defaults', () => {
+    const file = writeConfig({ web: baseWeb, theme: { background: '#081A3A', accentText: '#0047ab' } });
+    const { theme } = loadHostConfig(file, {}, () => ({}));
+    expect(theme.background).toBe('#081a3a');
+    expect(theme.accentText).toBe('#0047ab');
+    expect(theme.panel).toBe(DEFAULT_THEME.panel);
+  });
+
+  it('rejects a theme colour that is not #rrggbb, an unknown theme key, or a non-object theme', () => {
+    const bad = writeConfig({ web: baseWeb, theme: { background: 'red' } });
+    expect(() => loadHostConfig(bad, {}, () => ({}))).toThrow(/theme\.background/);
+    const unknown = writeConfig({ web: baseWeb, theme: { backgorund: '#000000' } });
+    expect(() => loadHostConfig(unknown, {}, () => ({}))).toThrow(/theme\.backgorund/);
+    const notObject = writeConfig({ web: baseWeb, theme: '#000000' });
+    expect(() => loadHostConfig(notObject, {}, () => ({}))).toThrow(/theme/);
   });
 });

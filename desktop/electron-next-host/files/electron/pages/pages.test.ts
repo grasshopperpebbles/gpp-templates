@@ -1,6 +1,18 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_THEME, type HostTheme } from '../host/theme';
+
+// startup.css variable for each host.config.json theme key (startup.js sets them from the query)
+const CSS_VARS: Record<string, keyof HostTheme> = {
+  '--background': 'background',
+  '--panel': 'panel',
+  '--text': 'text',
+  '--muted': 'muted',
+  '--accent': 'accent',
+  '--accent-text': 'accentText',
+  '--error': 'error',
+};
 
 const read = (name: string) => readFileSync(fileURLToPath(new URL(name, import.meta.url)), 'utf8');
 
@@ -20,12 +32,12 @@ describe('startup page', () => {
     expect(html).not.toMatch(/\sstyle=/i);
   });
 
-  it('uses the console colours and a Sapphire Retry button with white text', () => {
+  it('defaults to the console colours; Retry uses the accent fill and accent text', () => {
     const css = read('./startup.css').toLowerCase();
-    for (const colour of ['#171b21', '#1e242c', '#ece6d8', '#9aa1a8', '#0f52ba', '#f5777b']) {
-      expect(css).toContain(colour);
+    for (const [name, colour] of Object.entries(CSS_VARS)) {
+      expect(css).toContain(`${name}: ${DEFAULT_THEME[colour]}`);
     }
-    expect(css).toMatch(/\.retry\s*{[^}]*background:\s*var\(--sapphire\)[^}]*color:\s*#ffffff/);
+    expect(css).toMatch(/\.retry\s*{[^}]*background:\s*var\(--accent\)[^}]*color:\s*var\(--accent-text\)/);
   });
 
   it('shows the output tail in a monospace block', () => {
@@ -72,12 +84,14 @@ describe('startup page script', () => {
     },
   });
 
-  function load() {
+  function load(search = '') {
     const ids = ['steps', 'title', 'problem', 'problem-text', 'problem-tail', 'retry', 'continue'];
     const els = Object.fromEntries(ids.map((id) => [id, el()]));
     let onStartup: (e: unknown) => void = () => undefined;
     const calls: string[] = [];
+    const vars: Record<string, string> = {};
     const window = {
+      location: { search },
       electronAPI: {
         host: {
           onStartup: (cb: (e: unknown) => void) => (onStartup = cb),
@@ -86,9 +100,13 @@ describe('startup page script', () => {
         },
       },
     };
-    const document = { getElementById: (id: string) => els[id], createElement: () => el() };
+    const document = {
+      getElementById: (id: string) => els[id],
+      createElement: () => el(),
+      documentElement: { style: { setProperty: (name: string, value: string) => (vars[name] = value) } },
+    };
     new Function('document', 'window', read('./startup.js'))(document, window);
-    return { els, send: onStartup, calls };
+    return { els, send: onStartup, calls, vars };
   }
 
   it('a CORS warning keeps the page up with the message, Continue anyway and Retry', () => {
@@ -113,5 +131,14 @@ describe('startup page script', () => {
 
   it('tells the user website-port links need Open website in browser', () => {
     expect(read('./startup.html')).toContain('Open website in browser');
+  });
+
+  it('sets the theme colours from the page query and ignores anything that is not #rrggbb', () => {
+    const { vars } = load('?background=%23081a3a&accentText=%230047ab&panel=red&other=%23000000');
+    expect(vars).toEqual({ '--background': '#081a3a', '--accent-text': '#0047ab' });
+  });
+
+  it('every theme key maps to a startup.css variable', () => {
+    expect(Object.values(CSS_VARS).sort()).toEqual(Object.keys(DEFAULT_THEME).sort());
   });
 });

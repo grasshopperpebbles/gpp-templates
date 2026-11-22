@@ -1,6 +1,10 @@
 
 ---
 
+## Session: electron-next-host theme colours (2026-11-22)
+
+Branch `fix/desktop-host-theme`. nteljince's desktop startup page and the window behind it stayed charcoal after its web app moved to a charcoal-blue palette, because startup.css, `main.ts` `backgroundColor` and `pages.test.ts` hard-coded the console colours. Now `host.config.json` takes an optional `theme` block (validated `#rrggbb`, unknown keys rejected, defaults in `electron/host/theme.ts`). The startup page gets the colours in its `loadFile` query and sets CSS variables through CSSOM, which its `default-src 'self'` CSP allows (an inline `style` would not be). Checked in a scratch copy with nteljince's node_modules: vitest 131, type-check and lint clean. Prettier `--check` reports the same pre-existing style warnings as before (39 files on HEAD); not touched here.
+
 ## Session: app display name (2026-11-22)
 
 Branch `fix/app-display-name`. In the nteljince desktop app the window title read "SaaS Dashboard" (web recipe fallback for `NEXT_PUBLIC_SITE_NAME`) and the macOS menu bar read "Electron" (the dev Electron.app's CFBundleName; app.name does not change it). `web/nextjs-saas-dashboard`: the fallback and env.example.txt now use `{{PROJECT_SLUG}}`. `desktop/electron-next-host`: `productName: "{{PROJECT_SLUG}}"`; `pnpm dev` / `start` run `dist-electron/dev-app-name.js` before `electron .`, which writes productName into the project's own dev Electron.app with plutil (macOS only, idempotent, never blocks launch). New `electron/host/devAppName.test.ts` (7 tests). Verified in nteljince's workspace: vitest 125, lint and type-check clean; live launch from the original "Electron" plist renamed it and the menu bar and title read nteljince. Note: productName moves Electron's userData folder (`<slug>-desktop` → `<slug>`), so an existing install signs in once more.

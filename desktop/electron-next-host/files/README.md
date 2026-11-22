@@ -52,6 +52,7 @@ Paths are relative to this folder.
 | `compose` | `{ "file", "services", "waitTimeoutMs" }`, or `null` for no Docker. `waitTimeoutMs` (default `120000`) bounds the health-check wait. |
 | `api` | `{ "port", "portEnv"? }` for the CORS preflight against `http://localhost:<port>`, or `null`. `portEnv` (the compose host-port variable, e.g. `API_PORT`) overrides `port` from the process env, then the project root `.env`, same as `web.portEnv`. The origin checked is always `http://localhost:<effective web.port>`. |
 | `projectRoot` | Optional. Folder of the root `.env` (default: the folder of the compose file). |
+| `theme` | Optional. `#rrggbb` colours for the window background and the startup page: `background`, `panel`, `text`, `muted`, `accent` (Retry button fill), `accentText` (text on it), `error`. Keys left out keep the defaults in `electron/host/theme.ts`. Match them to the web app's own palette so the startup page and the window behind the app don't show a different colour. |
 
 `compose` runs `docker compose up -d --wait`. On some Compose versions `--wait` fails when a one-shot service (for example a migration job) exits. If that happens, list only the long-running services in `compose.services`.
 

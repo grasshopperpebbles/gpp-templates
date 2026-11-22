@@ -1,9 +1,11 @@
 :root {
-  --console: #171b21;
+  /* Defaults; startup.js replaces them with host.config.json's theme (see host/theme.ts) */
+  --background: #171b21;
   --panel: #1e242c;
   --text: #ece6d8;
   --muted: #9aa1a8;
-  --sapphire: #0f52ba;
+  --accent: #0f52ba;
+  --accent-text: #ffffff;
   --error: #f5777b;
   color-scheme: dark;
 }
@@ -18,7 +20,7 @@ body {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: var(--console);
+  background: var(--background);
   color: var(--text);
   font: 15px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -91,7 +93,7 @@ h1 {
   padding: 12px;
   max-height: 240px;
   overflow: auto;
-  background: var(--console);
+  background: var(--background);
   border-radius: 8px;
   color: var(--muted);
   font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -102,8 +104,8 @@ h1 {
   padding: 8px 20px;
   border: 0;
   border-radius: 8px;
-  background: var(--sapphire);
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--accent-text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;

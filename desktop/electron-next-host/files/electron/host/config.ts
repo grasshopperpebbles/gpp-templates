@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { readDotEnvFile } from './dotenv.js';
+import { DEFAULT_THEME, THEME_KEYS, type HostTheme } from './theme.js';
 
 export interface HostConfig {
   web: {
@@ -19,6 +20,8 @@ export interface HostConfig {
   api: { url: string; corsOrigin: string } | null;
   /** Folder of the root `.env` (the port override is read from it), or null */
   projectRoot: string | null;
+  /** Window and startup page colours; keys left out use DEFAULT_THEME */
+  theme: HostTheme;
 }
 
 export class HostConfigError extends Error {
@@ -58,6 +61,22 @@ function positiveInt(value: unknown, fallback: number, where: string): number {
     throw new HostConfigError(`${where} must be a positive integer`);
   }
   return value;
+}
+
+function theme(value: unknown): HostTheme {
+  if (value === undefined || value === null) return { ...DEFAULT_THEME };
+  if (!isObject(value)) throw new HostConfigError('theme must be an object of #rrggbb colours');
+  const result: HostTheme = { ...DEFAULT_THEME };
+  for (const [key, colour] of Object.entries(value)) {
+    if (!(THEME_KEYS as readonly string[]).includes(key)) {
+      throw new HostConfigError(`theme.${key} is not a theme colour (use ${THEME_KEYS.join(', ')})`);
+    }
+    if (typeof colour !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(colour)) {
+      throw new HostConfigError(`theme.${key} must be a #rrggbb colour`);
+    }
+    result[key as keyof HostTheme] = colour.toLowerCase();
+  }
+  return result;
 }
 
 /**
@@ -142,5 +161,6 @@ export function loadHostConfig(
     compose,
     api,
     projectRoot,
+    theme: theme(raw.theme),
   };
 }
