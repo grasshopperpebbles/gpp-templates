@@ -1,0 +1,75 @@
+// Load environment variables FIRST, before any other imports
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load .env file (in Docker, compose's env_file/environment set the same variables)
+const envPath = path.join(process.cwd(), '.env');
+dotenv.config({ path: envPath });
+
+// Now import everything else
+import prisma from './lib/prisma.js';
+import { closeRedis } from './lib/redis.js';
+import { createApp } from './app.js';
+import { assertJwtSecretConfigured } from './middleware/auth.middleware.js';
+import { bindHost } from './startupPolicy.js';
+
+// Refuse to start in production with a missing/placeholder/short JWT_SECRET.
+try {
+  assertJwtSecretConfigured();
+} catch (error) {
+  console.error(`❌ Refusing to start: ${(error as Error).message}`);
+  process.exit(1);
+}
+
+const app = createApp();
+const PORT = process.env.API_PORT || 3001;
+// Unset in development (listen on every interface). The packaged app sets 127.0.0.1.
+const HOST = bindHost(process.env.HOST);
+
+// ============================================================================
+// SERVER STARTUP
+// ============================================================================
+
+const onListen = () => {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('🚀 Express API Server Running');
+  console.log('');
+  console.log(`  API:          http://localhost:${PORT}`);
+  console.log(`  Health Check: http://localhost:${PORT}/health`);
+  console.log(`  API v1:       http://localhost:${PORT}/api/v1`);
+  console.log('');
+  console.log('📚 Available Endpoints:');
+  console.log('  GET    /health');
+  console.log('');
+  console.log('  POST   /api/v1/auth/register');
+  console.log('  POST   /api/v1/auth/login');
+  console.log('  POST   /api/v1/auth/refresh');
+  console.log('  POST   /api/v1/auth/logout');
+  console.log('  GET    /api/v1/auth/me');
+  console.log('');
+  console.log('  GET    /api/v1/users          (admin)');
+  console.log('  GET    /api/v1/users/:id      (self or admin)');
+  console.log('  POST   /api/v1/users          (admin)');
+  console.log('  PATCH  /api/v1/users/:id      (self or admin)');
+  console.log('  DELETE /api/v1/users/:id      (self or admin)');
+  console.log('');
+  console.log('🔐 Authentication:');
+  console.log('  1. Register: POST /api/v1/auth/register');
+  console.log('  2. Login:    POST /api/v1/auth/login');
+  console.log('  3. Use:      Authorization: Bearer <access_token>');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+};
+const server = HOST ? app.listen(PORT, HOST, onListen) : app.listen(PORT, onListen);
+
+// Graceful shutdown (docker stop sends SIGTERM)
+async function shutdown() {
+  console.log('\n\n🛑 Shutting down gracefully...');
+  server.close();
+  await Promise.allSettled([prisma.$disconnect(), closeRedis()]);
+  process.exit(0);
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
+export default app;

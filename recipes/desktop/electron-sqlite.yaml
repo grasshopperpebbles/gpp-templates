@@ -1,0 +1,24 @@
+kind: recipe
+id: electron-sqlite
+version: 1.0.0
+name: Electron + Express + SQLite
+description: Desktop app (Electron + React) with a Node.js Express API, Prisma and a local SQLite file, no database server
+
+workspaces:
+  - id: api
+    path: apps/api
+    pack: api/express-sqlite
+
+  - id: desktop
+    path: apps/desktop
+    pack: desktop/electron
+
+adapters:
+  - id: electron_to_express_sqlite
+    args:
+      desktopId: desktop
+      apiId: api
+
+installers:
+  - action: envSeed
+    args: { profile: dev }

@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
-import { existsSync } from 'node:fs';
+import { app, BrowserWindow, dialog, ipcMain, net, protocol, shell } from 'electron';
+import { spawn, type ChildProcess } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -9,6 +10,16 @@ import electronUpdater from 'electron-updater';
 import contextMenu from 'electron-context-menu';
 import { registerSettingsHandlers } from './ipc/settingsHandlers.js';
 import { CHANNELS } from './ipc/channels.js';
+import {
+  localApiFailureText,
+  localApiTreeKill,
+  localApiUsesShell,
+  onLocalApiExit,
+  planLocalApi,
+  readEnvValue,
+  readOrCreateJwtSecret,
+  rememberApiOutput,
+} from './local-api.js';
 import {
   APP_ORIGIN,
   APP_SCHEME,
@@ -55,6 +66,72 @@ function registerAppProtocol(): void {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let localApiChild: ChildProcess | undefined;
+/** Set before the quit kill, so that child's exit is not reported as an API failure. */
+let quitting = false;
+
+/** API_PORT, else the port in VITE_API_BASE_URL, else 3001. */
+function desktopApiPort(envText: string): string {
+  const explicit = readEnvValue(envText, 'API_PORT');
+  if (explicit) return explicit;
+  const baseUrl = readEnvValue(envText, 'VITE_API_BASE_URL');
+  if (!baseUrl) return '3001';
+  try {
+    return new URL(baseUrl).port || '3001';
+  } catch {
+    return '3001';
+  }
+}
+
+/**
+ * Starts the sibling API when `.env` sets GPP_LOCAL_API_DIR. A missing file, or a blank
+ * value, leaves startup unchanged for the FastAPI and MySQL desktop apps.
+ */
+function startLocalApi(): void {
+  const envPath = join(app.getAppPath(), '.env');
+  if (!existsSync(envPath)) return;
+  const envText = readFileSync(envPath, 'utf8');
+  const localApiDir = readEnvValue(envText, 'GPP_LOCAL_API_DIR');
+  const userData = app.getPath('userData');
+  const plan = planLocalApi({
+    packaged: app.isPackaged,
+    localApiDir,
+    desktopRoot: app.getAppPath(),
+    resourcesPath: process.resourcesPath,
+    execPath: process.execPath,
+    userData,
+    apiPort: desktopApiPort(envText),
+    jwtSecret: app.isPackaged && localApiDir?.trim() ? readOrCreateJwtSecret(userData) : undefined,
+  });
+  if (!plan) return;
+
+  const usesShell = localApiUsesShell(process.platform, app.isPackaged);
+  // A packaged app has no terminal. Keep the API's output for the failure dialog.
+  const capture = app.isPackaged;
+  let apiOutput: string[] = [];
+  const child = spawn(plan.command, plan.args, {
+    cwd: plan.cwd,
+    env: { ...process.env, ...plan.env },
+    stdio: capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+    shell: usesShell,
+  });
+  localApiChild = child;
+  const takeOutput = (chunk: Buffer): void => {
+    apiOutput = rememberApiOutput(apiOutput, chunk.toString());
+    log.error(chunk.toString().trimEnd());
+  };
+  child.stdout?.on('data', takeOutput);
+  child.stderr?.on('data', takeOutput);
+  child.on('error', (error) => {
+    log.error('Local API failed to start:', error);
+    dialog.showErrorBox('API failed to start', localApiFailureText(null, apiOutput));
+  });
+  child.on('exit', (code) => {
+    if (!onLocalApiExit(code, mainWindow !== null, quitting)) return;
+    log.error(`Local API exited with code ${String(code)}`);
+    dialog.showErrorBox('API failed to start', localApiFailureText(code, apiOutput));
+  });
+}
 
 // One running instance; a second launch focuses the existing window
 if (!app.requestSingleInstanceLock()) {
@@ -142,7 +219,13 @@ app.whenReady().then(() => {
   if (!devServerUrl) registerAppProtocol();
   registerSettingsHandlers(devServerUrl);
 
-  mainWindow = createMainWindow();
+  startLocalApi();
+  // Stay null until the window is actually shown, so a local API that exits during
+  // startup still counts as exiting before the window opened.
+  const opening = createMainWindow();
+  opening.once('ready-to-show', () => {
+    mainWindow = opening;
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -160,6 +243,21 @@ app.whenReady().then(() => {
 }).catch((error) => {
   log.error('Failed to start:', error);
   app.quit();
+});
+
+app.on('before-quit', () => {
+  // Windows kill() is TerminateProcess and the child exits 1. Mark the quit first so that
+  // exit is not shown as "The local API exited." A non-zero exit while the app is in use still is.
+  quitting = true;
+  const child = localApiChild;
+  if (!child) return;
+  const tree = localApiTreeKill(process.platform, app.isPackaged, child.pid);
+  if (tree) {
+    // Dev on Windows: the child is cmd.exe. Kill pnpm and the API with it, or the port stays taken.
+    spawn(tree.command, tree.args, { stdio: 'ignore', windowsHide: true });
+    return;
+  }
+  child.kill();
 });
 
 app.on('window-all-closed', () => {

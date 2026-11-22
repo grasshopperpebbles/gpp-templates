@@ -1,0 +1,47 @@
+{
+  "name": "express-sqlite",
+  "displayName": "Express API (SQLite)",
+  "description": "Node.js Express API with TypeScript, Prisma SQLite and a file: database URL, JWT authentication (register/login/refresh/logout) with refresh token rotation, user/admin roles, the same middleware stack as the Express template, Vitest + Supertest tests and a production Dockerfile.",
+  "platform": "api",
+  "dependencies": {
+    "requires": [],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Express.js with TypeScript",
+      "Prisma ORM with SQLite (file: URL) and an initial migration",
+      "Comprehensive middleware stack",
+      "Security headers (Helmet)",
+      "CORS configuration",
+      "Request ID tracking",
+      "Performance logging",
+      "Zod schema validation",
+      "Error handling with request IDs",
+      "JWT authentication (register, login, refresh, logout, /me; refresh tokens can't authenticate)",
+      "Refresh token rotation with reuse detection (hashed refresh_tokens table, family revocation, logout)",
+      "User roles (user/admin): listing, reading other users and POST /users are admin-only; set-role script for the first admin",
+      "Type-safe routes",
+      "Health check endpoint (reports Redis status)",
+      "Graceful shutdown",
+      "Dockerfile (node:22-slim multi-stage, non-root, production deps only, /health healthcheck)",
+      "Vitest + Supertest tests incl. auth (in-memory Prisma fake, no database/Redis needed)",
+      "Redis client (node-redis), optional via REDIS_URL"
+    ],
+    "excluded": [
+      "PostgreSQL",
+      "MySQL",
+      "A required Redis",
+      "CI/CD pipelines (add separately)"
+    ]
+  },
+  "homepageType": "api",
+  "routes": {
+    "api": [
+      "/api",
+      "/api/v1"
+    ],
+    "shared": []
+  }
+}
