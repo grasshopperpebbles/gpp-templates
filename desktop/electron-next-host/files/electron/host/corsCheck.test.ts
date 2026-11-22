@@ -11,7 +11,7 @@ function response(headers: Record<string, string>): Response {
 describe('checkCors', () => {
   it('sends OPTIONS with Origin and Access-Control-Request-Method: GET', async () => {
     const fetchFn = vi.fn().mockResolvedValue(response({ 'access-control-allow-origin': origin }));
-    await checkCors(api, origin, fetchFn as unknown as typeof fetch);
+    await checkCors(api, origin, fetchFn as unknown as typeof fetch, 5000);
     const [url, init] = fetchFn.mock.calls[0] as [string, RequestInit];
     expect(url).toBe(api);
     expect(init.method).toBe('OPTIONS');
@@ -21,12 +21,12 @@ describe('checkCors', () => {
 
   it('is ok when access-control-allow-origin equals the origin', async () => {
     const fetchFn = vi.fn().mockResolvedValue(response({ 'access-control-allow-origin': origin }));
-    expect((await checkCors(api, origin, fetchFn as unknown as typeof fetch)).ok).toBe(true);
+    expect((await checkCors(api, origin, fetchFn as unknown as typeof fetch, 5000)).ok).toBe(true);
   });
 
   it('is ok when access-control-allow-origin is *', async () => {
     const fetchFn = vi.fn().mockResolvedValue(response({ 'access-control-allow-origin': '*' }));
-    expect((await checkCors(api, origin, fetchFn as unknown as typeof fetch)).ok).toBe(true);
+    expect((await checkCors(api, origin, fetchFn as unknown as typeof fetch, 5000)).ok).toBe(true);
   });
 
   it('is not ok when the header is missing or names another origin', async () => {
@@ -34,15 +34,33 @@ describe('checkCors', () => {
     const cases: Array<Record<string, string>> = [{}, { 'access-control-allow-origin': 'http://localhost:3000' }];
     for (const headers of cases) {
       const fetchFn = vi.fn().mockResolvedValue(response(headers));
-      expect(await checkCors(api, origin, fetchFn as unknown as typeof fetch)).toEqual({ ok: false, message: expected });
+      expect(await checkCors(api, origin, fetchFn as unknown as typeof fetch, 5000)).toEqual({ ok: false, message: expected });
     }
   });
 
   it("is not ok when the API can't be reached", async () => {
     const fetchFn = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'));
-    expect(await checkCors(api, origin, fetchFn as unknown as typeof fetch)).toEqual({
+    expect(await checkCors(api, origin, fetchFn as unknown as typeof fetch, 5000)).toEqual({
       ok: false,
       message: `The API at ${api} isn't answering.`,
     });
+  });
+});
+
+describe('checkCors timeout', () => {
+  it('aborts the preflight after timeoutMs', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetchFn = vi.fn((_url: string, init: RequestInit) => {
+        return new Promise<Response>((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+        });
+      });
+      const pending = checkCors(api, origin, fetchFn as unknown as typeof fetch, 250);
+      await vi.advanceTimersByTimeAsync(250);
+      expect(await pending).toEqual({ ok: false, message: `The API at ${api} isn't answering.` });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

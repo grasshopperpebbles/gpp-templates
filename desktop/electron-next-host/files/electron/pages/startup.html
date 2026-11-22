@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Starting</title>
+    <link rel="stylesheet" href="startup.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <h1 id="title">Starting…</h1>
+      <ol id="steps" class="steps" aria-live="polite"></ol>
+      <section id="problem" class="problem" hidden>
+        <p id="problem-text" class="problem-text"></p>
+        <pre id="problem-tail" class="problem-tail" hidden></pre>
+        <button id="retry" type="button" class="retry">Retry</button>
+      </section>
+    </main>
+    <script src="startup.js"></script>
+  </body>
+</html>

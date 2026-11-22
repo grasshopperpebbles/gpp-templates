@@ -43,13 +43,15 @@ describe('loadHostConfig', () => {
     const { web } = loadHostConfig(file, {});
     expect(web.readyTimeoutMs).toBe(120000);
     expect(web.stopGraceMs).toBe(5000);
+    expect(web.corsTimeoutMs).toBe(5000);
   });
 
   it('keeps explicit timeouts and a null compose/api', () => {
-    const file = writeConfig({ web: { ...baseWeb, readyTimeoutMs: 1000, stopGraceMs: 10 } });
+    const file = writeConfig({ web: { ...baseWeb, readyTimeoutMs: 1000, stopGraceMs: 10, corsTimeoutMs: 250 } });
     const config = loadHostConfig(file, {});
     expect(config.web.readyTimeoutMs).toBe(1000);
     expect(config.web.stopGraceMs).toBe(10);
+    expect(config.web.corsTimeoutMs).toBe(250);
     expect(config.compose).toBeNull();
     expect(config.api).toBeNull();
   });

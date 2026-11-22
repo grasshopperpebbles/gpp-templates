@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { composeUp, DockerNotRunningError, type Run } from './compose';
+import { composeUp, DockerNotRunningError, execRun, type Run } from './compose';
 
 const ok = { code: 0, stdout: '', stderr: '' };
 
@@ -33,5 +33,23 @@ describe('composeUp', () => {
     expect(error).toBeInstanceOf(Error);
     expect(error).not.toBeInstanceOf(DockerNotRunningError);
     expect((error as Error).message).toContain('no such service: zzz');
+  });
+});
+
+describe('execRun', () => {
+  it('resolves with the exit code and output of a failing command', async () => {
+    const result = await execRun(process.execPath, ['-e', "console.error('boom'); process.exit(3)"], { cwd: process.cwd() });
+    expect(result.code).toBe(3);
+    expect(result.stderr).toContain('boom');
+  });
+
+  it('resolves code 0 for a command that works', async () => {
+    const result = await execRun(process.execPath, ['-e', "console.log('hi')"], { cwd: process.cwd() });
+    expect(result).toMatchObject({ code: 0, stdout: 'hi\n' });
+  });
+
+  it('resolves a non-zero code when the command does not exist', async () => {
+    const result = await execRun('definitely-not-a-command-xyz', [], { cwd: process.cwd() });
+    expect(result.code).not.toBe(0);
   });
 });

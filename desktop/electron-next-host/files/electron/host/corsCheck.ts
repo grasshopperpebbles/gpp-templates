@@ -3,12 +3,15 @@ export interface CorsResult {
   message: string;
 }
 
-const TIMEOUT_MS = 5_000;
-
 /** Sends the preflight a browser would send and checks the API allows `origin`. */
-export async function checkCors(apiUrl: string, origin: string, fetchFn: typeof fetch): Promise<CorsResult> {
+export async function checkCors(
+  apiUrl: string,
+  origin: string,
+  fetchFn: typeof fetch,
+  timeoutMs: number,
+): Promise<CorsResult> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetchFn(apiUrl, {
       method: 'OPTIONS',

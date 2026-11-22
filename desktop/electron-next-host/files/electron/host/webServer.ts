@@ -13,10 +13,17 @@ export interface WebServerOptions {
   stopGraceMs: number;
   /** Readiness poll interval; defaults to 500 ms. */
   pollMs?: number;
+  /**
+   * Called right after the process is spawned, before it answers, with a handle that can stop it.
+   * Lets a caller stop a server that is still starting (for example when the app quits).
+   */
+  onStarting?: (handle: { stop(): Promise<void> }) => void;
 }
 
 export interface WebServer {
   url: string;
+  /** False once the process has exited. */
+  isRunning(): boolean;
   stop(): Promise<void>;
 }
 
@@ -104,6 +111,8 @@ export function startWebServer(opts: WebServerOptions, deps: WebServerDeps): Pro
     });
   };
 
+  opts.onStarting?.({ stop });
+
   return new Promise<WebServer>((resolve, reject) => {
     let settled = false;
     const finish = (fn: () => void) => {
@@ -126,7 +135,7 @@ export function startWebServer(opts: WebServerOptions, deps: WebServerDeps): Pro
       polling = true;
       try {
         const response = await deps.fetch(`${url}/`);
-        if (response.status < 500) finish(() => resolve({ url, stop }));
+        if (response.status < 500) finish(() => resolve({ url, stop, isRunning: () => !exited }));
       } catch {
         // not listening yet
       } finally {

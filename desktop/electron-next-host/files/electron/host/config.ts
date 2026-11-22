@@ -10,6 +10,7 @@ export interface HostConfig {
     distDir: string;
     readyTimeoutMs: number;
     stopGraceMs: number;
+    corsTimeoutMs: number;
   };
   /** services [] = all */
   compose: { file: string; services: string[] } | null;
@@ -26,6 +27,7 @@ export class HostConfigError extends Error {
 
 const DEFAULT_READY_TIMEOUT_MS = 120_000;
 const DEFAULT_STOP_GRACE_MS = 5_000;
+const DEFAULT_CORS_TIMEOUT_MS = 5_000;
 
 type Json = Record<string, unknown>;
 
@@ -105,6 +107,7 @@ export function loadHostConfig(file: string, env: NodeJS.ProcessEnv): HostConfig
       distDir: str(webRaw, 'distDir', 'web'),
       readyTimeoutMs: positiveInt(webRaw.readyTimeoutMs, DEFAULT_READY_TIMEOUT_MS, 'web.readyTimeoutMs'),
       stopGraceMs: positiveInt(webRaw.stopGraceMs, DEFAULT_STOP_GRACE_MS, 'web.stopGraceMs'),
+      corsTimeoutMs: positiveInt(webRaw.corsTimeoutMs, DEFAULT_CORS_TIMEOUT_MS, 'web.corsTimeoutMs'),
     },
     compose,
     api,

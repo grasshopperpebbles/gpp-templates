@@ -7,4 +7,8 @@ export const CHANNELS = {
   settingsSet: 'settings:set',
   settingsReset: 'settings:reset',
   settingsDelete: 'settings:delete',
+  /** main → startup page: a BootEvent (sent with webContents.send, so the preload listens with ipcRenderer.on) */
+  hostStartup: 'host:startup',
+  /** startup page → main: run the boot sequence again */
+  hostRetry: 'host:retry',
 } as const;

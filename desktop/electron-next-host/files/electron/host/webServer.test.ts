@@ -144,3 +144,28 @@ describe('startWebServer', () => {
     expect(killGroup).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('startWebServer handles', () => {
+  it('calls onStarting with a handle that stops the process before it is ready', async () => {
+    const { child, killGroup, deps } = setup(() => Promise.reject(new Error('down')));
+    let handle: { stop(): Promise<void> } | undefined;
+    const started = startWebServer({ ...opts, onStarting: (h) => (handle = h) }, deps);
+    started.catch(() => undefined);
+    expect(handle).toBeDefined();
+    const stopped = handle!.stop();
+    expect(killGroup).toHaveBeenCalledWith(4242, 'SIGTERM');
+    child.exit(0);
+    await stopped;
+    await expect(started).rejects.toBeInstanceOf(WebServerExitedError);
+  });
+
+  it('isRunning is true when ready and false after the process exits', async () => {
+    const { child, deps } = setup(() => Promise.resolve({ status: 200 }));
+    const started = startWebServer(opts, deps);
+    await vi.advanceTimersByTimeAsync(500);
+    const server = await started;
+    expect(server.isRunning()).toBe(true);
+    child.exit(1);
+    expect(server.isRunning()).toBe(false);
+  });
+});

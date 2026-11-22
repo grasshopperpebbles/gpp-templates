@@ -47,6 +47,7 @@
     },
     "files": [
       "dist-electron/**/*",
+      "electron/pages/**/*",
       "host.config.json",
       "package.json"
     ],

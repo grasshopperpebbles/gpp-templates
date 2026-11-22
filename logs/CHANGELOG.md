@@ -1,6 +1,11 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - electron-next-host: window, startup sequence, website menu
+
+- **Added:** `desktop/electron-next-host` `electron/main.ts` (thin wiring) and tested modules: `host/boot.ts` (docker, port, web, cors, ready events; Docker, busy-port, web-exit and timeout messages; CORS is a warning), `host/navigation.ts` (`isPageUrl`), `host/session.ts` (one boot at a time, event replay, reopen only boots when the server stopped), `host/website.ts` ("Open website in browser" starts once, a busy port means already up), `host/servers.ts` (stops every server on quit, including one still starting), `menu.ts` (standard roles plus Open website in browser, Reload page, Show logs). Startup page in `electron/pages/` (CSP `default-src 'self'`, no inline script) with a step list, error text, a monospace output tail and a Sapphire Retry button. New channels `host:startup` and `host:retry`; `host:retry` answers only the startup page, app info and settings only the hosted origin.
+- **Changed:** `web.corsTimeoutMs` (default 5000) replaces the CORS module constant. `startWebServer` gains `onStarting` and `WebServer.isRunning()`. `compose.ts` gains `execRun`. `ipc/validate.ts` drops the `app://` helpers and gains `isStartupUrl`. README updated.
+
 ## [Unreleased] - 2026-11-22 - electron-next-host: CORS check
 
 - **Added:** `desktop/electron-next-host` `electron/host/corsCheck.ts` (`checkCors`): an OPTIONS preflight with `Origin` and `Access-Control-Request-Method: GET`, ok when `access-control-allow-origin` is the origin or `*`; otherwise a message naming `CORS_ORIGINS`, or "isn't answering" when unreachable (5 s abort). 4 tests.

@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import Store from 'electron-store';
 import { CHANNELS } from './channels.js';
-import { isAppUrl, isValidSettingsKey } from './validate.js';
+import { isValidSettingsKey } from './validate.js';
 
 // Initialize electron-store
 const store = new Store({
@@ -13,9 +13,10 @@ const store = new Store({
   },
 });
 
-export function registerSettingsHandlers(devServerUrl: string | undefined): void {
+/** `isTrustedUrl` says which pages may call these handlers (the hosted web app, not the startup page). */
+export function registerSettingsHandlers(isTrustedUrl: (url: string | undefined) => boolean): void {
   const checkSender = (url: string | undefined) => {
-    if (!isAppUrl(url, devServerUrl)) throw new Error('Untrusted sender');
+    if (!isTrustedUrl(url)) throw new Error('Untrusted sender');
   };
   const checkKey = (key: unknown): string => {
     if (!isValidSettingsKey(key)) throw new Error(`Invalid settings key: ${String(key)}`);
