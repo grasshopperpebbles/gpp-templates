@@ -15,7 +15,7 @@ export interface HostConfig {
   };
   /** services [] = all; waitTimeoutMs bounds `up --wait` (the health checks) */
   compose: { file: string; services: string[]; waitTimeoutMs: number } | null;
-  /** url = API base for the CORS preflight; corsOrigin follows the effective web port */
+  /** url = API base for the CORS preflight (api.port, overridden by api.portEnv); corsOrigin follows the effective web port */
   api: { url: string; corsOrigin: string } | null;
   /** Folder of the root `.env` (the port override is read from it), or null */
   projectRoot: string | null;
@@ -64,6 +64,7 @@ function positiveInt(value: unknown, fallback: number, where: string): number {
  * Reads host.config.json. Paths in the file are relative to the file's folder (the desktop
  * workspace) and come back absolute. `web.portEnv` overrides `web.port`: the process env first,
  * then the project root's `.env` (the folder of `projectRoot`, else of the compose file).
+ * `api.portEnv` (optional) overrides `api.port` the same way.
  */
 export function loadHostConfig(
   file: string,
@@ -102,21 +103,29 @@ export function loadHostConfig(
   if (raw.projectRoot !== undefined) projectRoot = resolve(base, str(raw, 'projectRoot', 'host.config.json'));
   else if (compose) projectRoot = dirname(compose.file);
 
-  let override = env[portEnv];
-  if ((override === undefined || override === '') && projectRoot) {
-    override = readEnvFile(join(projectRoot, '.env'))[portEnv];
-  }
-  if (override !== undefined && override !== '') {
-    if (!/^\d+$/.test(override)) throw new HostConfigError(`${portEnv} must be an integer port, got "${override}"`);
+  // process env first, then the project root's .env
+  const envValue = (name: string): string | undefined => {
+    const fromProcess = env[name];
+    if (fromProcess !== undefined && fromProcess !== '') return fromProcess;
+    const fromFile = projectRoot ? readEnvFile(join(projectRoot, '.env'))[name] : undefined;
+    return fromFile !== undefined && fromFile !== '' ? fromFile : undefined;
+  };
+  const portFromEnv = (name: string, fallback: number): number => {
+    const override = envValue(name);
+    if (override === undefined) return fallback;
+    if (!/^\d+$/.test(override)) throw new HostConfigError(`${name} must be an integer port, got "${override}"`);
     const n = Number(override);
-    if (n < 1 || n > 65535) throw new HostConfigError(`${portEnv} must be from 1 to 65535, got "${override}"`);
-    webPort = n;
-  }
+    if (n < 1 || n > 65535) throw new HostConfigError(`${name} must be from 1 to 65535, got "${override}"`);
+    return n;
+  };
+  webPort = portFromEnv(portEnv, webPort);
 
   let api: HostConfig['api'] = null;
   if (raw.api != null) {
     if (!isObject(raw.api)) throw new HostConfigError('api must be an object or null');
-    api = { url: str(raw.api, 'url', 'api'), corsOrigin: `http://localhost:${webPort}` };
+    let apiPort = port(raw.api.port, 'api.port');
+    if (raw.api.portEnv !== undefined) apiPort = portFromEnv(str(raw.api, 'portEnv', 'api'), apiPort);
+    api = { url: `http://localhost:${apiPort}`, corsOrigin: `http://localhost:${webPort}` };
   }
 
   return {

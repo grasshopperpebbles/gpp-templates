@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - electron-next-host: api port resolved at runtime
+
+- **Changed:** `host.config.json` `api` is now `{ "port", "portEnv"? }` instead of `{ "url" }`. `loadHostConfig` builds `http://localhost:<port>`, with `portEnv` overriding `port` from the process env, then the project root `.env`, same order as `web.portEnv`. An adapter no longer needs to bake a machine's `.env` override into a committed file. Tests added in `config.test.ts`; README updated.
+
 ## [Unreleased] - 2026-11-22 - electron-next-host: vitest scope
 
 - **Fixed:** `desktop/electron-next-host` gains `vitest.config.ts` with `include: ['electron/**/*.test.ts']`. gpp scaffolds `logs/log_archive.test.mjs` (a node:test file) into every project, and vitest picked it up and failed with "No test suite found".

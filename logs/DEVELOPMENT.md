@@ -1,6 +1,10 @@
 
 ---
 
+## Session: electron-next-host api port at runtime (2026-11-22)
+
+Branch `feature/electron-next-host`. `api` block is `{ port, portEnv? }`, resolved in `loadHostConfig` (process env, then root `.env`, then default). Scratch scaffold `host-demo`: 18 files / 118 tests pass, type-check, lint and `build:electron` clean; `template validate` valid.
+
 ## Session: electron-next-host vitest scope (2026-11-22)
 
 Branch `feature/electron-next-host`. Scratch scaffold with `logs/log_archive.test.mjs` present: without the config 1 file failed ("No test suite found"); with it 18 files / 116 tests pass, type-check and lint clean, `template validate` valid.

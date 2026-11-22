@@ -68,15 +68,28 @@ describe('loadHostConfig', () => {
     expect(() => loadHostConfig(join(file, '..', 'missing.json'), {})).toThrow(HostConfigError);
   });
 
-  it('rejects an invalid port in the file and an api block without a url', () => {
+  it('rejects an invalid port in the file and an api block without a port', () => {
     expect(() => loadHostConfig(writeConfig({ web: { ...baseWeb, port: 'x' } }), {})).toThrow(HostConfigError);
     expect(() => loadHostConfig(writeConfig({ web: baseWeb, api: {} }), {})).toThrow(HostConfigError);
   });
 
   it('api.corsOrigin follows the effective web port', () => {
-    const file = writeConfig({ web: baseWeb, api: { url: 'http://localhost:8880' } });
+    const file = writeConfig({ web: baseWeb, api: { port: 8000 } });
     expect(loadHostConfig(file, {}).api?.corsOrigin).toBe('http://localhost:3010');
     expect(loadHostConfig(file, { X_PORT: '3020' }).api?.corsOrigin).toBe('http://localhost:3020');
+  });
+
+  it('api url: default port, then api.portEnv from the project root .env, then the process env', () => {
+    const file = writeConfig({ web: baseWeb, compose: { file: '../c.yml' }, api: { port: 8000, portEnv: 'A_PORT' } });
+    expect(loadHostConfig(file, {}, () => ({})).api?.url).toBe('http://localhost:8000');
+    expect(loadHostConfig(file, {}, () => ({ A_PORT: '8880' })).api?.url).toBe('http://localhost:8880');
+    expect(loadHostConfig(file, { A_PORT: '8001' }, () => ({ A_PORT: '8880' })).api?.url).toBe('http://localhost:8001');
+    expect(() => loadHostConfig(file, { A_PORT: 'zz' }, () => ({}))).toThrow(/A_PORT/);
+  });
+
+  it('api without portEnv ignores the environment', () => {
+    const file = writeConfig({ web: baseWeb, api: { port: 8123 } });
+    expect(loadHostConfig(file, { A_PORT: '1' }).api?.url).toBe('http://localhost:8123');
   });
 
   it('reads the port override from the project root .env when the process env has none', () => {
