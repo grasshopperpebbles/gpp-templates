@@ -1,6 +1,23 @@
 import { test, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { clientIpOf, decodeKeyword, fetchGift, subscribeForGift } from './broadkast-gifts.ts'
+import {
+  ALREADY_BOUGHT,
+  SOMETHING_WRONG,
+  THANKS_EXPIRED,
+  THANKS_UNAVAILABLE,
+  TOO_MANY,
+  clientIpOf,
+  decodeKeyword,
+  fetchGift,
+  fetchThanks,
+  formatPrice,
+  joinKitWaitlist,
+  readThanksParams,
+  resendGuideLink,
+  sendSurvey,
+  startGuideCheckout,
+  subscribeForGift,
+} from './broadkast-gifts.ts'
 
 const realFetch = globalThis.fetch
 let calls: Array<{ url: string; init?: RequestInit }> = []
@@ -120,4 +137,153 @@ test('decodeKeyword never throws on a stray %', () => {
   assert.equal(decodeKeyword('%'), '%')
   assert.equal(decodeKeyword('VIDEO'), 'VIDEO')
   assert.equal(decodeKeyword('V%C3%A9'), 'Vé')
+})
+
+const VIEW = {
+  brandName: 'Acme',
+  gift: { name: 'Cheat Sheet', downloadUrl: 'https://api.example.com/v1/public/downloads/x' },
+  offer: {
+    pitchLine: 'Go further',
+    productName: 'Make Your First AI Video',
+    priceMinor: 1900,
+    currency: 'usd',
+    canBuy: true,
+    bought: false,
+    refundDays: 30,
+  },
+  survey: [
+    { question: 'What do you make?', answered: false },
+    { question: 'Biggest block?', answered: true },
+  ],
+  waitlist: { kitName: 'Creator Kit', kitDescription: 'Templates', joined: false },
+}
+
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status })
+
+test('fetchThanks asks for the encoded keyword and token with no-store', async () => {
+  mockFetch(async () => json(VIEW))
+  await fetchThanks('VIDEO', 'a.b/c+d')
+  assert.equal(calls[0].url, 'https://api.example.com/v1/public/gifts/my-shop/VIDEO/thanks?s=a.b%2Fc%2Bd')
+  assert.equal(calls[0].init?.cache, 'no-store')
+})
+
+test('fetchThanks maps 200 to the view', async () => {
+  mockFetch(async () => json(VIEW))
+  assert.deepEqual(await fetchThanks('VIDEO', 't'), { kind: 'ok', view: VIEW })
+})
+
+test('fetchThanks: 404 is invalid; 500 and a network error are unavailable', async () => {
+  mockFetch(async () => json({ code: 'THANKS_LINK_INVALID' }, 404))
+  assert.deepEqual(await fetchThanks('VIDEO', 't'), { kind: 'invalid' })
+  mockFetch(async () => json({}, 500))
+  assert.deepEqual(await fetchThanks('VIDEO', 't'), { kind: 'unavailable' })
+  mockFetch(async () => {
+    throw new Error('down')
+  })
+  assert.deepEqual(await fetchThanks('VIDEO', 't'), { kind: 'unavailable' })
+})
+
+test('fetchThanks with an empty token is invalid and fetches nothing', async () => {
+  mockFetch(async () => json(VIEW))
+  assert.deepEqual(await fetchThanks('VIDEO', ''), { kind: 'invalid' })
+  assert.equal(calls.length, 0)
+})
+
+test('fetchThanks forwards the visitor IP', async () => {
+  mockFetch(async () => json(VIEW))
+  await fetchThanks('VIDEO', 't', '203.0.113.9')
+  assert.equal((calls[0].init?.headers as Record<string, string>)['X-Forwarded-For'], '203.0.113.9')
+})
+
+test('readThanksParams takes the first value and reads the flags', () => {
+  assert.deepEqual(readThanksParams({ s: ['t1', 't2'], purchase: 'done' }), {
+    s: 't1',
+    purchaseDone: true,
+    downloadExpired: false,
+    purchaseId: null,
+  })
+  assert.deepEqual(readThanksParams({ s: 't', download: 'expired', purchaseId: 'p1' }), {
+    s: 't',
+    purchaseDone: false,
+    downloadExpired: true,
+    purchaseId: 'p1',
+  })
+  assert.equal(readThanksParams({}).s, '')
+})
+
+test('formatPrice', () => {
+  assert.equal(formatPrice(1900, 'usd'), '$19')
+  assert.equal(formatPrice(1950, 'usd'), '$19.50')
+  assert.equal(formatPrice(1900, 'EUR'), '€19')
+  assert.equal(formatPrice(500, 'jpy'), '¥500')
+})
+
+test('sendSurvey posts { s, answers } to the survey path', async () => {
+  mockFetch(async () => json({ saved: 1 }))
+  const answers = [{ question: 'What do you make?', answer: 'Videos' }]
+  assert.deepEqual(await sendSurvey({ keyword: 'VIDEO', s: 'tok', answers }), { ok: true })
+  assert.equal(calls[0].url, 'https://api.example.com/v1/public/gifts/my-shop/VIDEO/thanks/survey')
+  assert.equal(calls[0].init?.method, 'POST')
+  assert.deepEqual(JSON.parse(String(calls[0].init?.body)), { s: 'tok', answers })
+})
+
+test('joinKitWaitlist posts { s } to the waitlist path', async () => {
+  mockFetch(async () => json({ joined: true }))
+  assert.deepEqual(await joinKitWaitlist({ keyword: 'VIDEO', s: 'tok', ip: '1.2.3.4' }), { ok: true })
+  assert.equal(calls[0].url, 'https://api.example.com/v1/public/gifts/my-shop/VIDEO/thanks/waitlist')
+  assert.deepEqual(JSON.parse(String(calls[0].init?.body)), { s: 'tok' })
+  assert.equal((calls[0].init?.headers as Record<string, string>)['X-Forwarded-For'], '1.2.3.4')
+})
+
+test('startGuideCheckout returns the Stripe URL', async () => {
+  mockFetch(async () => json({ url: 'https://checkout.stripe.com/c/pay/cs_test_1' }))
+  assert.deepEqual(await startGuideCheckout({ keyword: 'VIDEO', s: 'tok' }), {
+    ok: true,
+    url: 'https://checkout.stripe.com/c/pay/cs_test_1',
+  })
+  assert.equal(calls[0].url, 'https://api.example.com/v1/public/gifts/my-shop/VIDEO/thanks/checkout')
+})
+
+test('startGuideCheckout refuses a non-https url', async () => {
+  for (const body of [{ url: 'javascript:alert(1)' }, { url: 'http://x' }, {}]) {
+    mockFetch(async () => json(body))
+    assert.deepEqual(await startGuideCheckout({ keyword: 'VIDEO', s: 'tok' }), { ok: false, message: SOMETHING_WRONG })
+  }
+})
+
+test('startGuideCheckout: 409 CHECKOUT_ALREADY_BOUGHT is ALREADY_BOUGHT; 409 CHECKOUT_OFF is SOMETHING_WRONG', async () => {
+  mockFetch(async () => json({ code: 'CHECKOUT_ALREADY_BOUGHT' }, 409))
+  assert.deepEqual(await startGuideCheckout({ keyword: 'VIDEO', s: 'tok' }), { ok: false, message: ALREADY_BOUGHT })
+  mockFetch(async () => json({ code: 'CHECKOUT_OFF' }, 409))
+  assert.deepEqual(await startGuideCheckout({ keyword: 'VIDEO', s: 'tok' }), { ok: false, message: SOMETHING_WRONG })
+})
+
+test('a 404 on any thank-you action is expired', async () => {
+  const expired = { ok: false, message: THANKS_EXPIRED, expired: true }
+  mockFetch(async () => json({ code: 'THANKS_LINK_INVALID' }, 404))
+  assert.deepEqual(await sendSurvey({ keyword: 'V', s: 't', answers: [] }), expired)
+  assert.deepEqual(await joinKitWaitlist({ keyword: 'V', s: 't' }), expired)
+  assert.deepEqual(await startGuideCheckout({ keyword: 'V', s: 't' }), expired)
+})
+
+test('a network error or 500 on an action is SOMETHING_WRONG; 429 is TOO_MANY', async () => {
+  mockFetch(async () => {
+    throw new Error('down')
+  })
+  assert.deepEqual(await joinKitWaitlist({ keyword: 'V', s: 't' }), { ok: false, message: SOMETHING_WRONG })
+  mockFetch(async () => json({}, 429))
+  assert.deepEqual(await sendSurvey({ keyword: 'V', s: 't', answers: [] }), { ok: false, message: TOO_MANY })
+})
+
+test('resendGuideLink: 202 ok, 429 TOO_MANY, path is encoded', async () => {
+  mockFetch(async () => json({ ok: true }, 202))
+  assert.deepEqual(await resendGuideLink({ purchaseId: 'p/1' }), { ok: true })
+  assert.equal(calls[0].url, 'https://api.example.com/v1/public/downloads/p%2F1/resend')
+  assert.equal(calls[0].init?.method, 'POST')
+  mockFetch(async () => json({}, 429))
+  assert.deepEqual(await resendGuideLink({ purchaseId: 'p1' }), { ok: false, message: TOO_MANY })
+})
+
+test('the unavailable copy is exported', () => {
+  assert.equal(THANKS_UNAVAILABLE, "This page isn't available right now. Try again in a few minutes.")
 })

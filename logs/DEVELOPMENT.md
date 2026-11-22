@@ -1,6 +1,10 @@
 
 ---
 
+## Session: Broadkast thank-you page client (2026-11-22)
+
+Branch `feature/gift-offer-funnel`. Added to `broadkast-gifts.ts` (not a new file: `node --test --experimental-strip-types` cannot resolve an extensionless sibling import). The four POSTs share one status mapping: 2xx ok, 404 expired, 429 too many, 409 `CHECKOUT_ALREADY_BOUGHT` already bought, else a generic error. `node --test` on the file: 29 pass.
+
 ## Session: Source of truth for the packs gpp-cli bundles (2026-11-20)
 
 Branch `chore/one-source-template-packs`. Spec and plan are in gpp-cli (`docs/superpowers/specs/2026-11-20-one-source-template-packs-design.md`). `gpp/` and `templates/baas/` compared with gpp-cli's copies and removed (the operator chose, file by file, what to keep). `cms/headless-site-options.php` copied from gpp-cli; `gpp template install --all` into a temp HOME does not list it as a pack. gpp-cli's first sync from this branch (`d9a7c59`) changed no pack file, and `--verify` found nothing else shared.

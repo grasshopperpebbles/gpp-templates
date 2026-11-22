@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - Broadkast thank-you page client
+
+- **Added:** `web/nextjs-headless-wp-full` `src/lib/broadkast-gifts.ts`: `fetchThanks`, `sendSurvey`, `joinKitWaitlist`, `startGuideCheckout` (accepts only an `https://` URL), `resendGuideLink`, `readThanksParams`, `formatPrice` and the thank-you copy constants. 15 new tests.
+
 ## [Unreleased] - 2026-11-20 - Source of truth for the packs gpp-cli bundles
 
 - **Changed:** this repo is now the only place the packs, `recipes/` and WordPress plugin files that gpp-cli bundles are edited; gpp-cli copies them from a pinned commit (`npm run templates:sync`, gpp-cli v0.9.131). CLAUDE.md (the rule, flipped from "gpp-cli is the source of truth") and a README section.

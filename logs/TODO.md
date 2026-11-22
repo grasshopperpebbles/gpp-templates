@@ -1,6 +1,11 @@
 
 ---
 
+### Broadkast thank-you page client (2026-11-22)
+
+- [x] Client functions for Broadkast's thank-you API (view, survey, kit waitlist, guide checkout, resend link).
+- [ ] The thank-you page, its server actions and the `#offer` anchor use these (Task 16 of the gift offer funnel).
+
 ## gpp-templates repository
 
 ### This repo is the source of truth for the packs gpp-cli bundles (2026-11-20)

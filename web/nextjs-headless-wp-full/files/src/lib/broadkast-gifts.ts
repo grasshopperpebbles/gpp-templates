@@ -9,6 +9,10 @@ export interface Gift {
 
 export const GIFT_UNAVAILABLE = "This gift isn't available."
 export const TOO_MANY = 'Too many requests right now. Try again in a minute.'
+export const THANKS_EXPIRED = 'This link has expired. Check your email for the latest one.'
+export const THANKS_UNAVAILABLE = "This page isn't available right now. Try again in a few minutes."
+export const ALREADY_BOUGHT = 'You already have this guide. The download link is in your email.'
+export const SOMETHING_WRONG = 'Something went wrong. Please try again.'
 
 /** The visitor's IP from this request: the first x-forwarded-for hop, else x-real-ip. */
 export function clientIpOf(headers: Headers): string | undefined {
@@ -71,8 +75,142 @@ export async function subscribeForGift(input: {
     if (res.status === 429) return { ok: false, message: TOO_MANY }
     const data = await res.json().catch(() => ({}))
     if (res.ok && data.success) return { ok: true, message: data.message }
-    return { ok: false, message: data.message || 'Something went wrong. Please try again.' }
+    return { ok: false, message: data.message || SOMETHING_WRONG }
   } catch {
-    return { ok: false, message: 'Something went wrong. Please try again.' }
+    return { ok: false, message: SOMETHING_WRONG }
   }
+}
+
+// ---- Thank-you page ----
+
+export interface ThanksView {
+  brandName: string
+  gift: { name: string; downloadUrl: string }
+  offer: null | {
+    pitchLine: string
+    productName: string
+    priceMinor: number
+    currency: string
+    canBuy: boolean
+    bought: boolean
+    refundDays: number
+  }
+  survey: Array<{ question: string; answered: boolean }>
+  waitlist: null | { kitName: string; kitDescription: string; joined: boolean }
+}
+
+export type ThanksResult = { kind: 'ok'; view: ThanksView } | { kind: 'invalid' } | { kind: 'unavailable' }
+
+export type ActionResult = { ok: true; url?: string } | { ok: false; message: string; expired?: boolean }
+
+type SearchParams = Record<string, string | string[] | undefined>
+
+/** The thank-you page's query: the first value of each key, plus the purchase and expired-download flags. */
+export function readThanksParams(sp: SearchParams): {
+  s: string
+  purchaseDone: boolean
+  downloadExpired: boolean
+  purchaseId: string | null
+} {
+  const first = (key: string): string => {
+    const v = sp[key]
+    return (Array.isArray(v) ? v[0] : v) ?? ''
+  }
+  return {
+    s: first('s'),
+    purchaseDone: first('purchase') === 'done',
+    downloadExpired: first('download') === 'expired',
+    purchaseId: first('purchaseId') || null,
+  }
+}
+
+/** "$19", "$19.50", "¥500": a whole amount drops the decimals. */
+export function formatPrice(priceMinor: number, currency: string): string {
+  const base = { style: 'currency' as const, currency: currency.toUpperCase() }
+  const digits = new Intl.NumberFormat('en', base).resolvedOptions().maximumFractionDigits ?? 2
+  const amount = priceMinor / 10 ** digits
+  const whole = Number.isInteger(amount)
+  return new Intl.NumberFormat('en', {
+    ...base,
+    minimumFractionDigits: whole ? 0 : digits,
+    maximumFractionDigits: whole ? 0 : digits,
+  }).format(amount)
+}
+
+function forwarded(ip?: string): Record<string, string> {
+  return ip ? { 'X-Forwarded-For': ip } : {}
+}
+
+function thanksBase(keyword: string): string | null {
+  const { base, websiteId } = config()
+  if (!base || !websiteId) return null
+  return `${base}/v1/public/gifts/${encodeURIComponent(websiteId)}/${encodeURIComponent(keyword)}/thanks`
+}
+
+export async function fetchThanks(keyword: string, s: string, ip?: string): Promise<ThanksResult> {
+  if (!s) return { kind: 'invalid' }
+  const base = thanksBase(keyword)
+  if (!base) return { kind: 'unavailable' }
+  try {
+    const res = await fetch(`${base}?s=${encodeURIComponent(s)}`, { cache: 'no-store', headers: forwarded(ip) })
+    if (res.status === 404) return { kind: 'invalid' }
+    if (res.status !== 200) return { kind: 'unavailable' }
+    return { kind: 'ok', view: (await res.json()) as ThanksView }
+  } catch {
+    return { kind: 'unavailable' }
+  }
+}
+
+async function postAction(url: string | null, body: unknown, ip?: string): Promise<ActionResult & { data?: any }> {
+  if (!url) return { ok: false, message: SOMETHING_WRONG }
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', ...forwarded(ip) },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (res.ok) return { ok: true, data }
+    if (res.status === 404) return { ok: false, message: THANKS_EXPIRED, expired: true }
+    if (res.status === 429) return { ok: false, message: TOO_MANY }
+    if (res.status === 409 && data?.code === 'CHECKOUT_ALREADY_BOUGHT') return { ok: false, message: ALREADY_BOUGHT }
+    return { ok: false, message: SOMETHING_WRONG }
+  } catch {
+    return { ok: false, message: SOMETHING_WRONG }
+  }
+}
+
+function plain(r: ActionResult & { data?: any }): ActionResult {
+  return r.ok ? { ok: true } : r
+}
+
+export async function sendSurvey(i: {
+  keyword: string
+  s: string
+  answers: Array<{ question: string; answer: string }>
+  ip?: string
+}): Promise<ActionResult> {
+  const base = thanksBase(i.keyword)
+  return plain(await postAction(base && `${base}/survey`, { s: i.s, answers: i.answers }, i.ip))
+}
+
+export async function joinKitWaitlist(i: { keyword: string; s: string; ip?: string }): Promise<ActionResult> {
+  const base = thanksBase(i.keyword)
+  return plain(await postAction(base && `${base}/waitlist`, { s: i.s }, i.ip))
+}
+
+export async function startGuideCheckout(i: { keyword: string; s: string; ip?: string }): Promise<ActionResult> {
+  const base = thanksBase(i.keyword)
+  const r = await postAction(base && `${base}/checkout`, { s: i.s }, i.ip)
+  if (!r.ok) return r
+  const url = r.data?.url
+  if (typeof url !== 'string' || !url.startsWith('https://')) return { ok: false, message: SOMETHING_WRONG }
+  return { ok: true, url }
+}
+
+export async function resendGuideLink(i: { purchaseId: string; ip?: string }): Promise<ActionResult> {
+  const { base } = config()
+  const url = base ? `${base}/v1/public/downloads/${encodeURIComponent(i.purchaseId)}/resend` : null
+  return plain(await postAction(url, undefined, i.ip))
 }
