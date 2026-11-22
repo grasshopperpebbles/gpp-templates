@@ -1,0 +1,35 @@
+{
+  "name": "electron-next-host",
+  "displayName": "Electron host for a Next.js app",
+  "description": "Electron desktop shell that starts and hosts a sibling Next.js app (and optionally its Docker Compose services) instead of bundling a Vite renderer. Keeps the electron pack security defaults: sandbox, context isolation, single instance, validated IPC.",
+  "platform": "desktop",
+  "dependencies": {
+    "requires": [
+      "web"
+    ],
+    "requiresVariant": null,
+    "optional": []
+  },
+  "features": {
+    "included": [
+      "Electron main process that hosts a sibling Next.js app",
+      "host.config.json: web app path, port, dist dir, optional Docker Compose and API origin",
+      "electron-store for persistent settings",
+      "electron-window-state for window persistence",
+      "electron-log for structured logging",
+      "electron-builder for packaging",
+      "IPC handlers structure",
+      "Preload script with context isolation",
+      "Security best practices (sandbox, context isolation, single instance, IPC validation)"
+    ],
+    "excluded": [
+      "Monaco Editor (can be added separately)",
+      "AI integrations (can be added separately)",
+      "Terminal integration (can be added separately)"
+    ]
+  },
+  "homepageType": "app",
+  "routes": {
+    "shared": []
+  }
+}

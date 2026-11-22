@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - desktop/electron-next-host pack
+
+- **Added:** `desktop/electron-next-host` (requires `web`): the `desktop/electron` shell without the Vite renderer, to host a sibling Next.js app. Keeps the sandbox, context isolation, single-instance and IPC-validation pieces (`preload.cts`, `electron/ipc/*` and tests, settings handlers). New `host.config.json` and `electron/host/config.ts` (`loadHostConfig`, `HostConfigError`): paths resolve against the config folder, `env[web.portEnv]` overrides the port, timeouts default to 120000 / 5000 ms. 8 tests. No `main.ts` yet and no auto-update. Listed in README.
+
 ## [Unreleased] - 2026-11-22 - SaaS dashboard: a second dev server
 
 - **Changed:** `web/nextjs-saas-dashboard` `next.config.ts` reads `distDir` from `NEXT_DIST_DIR` (default `.next`), so a desktop app can run its own dev server beside the website. `/.next-desktop/` is in `_gitignore` and its type folders are in `tsconfig.json` `include`.

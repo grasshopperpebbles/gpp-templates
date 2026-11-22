@@ -1,6 +1,10 @@
 
 ---
 
+## Session: desktop/electron-next-host skeleton (2026-11-22)
+
+Branch `feature/electron-next-host`. Scaffolded `files/` into a scratch dir (slug `demo`), `pnpm install`; `pnpm vitest run`: 18 pass (8 new config tests, written first and seen failing on the missing module), `pnpm type-check` and `pnpm lint` clean. `gpp template validate desktop/electron-next-host`: valid (16 files). The preload's `ElectronAPI` type moved to `electron/electron-api.d.ts` (the old `src/types` is gone); `tsconfig.json` now type-checks `electron/**` with Bundler resolution so tests can import without `.js`.
+
 ## Session: SaaS dashboard second dev server (2026-11-22)
 
 Branch `feature/electron-next-host`. `node ~/projects/gpp-cli/dist/cli.js template validate web/nextjs-saas-dashboard`: valid (76 files).

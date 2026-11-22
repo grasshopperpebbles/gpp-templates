@@ -1,0 +1,11 @@
+{
+  "web": {
+    "path": "../web",
+    "port": 3010,
+    "portEnv": "DESKTOP_WEB_PORT",
+    "websitePort": 3000,
+    "distDir": ".next-desktop"
+  },
+  "compose": { "file": "../../docker-compose.yml", "services": [] },
+  "api": null
+}

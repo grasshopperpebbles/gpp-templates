@@ -82,6 +82,7 @@ All headless WordPress and Strapi web variants (both Next.js and SvelteKit) incl
 | Template | Description |
 |----------|-------------|
 | `desktop/electron` | Electron desktop application |
+| `desktop/electron-next-host` | Electron shell that hosts a sibling Next.js app |
 
 ### Worker
 | Template | Description |

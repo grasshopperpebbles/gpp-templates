@@ -1,0 +1,79 @@
+{
+  "name": "{{PROJECT_SLUG}}-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Electron desktop host for a Next.js app",
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "pnpm build:electron && electron .",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "start": "pnpm build:electron && electron .",
+    "dist": "pnpm build:electron && electron-builder",
+    "dist:mac": "pnpm build:electron && electron-builder --mac",
+    "dist:win": "pnpm build:electron && electron-builder --win",
+    "dist:linux": "pnpm build:electron && electron-builder --linux",
+    "type-check": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "rebuild": "electron-rebuild -f -w"
+  },
+  "dependencies": {
+    "electron-context-menu": "^3.6.1",
+    "electron-log": "^5.2.0",
+    "electron-store": "^10.1.0",
+    "electron-window-state": "^5.0.3"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.1",
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.7.4",
+    "electron": "^39.2.1",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^16.5.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.46.4",
+    "vitest": "^4.0.9"
+  },
+  "build": {
+    "appId": "com.{{PROJECT_SLUG}}.desktop",
+    "productName": "{{PROJECT_SLUG}}",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist-electron/**/*",
+      "host.config.json",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
+  }
+}
