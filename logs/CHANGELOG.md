@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - Thank-you page final-review fixes
+
+- **Changed:** `broadkast-gifts.ts` maps the API's new 409 `SURVEY_QUESTIONS_CHANGED` (questions edited after the page loaded) to `SURVEY_CHANGED`, so the survey no longer says "Your answers are saved" when nothing was saved. 1 new test.
+
 ## [Unreleased] - 2026-11-22 - Broadkast thank-you page
 
 - **Added:** `web/nextjs-headless-wp-full` page `gift/[keyword]/thanks` (offer card, survey, kit waitlist, fresh-link button; `referrer: no-referrer`), its four same-origin proxy routes (`api/gift/thanks/{survey,waitlist,checkout}`, `api/gift/download-resend`), and `cleanAnswers` / `unansweredQuestions` in `broadkast-gifts.ts` (2 new tests).

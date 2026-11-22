@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   ALREADY_BOUGHT,
   SOMETHING_WRONG,
+  SURVEY_CHANGED,
   THANKS_EXPIRED,
   THANKS_UNAVAILABLE,
   TOO_MANY,
@@ -227,6 +228,12 @@ test('sendSurvey posts { s, answers } to the survey path', async () => {
   assert.equal(calls[0].url, 'https://api.example.com/v1/public/gifts/my-shop/VIDEO/thanks/survey')
   assert.equal(calls[0].init?.method, 'POST')
   assert.deepEqual(JSON.parse(String(calls[0].init?.body)), { s: 'tok', answers })
+})
+
+test('sendSurvey: 409 SURVEY_QUESTIONS_CHANGED is SURVEY_CHANGED, never a saved answer', async () => {
+  mockFetch(async () => json({ code: 'SURVEY_QUESTIONS_CHANGED' }, 409))
+  const answers = [{ question: 'An old question', answer: 'Videos' }]
+  assert.deepEqual(await sendSurvey({ keyword: 'VIDEO', s: 'tok', answers }), { ok: false, message: SURVEY_CHANGED })
 })
 
 test('joinKitWaitlist posts { s } to the waitlist path', async () => {

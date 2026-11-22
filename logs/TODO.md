@@ -1,11 +1,15 @@
 
 ---
 
+### Thank-you page final-review fixes (2026-11-22)
+
+- [x] Survey: show "questions changed, reload" on the API's 409 `SURVEY_QUESTIONS_CHANGED` instead of "saved".
+
 ### Broadkast thank-you page client (2026-11-22)
 
 - [x] Client functions for Broadkast's thank-you API (view, survey, kit waitlist, guide checkout, resend link).
 - [x] The thank-you page and its proxy routes (Task 16).
-- [ ] Type-check and lint them in a real app (Task 17).
+- [x] Type-check and lint them in a real app (Task 17, in grasshopperpebbles-com).
 
 ## gpp-templates repository
 

@@ -13,6 +13,7 @@ export const THANKS_EXPIRED = 'This link has expired. Check your email for the l
 export const THANKS_UNAVAILABLE = "This page isn't available right now. Try again in a few minutes."
 export const ALREADY_BOUGHT = 'You already have this guide. The download link is in your email.'
 export const SOMETHING_WRONG = 'Something went wrong. Please try again.'
+export const SURVEY_CHANGED = 'The questions have changed since this page loaded. Reload the page to see them.'
 
 /** The visitor's IP from this request: the first x-forwarded-for hop, else x-real-ip. */
 export function clientIpOf(headers: Headers): string | undefined {
@@ -178,6 +179,7 @@ async function postAction(url: string | null, body: unknown, ip?: string): Promi
     if (res.status === 404) return { ok: false, message: THANKS_EXPIRED, expired: true }
     if (res.status === 429) return { ok: false, message: TOO_MANY }
     if (res.status === 409 && data.code === 'CHECKOUT_ALREADY_BOUGHT') return { ok: false, message: ALREADY_BOUGHT }
+    if (res.status === 409 && data.code === 'SURVEY_QUESTIONS_CHANGED') return { ok: false, message: SURVEY_CHANGED }
     return { ok: false, message: SOMETHING_WRONG }
   } catch {
     return { ok: false, message: SOMETHING_WRONG }

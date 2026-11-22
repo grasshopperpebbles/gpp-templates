@@ -1,6 +1,10 @@
 
 ---
 
+## Session: Thank-you page final-review fixes (2026-11-22)
+
+Broadkast's final review (M6): the survey API answered 200 `{saved: 0}` when every answer was for a question no longer asked, and the page showed "saved". The API now answers 409 `SURVEY_QUESTIONS_CHANGED`; `postAction` maps it to `SURVEY_CHANGED` ("Reload the page to see them"), which the survey proxy route and `SurveyForm` already show as an error. `node --test --experimental-strip-types src/lib/broadkast-gifts.test.ts`: 32 pass.
+
 ## Session: Broadkast thank-you page (2026-11-22)
 
 Branch `feature/gift-offer-funnel`. The page is a server component; the four client components stay thin and the testable logic (answer cleaning, unanswered questions) is in the lib, since the pack has no React test runner. `node --test` on the lib: 31 pass. Components and routes are type-checked in Task 17, where a real app hosts them.
