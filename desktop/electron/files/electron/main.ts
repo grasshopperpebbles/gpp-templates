@@ -10,7 +10,7 @@ import electronUpdater from 'electron-updater';
 import contextMenu from 'electron-context-menu';
 import { registerSettingsHandlers } from './ipc/settingsHandlers.js';
 import { CHANNELS } from './ipc/channels.js';
-import { onLocalApiExit, planLocalApi, readEnvValue } from './local-api.js';
+import { onLocalApiExit, planLocalApi, readEnvValue, readOrCreateJwtSecret } from './local-api.js';
 import {
   APP_ORIGIN,
   APP_SCHEME,
@@ -80,14 +80,17 @@ function startLocalApi(): void {
   const envPath = join(app.getAppPath(), '.env');
   if (!existsSync(envPath)) return;
   const envText = readFileSync(envPath, 'utf8');
+  const localApiDir = readEnvValue(envText, 'GPP_LOCAL_API_DIR');
+  const userData = app.getPath('userData');
   const plan = planLocalApi({
     packaged: app.isPackaged,
-    localApiDir: readEnvValue(envText, 'GPP_LOCAL_API_DIR'),
+    localApiDir,
     desktopRoot: app.getAppPath(),
     resourcesPath: process.resourcesPath,
     execPath: process.execPath,
-    userData: app.getPath('userData'),
+    userData,
     apiPort: desktopApiPort(envText),
+    jwtSecret: app.isPackaged && localApiDir?.trim() ? readOrCreateJwtSecret(userData) : undefined,
   });
   if (!plan) return;
 
@@ -95,18 +98,19 @@ function startLocalApi(): void {
     cwd: plan.cwd,
     env: { ...process.env, ...plan.env },
     stdio: 'inherit',
-    shell: process.platform === 'win32',
+    // A shell is only how Windows finds pnpm. The packaged launch is Electron itself, and a
+    // shell would split an install path that contains a space.
+    shell: process.platform === 'win32' && !app.isPackaged,
   });
   localApiChild = child;
   child.on('error', (error) => {
     log.error('Local API failed to start:', error);
-    if (!onLocalApiExit(1, mainWindow !== null)) return;
-    dialog.showErrorBox('API failed to start', 'The local API exited before the window opened.');
+    dialog.showErrorBox('API failed to start', 'The local API exited. This window has no API.');
   });
   child.on('exit', (code) => {
     if (!onLocalApiExit(code, mainWindow !== null)) return;
-    log.error(`Local API exited with code ${String(code)} before the window opened`);
-    dialog.showErrorBox('API failed to start', 'The local API exited before the window opened.');
+    log.error(`Local API exited with code ${String(code)}`);
+    dialog.showErrorBox('API failed to start', 'The local API exited. This window has no API.');
   });
 }
 

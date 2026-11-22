@@ -22,12 +22,14 @@ try {
 
 const app = createApp();
 const PORT = process.env.API_PORT || 3001;
+// Unset in development (listen on every interface). The packaged app sets 127.0.0.1.
+const HOST = process.env.HOST;
 
 // ============================================================================
 // SERVER STARTUP
 // ============================================================================
 
-const server = app.listen(PORT, () => {
+const onListen = () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('🚀 Express API Server Running');
   console.log('');
@@ -55,7 +57,8 @@ const server = app.listen(PORT, () => {
   console.log('  2. Login:    POST /api/v1/auth/login');
   console.log('  3. Use:      Authorization: Bearer <access_token>');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-});
+};
+const server = HOST ? app.listen(PORT, HOST, onListen) : app.listen(PORT, onListen);
 
 // Graceful shutdown (docker stop sends SIGTERM)
 async function shutdown() {

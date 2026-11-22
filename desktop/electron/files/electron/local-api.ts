@@ -1,4 +1,8 @@
+import { randomBytes } from 'node:crypto';
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+
+const MIN_INSTALL_SECRET = 32;
 
 /** Value of one `KEY=value` line, surrounding quotes removed, or undefined when absent. */
 export function readEnvValue(content: string, key: string): string | undefined {
@@ -40,6 +44,8 @@ export function planLocalApi(input: {
   execPath: string;
   userData: string;
   apiPort: string;
+  /** Required for a packaged app. A per-install secret, at least 32 characters. */
+  jwtSecret?: string;
 }): {
   command: string;
   args: string[];
@@ -58,6 +64,10 @@ export function planLocalApi(input: {
     };
   }
 
+  const secret = input.jwtSecret?.trim() ?? '';
+  if (secret.length < MIN_INSTALL_SECRET) {
+    throw new Error('A packaged local API needs a JWT secret of at least 32 characters');
+  }
   const apiRoot = join(input.resourcesPath, 'api');
   return {
     command: input.execPath,
@@ -65,13 +75,38 @@ export function planLocalApi(input: {
     cwd: apiRoot,
     env: {
       ELECTRON_RUN_AS_NODE: '1',
+      NODE_ENV: 'production',
+      JWT_SECRET: secret,
+      HOST: '127.0.0.1',
+      CORS_ORIGINS: 'app://bundle',
       DATABASE_URL: sqliteFileUrl(join(input.userData, 'app.db')),
       API_PORT: input.apiPort,
     },
   };
 }
 
-/** True only when the API process failed and no window exists yet. */
-export function onLocalApiExit(code: number | null, hasWindow: boolean): boolean {
-  return code !== null && code !== 0 && !hasWindow;
+/** File in userData that holds this install's API signing secret. The renderer cannot read userData. */
+export function installJwtSecretPath(userData: string): string {
+  return join(userData, 'api-jwt-secret');
+}
+
+/** Read the install secret, or create one (mode 0600) the first time the packaged app starts. */
+export function readOrCreateJwtSecret(userData: string): string {
+  const file = installJwtSecretPath(userData);
+  try {
+    const existing = readFileSync(file, 'utf8').trim();
+    if (existing.length >= MIN_INSTALL_SECRET) return existing;
+  } catch {
+    // Missing file: create it below.
+  }
+  const secret = randomBytes(32).toString('hex');
+  mkdirSync(userData, { recursive: true });
+  writeFileSync(file, `${secret}\n`, { mode: 0o600 });
+  chmodSync(file, 0o600);
+  return secret;
+}
+
+/** True when the API process failed. The window may already be open; the failure is still shown. */
+export function onLocalApiExit(code: number | null, _hasWindow: boolean): boolean {
+  return code !== null && code !== 0;
 }
