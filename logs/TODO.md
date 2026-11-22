@@ -4,7 +4,8 @@
 ### Broadkast thank-you page client (2026-11-22)
 
 - [x] Client functions for Broadkast's thank-you API (view, survey, kit waitlist, guide checkout, resend link).
-- [ ] The thank-you page, its server actions and the `#offer` anchor use these (Task 16 of the gift offer funnel).
+- [x] The thank-you page and its proxy routes (Task 16).
+- [ ] Type-check and lint them in a real app (Task 17).
 
 ## gpp-templates repository
 

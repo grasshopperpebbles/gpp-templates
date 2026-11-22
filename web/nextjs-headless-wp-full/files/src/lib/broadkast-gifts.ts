@@ -161,7 +161,10 @@ export async function fetchThanks(keyword: string, s: string, ip?: string): Prom
   }
 }
 
-async function postAction(url: string | null, body: unknown, ip?: string): Promise<ActionResult & { data?: any }> {
+type PostedBody = { url?: unknown }
+type PostResult = ActionResult & { data?: PostedBody }
+
+async function postAction(url: string | null, body: unknown, ip?: string): Promise<PostResult> {
   if (!url) return { ok: false, message: SOMETHING_WRONG }
   try {
     const res = await fetch(url, {
@@ -170,18 +173,18 @@ async function postAction(url: string | null, body: unknown, ip?: string): Promi
       headers: { 'Content-Type': 'application/json', ...forwarded(ip) },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     })
-    const data = await res.json().catch(() => ({}))
+    const data = ((await res.json().catch(() => null)) ?? {}) as PostedBody & { code?: unknown }
     if (res.ok) return { ok: true, data }
     if (res.status === 404) return { ok: false, message: THANKS_EXPIRED, expired: true }
     if (res.status === 429) return { ok: false, message: TOO_MANY }
-    if (res.status === 409 && data?.code === 'CHECKOUT_ALREADY_BOUGHT') return { ok: false, message: ALREADY_BOUGHT }
+    if (res.status === 409 && data.code === 'CHECKOUT_ALREADY_BOUGHT') return { ok: false, message: ALREADY_BOUGHT }
     return { ok: false, message: SOMETHING_WRONG }
   } catch {
     return { ok: false, message: SOMETHING_WRONG }
   }
 }
 
-function plain(r: ActionResult & { data?: any }): ActionResult {
+function plain(r: PostResult): ActionResult {
   return r.ok ? { ok: true } : r
 }
 
@@ -213,4 +216,22 @@ export async function resendGuideLink(i: { purchaseId: string; ip?: string }): P
   const { base } = config()
   const url = base ? `${base}/v1/public/downloads/${encodeURIComponent(i.purchaseId)}/resend` : null
   return plain(await postAction(url, undefined, i.ip))
+}
+
+/** Keeps only well-formed `{ question, answer }` entries from an untrusted parsed body. */
+export function cleanAnswers(raw: unknown): Array<{ question: string; answer: string }> {
+  if (!Array.isArray(raw)) return []
+  const out: Array<{ question: string; answer: string }> = []
+  for (const item of raw) {
+    if (item && typeof item === 'object') {
+      const { question, answer } = item as Record<string, unknown>
+      if (typeof question === 'string' && typeof answer === 'string') out.push({ question, answer })
+    }
+  }
+  return out
+}
+
+/** The survey questions still waiting for an answer. */
+export function unansweredQuestions(survey: ThanksView['survey']): string[] {
+  return survey.filter((q) => !q.answered).map((q) => q.question)
 }

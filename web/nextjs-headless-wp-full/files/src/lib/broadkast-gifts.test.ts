@@ -6,6 +6,7 @@ import {
   THANKS_EXPIRED,
   THANKS_UNAVAILABLE,
   TOO_MANY,
+  cleanAnswers,
   clientIpOf,
   decodeKeyword,
   fetchGift,
@@ -17,6 +18,7 @@ import {
   sendSurvey,
   startGuideCheckout,
   subscribeForGift,
+  unansweredQuestions,
 } from './broadkast-gifts.ts'
 
 const realFetch = globalThis.fetch
@@ -286,4 +288,27 @@ test('resendGuideLink: 202 ok, 429 TOO_MANY, path is encoded', async () => {
 
 test('the unavailable copy is exported', () => {
   assert.equal(THANKS_UNAVAILABLE, "This page isn't available right now. Try again in a few minutes.")
+})
+
+test('cleanAnswers keeps only well-formed question/answer pairs', () => {
+  assert.deepEqual(cleanAnswers('x'), [])
+  assert.deepEqual(cleanAnswers(null), [])
+  assert.deepEqual(
+    cleanAnswers([{ question: 'q', answer: 'a' }, { question: 'q' }, null, 3, { question: 1, answer: 'a' }, { question: 'r', answer: 'b', extra: 1 }]),
+    [
+      { question: 'q', answer: 'a' },
+      { question: 'r', answer: 'b' },
+    ]
+  )
+})
+
+test('unansweredQuestions lists the questions not yet answered', () => {
+  assert.deepEqual(unansweredQuestions([]), [])
+  assert.deepEqual(
+    unansweredQuestions([
+      { question: 'a', answered: true },
+      { question: 'b', answered: false },
+    ]),
+    ['b']
+  )
 })

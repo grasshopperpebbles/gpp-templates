@@ -1,6 +1,11 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - Broadkast thank-you page
+
+- **Added:** `web/nextjs-headless-wp-full` page `gift/[keyword]/thanks` (offer card, survey, kit waitlist, fresh-link button; `referrer: no-referrer`), its four same-origin proxy routes (`api/gift/thanks/{survey,waitlist,checkout}`, `api/gift/download-resend`), and `cleanAnswers` / `unansweredQuestions` in `broadkast-gifts.ts` (2 new tests).
+- **Changed:** the parsed POST body in `broadkast-gifts.ts` is typed, no `any`.
+
 ## [Unreleased] - 2026-11-22 - Broadkast thank-you page client
 
 - **Added:** `web/nextjs-headless-wp-full` `src/lib/broadkast-gifts.ts`: `fetchThanks`, `sendSurvey`, `joinKitWaitlist`, `startGuideCheckout` (accepts only an `https://` URL), `resendGuideLink`, `readThanksParams`, `formatPrice` and the thank-you copy constants. 15 new tests.

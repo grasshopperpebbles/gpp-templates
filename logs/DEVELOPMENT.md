@@ -1,6 +1,10 @@
 
 ---
 
+## Session: Broadkast thank-you page (2026-11-22)
+
+Branch `feature/gift-offer-funnel`. The page is a server component; the four client components stay thin and the testable logic (answer cleaning, unanswered questions) is in the lib, since the pack has no React test runner. `node --test` on the lib: 31 pass. Components and routes are type-checked in Task 17, where a real app hosts them.
+
 ## Session: Broadkast thank-you page client (2026-11-22)
 
 Branch `feature/gift-offer-funnel`. Added to `broadkast-gifts.ts` (not a new file: `node --test --experimental-strip-types` cannot resolve an extensionless sibling import). The four POSTs share one status mapping: 2xx ok, 404 expired, 429 too many, 409 `CHECKOUT_ALREADY_BOUGHT` already bought, else a generic error. `node --test` on the file: 29 pass.
