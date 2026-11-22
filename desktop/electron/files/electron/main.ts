@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
-import { existsSync } from 'node:fs';
+import { app, BrowserWindow, dialog, ipcMain, net, protocol, shell } from 'electron';
+import { spawn, type ChildProcess } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -9,6 +10,7 @@ import electronUpdater from 'electron-updater';
 import contextMenu from 'electron-context-menu';
 import { registerSettingsHandlers } from './ipc/settingsHandlers.js';
 import { CHANNELS } from './ipc/channels.js';
+import { onLocalApiExit, planLocalApi, readEnvValue } from './local-api.js';
 import {
   APP_ORIGIN,
   APP_SCHEME,
@@ -55,6 +57,58 @@ function registerAppProtocol(): void {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let localApiChild: ChildProcess | undefined;
+
+/** API_PORT, else the port in VITE_API_BASE_URL, else 3001. */
+function desktopApiPort(envText: string): string {
+  const explicit = readEnvValue(envText, 'API_PORT');
+  if (explicit) return explicit;
+  const baseUrl = readEnvValue(envText, 'VITE_API_BASE_URL');
+  if (!baseUrl) return '3001';
+  try {
+    return new URL(baseUrl).port || '3001';
+  } catch {
+    return '3001';
+  }
+}
+
+/**
+ * Starts the sibling API when `.env` sets GPP_LOCAL_API_DIR. A missing file, or a blank
+ * value, leaves startup unchanged for the FastAPI and MySQL desktop apps.
+ */
+function startLocalApi(): void {
+  const envPath = join(app.getAppPath(), '.env');
+  if (!existsSync(envPath)) return;
+  const envText = readFileSync(envPath, 'utf8');
+  const plan = planLocalApi({
+    packaged: app.isPackaged,
+    localApiDir: readEnvValue(envText, 'GPP_LOCAL_API_DIR'),
+    desktopRoot: app.getAppPath(),
+    resourcesPath: process.resourcesPath,
+    execPath: process.execPath,
+    userData: app.getPath('userData'),
+    apiPort: desktopApiPort(envText),
+  });
+  if (!plan) return;
+
+  const child = spawn(plan.command, plan.args, {
+    cwd: plan.cwd,
+    env: { ...process.env, ...plan.env },
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+  });
+  localApiChild = child;
+  child.on('error', (error) => {
+    log.error('Local API failed to start:', error);
+    if (!onLocalApiExit(1, mainWindow !== null)) return;
+    dialog.showErrorBox('API failed to start', 'The local API exited before the window opened.');
+  });
+  child.on('exit', (code) => {
+    if (!onLocalApiExit(code, mainWindow !== null)) return;
+    log.error(`Local API exited with code ${String(code)} before the window opened`);
+    dialog.showErrorBox('API failed to start', 'The local API exited before the window opened.');
+  });
+}
 
 // One running instance; a second launch focuses the existing window
 if (!app.requestSingleInstanceLock()) {
@@ -142,7 +196,13 @@ app.whenReady().then(() => {
   if (!devServerUrl) registerAppProtocol();
   registerSettingsHandlers(devServerUrl);
 
-  mainWindow = createMainWindow();
+  startLocalApi();
+  // Stay null until the window is actually shown, so a local API that exits during
+  // startup still counts as exiting before the window opened.
+  const opening = createMainWindow();
+  opening.once('ready-to-show', () => {
+    mainWindow = opening;
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -160,6 +220,10 @@ app.whenReady().then(() => {
 }).catch((error) => {
   log.error('Failed to start:', error);
   app.quit();
+});
+
+app.on('before-quit', () => {
+  localApiChild?.kill();
 });
 
 app.on('window-all-closed', () => {
