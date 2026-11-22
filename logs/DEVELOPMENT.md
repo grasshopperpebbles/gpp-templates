@@ -1,6 +1,10 @@
 
 ---
 
+## Session: saas-dashboard GraphQL README (2026-11-22)
+
+Found while bringing nteljince's older GraphQL client up to the recipe: the README example still set a browser token. Removed those lines. `nextjs-marketing` keeps its own client with `setAuthToken`, so its README is right.
+
 ## Session: electron-next-host theme colours (2026-11-22)
 
 Branch `fix/desktop-host-theme`. nteljince's desktop startup page and the window behind it stayed charcoal after its web app moved to a charcoal-blue palette, because startup.css, `main.ts` `backgroundColor` and `pages.test.ts` hard-coded the console colours. Now `host.config.json` takes an optional `theme` block (validated `#rrggbb`, unknown keys rejected, defaults in `electron/host/theme.ts`). The startup page gets the colours in its `loadFile` query and sets CSS variables through CSSOM, which its `default-src 'self'` CSP allows (an inline `style` would not be). Checked in a scratch copy with nteljince's node_modules: vitest 131, type-check and lint clean. Prettier `--check` reports the same pre-existing style warnings as before (39 files on HEAD); not touched here.

@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - nextjs-saas-dashboard: GraphQL README
+
+- **Fixed:** the README's GraphQL example no longer calls `graphqlClient.setAuthToken(...)`; the client has had no such method since 0deadb5 (the `/api/graphql` route adds the token on the server).
+
 ## [Unreleased] - 2026-11-22 - electron-next-host: theme colours from host.config.json
 
 - **Changed:** the window background and the startup page colours come from an optional `theme` block in `host.config.json` (`background`, `panel`, `text`, `muted`, `accent`, `accentText`, `error`, each `#rrggbb`; keys left out keep the old console defaults in `electron/host/theme.ts`). `main.ts` sets `backgroundColor` from it and passes the colours to the startup page in its query; `startup.js` sets the CSS variables (the page's CSP allows no inline style). A project whose web app has its own palette no longer shows a charcoal startup page. Tests in `config.test.ts`, `theme.test.ts`, `pages.test.ts`; README documents the block.

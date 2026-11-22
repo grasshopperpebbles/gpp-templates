@@ -92,9 +92,6 @@ GRAPHQL_ENDPOINT=http://localhost:8000/graphql
 ```typescript
 import { graphqlClient } from '@/lib/graphql';
 
-// Set auth token
-graphqlClient.setAuthToken("your-bearer-token");
-
 // Query
 const data = await graphqlClient.query(`
   query GetUsers {
