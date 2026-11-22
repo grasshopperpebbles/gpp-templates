@@ -111,11 +111,13 @@ Never expose `ipcRenderer` itself, or a generic `invoke(channel, ...args)`, to t
 
 ## Calling an API
 
-Set the backend URL in `.env` (the gpp `electron-fastapi-postgres` recipe writes it for you):
+Set the backend URL in `.env`. The gpp `electron-fastapi-postgres` (FastAPI) and `electron-express-mysql` (Express) recipes write it for you, with the API port gpp picked on your machine:
 
 ```bash
-VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_API_BASE_URL=http://localhost:8000/api/v1   # FastAPI; the Express API starts at 3001
 ```
+
+If you change the API's port later (`API_HOST_PORT` in the project's root `.env`), change this URL too; `gpp verify` warns when the two disagree.
 
 Read it from `src/lib/api.ts` (`undefined` when unset):
 
@@ -128,7 +130,7 @@ const res = await fetch(`${apiBaseUrl}/health`);
 - **Build time:** Vite inlines the value, so set the production URL (in `.env`, `.env.production`, or the shell) before `pnpm build` / `pnpm dist`.
 - **CSP:** `pnpm build` adds the URL's origin to the production `connect-src` (`config/csp.ts`). Without `VITE_API_BASE_URL` the policy stays `default-src 'self'`, which blocks every network call.
 - **https in production:** a plain `http://` URL to a host other than `localhost` still builds, but `pnpm build` warns: the packaged app would send tokens unencrypted.
-- **CORS:** the API must allow the renderer's origin: `http://localhost:5180` in dev, and `app://bundle` in the built app (see [How the built app loads](#how-the-built-app-loads)). For the gpp FastAPI pack, in the API's `.env` (comma-separated): `CORS_ORIGINS=http://localhost:5180,app://bundle`. Don't allow `null`: every sandboxed iframe and `file://` page sends it.
+- **CORS:** the API must allow the renderer's origin: `http://localhost:5180` in dev, and `app://bundle` in the built app (see [How the built app loads](#how-the-built-app-loads)). For the gpp FastAPI and Express packs, in the API's `.env` (comma-separated, and both recipes write it): `CORS_ORIGINS=http://localhost:5180,app://bundle`. The Express pack checks the list only when `NODE_ENV=production`, and allows every origin in development. Don't allow `null`: every sandboxed iframe and `file://` page sends it.
 
 ## Logging
 
