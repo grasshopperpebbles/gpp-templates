@@ -1,6 +1,10 @@
 
 ---
 
+## Session: electron-next-host docker, port and web server (2026-11-22)
+
+Branch `feature/electron-next-host`. Scratch scaffold `host-demo`: `pnpm vitest run` 30 pass (11 new), `pnpm type-check` and `pnpm lint` clean; `template validate desktop/electron-next-host` valid (22 files). `killGroup` receives the positive pid and the production `killProcessGroup` negates it. `stop()` resolves after the SIGKILL so quitting never hangs. A lint-found `prefer-const` and a missing `.js` extension on a type import (NodeNext) were fixed.
+
 ## Session: desktop/electron-next-host skeleton (2026-11-22)
 
 Branch `feature/electron-next-host`. Scaffolded `files/` into a scratch dir (slug `demo`), `pnpm install`; `pnpm vitest run`: 18 pass (8 new config tests, written first and seen failing on the missing module), `pnpm type-check` and `pnpm lint` clean. `gpp template validate desktop/electron-next-host`: valid (16 files). The preload's `ElectronAPI` type moved to `electron/electron-api.d.ts` (the old `src/types` is gone); `tsconfig.json` now type-checks `electron/**` with Bundler resolution so tests can import without `.js`.
