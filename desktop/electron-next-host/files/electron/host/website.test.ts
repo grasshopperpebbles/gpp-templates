@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { HostConfig } from './config';
 import type { WebServer, WebServerOptions } from './webServer';
 import { createWebsiteLauncher } from './website';
@@ -14,8 +14,10 @@ const cfg: HostConfig['web'] = {
   corsTimeoutMs: 5_000,
 };
 
+let running = true;
+
 function setup(portFree = true) {
-  const server: WebServer = { url: 'http://localhost:3000', stop: async () => undefined, isRunning: () => true };
+  const server: WebServer = { url: 'http://localhost:3000', stop: async () => undefined, isRunning: () => running };
   const start = vi.fn<(o: WebServerOptions) => Promise<WebServer>>().mockResolvedValue(server);
   const isPortFree = vi.fn().mockResolvedValue(portFree);
   const open = vi.fn();
@@ -25,6 +27,10 @@ function setup(portFree = true) {
 }
 
 describe('createWebsiteLauncher', () => {
+  beforeEach(() => {
+    running = true;
+  });
+
   it('first use starts the website server on websitePort with the default dist dir, then opens it', async () => {
     const { start, open, launcher } = setup();
     await launcher.openInBrowser();
@@ -79,5 +85,14 @@ describe('createWebsiteLauncher', () => {
     });
     await launcher.openInBrowser();
     expect(track).toHaveBeenCalledWith(handle);
+  });
+
+  it('starts the website again when its server has exited since', async () => {
+    const { start, open, launcher } = setup();
+    await launcher.openInBrowser();
+    running = false;
+    await launcher.openInBrowser();
+    expect(start).toHaveBeenCalledTimes(2);
+    expect(open).toHaveBeenCalledTimes(2);
   });
 });

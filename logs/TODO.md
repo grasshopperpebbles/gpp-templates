@@ -1,6 +1,10 @@
 
 ---
 
+### electron-next-host final-review fixes (2026-11-22)
+
+- [x] Port check on every local address, visible CORS warning, `.env` port override, origin from the effective port, `--wait` for health, `will-redirect`, lint ignore for `.next-desktop`, and the Minor findings.
+
 ### Thank-you page final-review fixes (2026-11-22)
 
 - [x] Survey: show "questions changed, reload" on the API's 409 `SURVEY_QUESTIONS_CHANGED` instead of "saved".

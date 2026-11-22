@@ -13,11 +13,12 @@ An Electron app that hosts your Next.js app in its own window. It starts the web
 The window opens on a startup page that lists each step with its state: Docker services (only when `compose` is set), the port check, the web app, and the API CORS check (only when `api` is set). When a step fails the page says why and offers **Retry**:
 
 - Docker isn't running: "Docker isn't running. Start Docker Desktop, then click Retry."
-- The port is busy: it names the port and `web.portEnv`.
+- Docker services don't become healthy within `compose.waitTimeoutMs` (the app runs `docker compose up -d --wait`): it names the unhealthy service.
+- The port is busy on any local address (including a `next dev` on `::`): it names the port and `web.portEnv`.
 - The web app exits before it answers: the last 20 lines of its output are shown in a monospace block.
 - The web app doesn't answer within `web.readyTimeoutMs`: it says how long it waited.
 
-A CORS problem is only a warning; the app still opens. When the server answers, the window loads `http://localhost:<web.port>`. Only that origin and the startup page can navigate the window; any other http(s) link opens in your system browser.
+When the API doesn't allow the desktop origin (`http://localhost:<web.port>`), the startup page stays up with the warning and two buttons: **Continue anyway** opens the app, **Retry** starts the boot again. Otherwise, when the server answers, the window loads `http://localhost:<web.port>`. Only that origin and the startup page can navigate the window; any other http(s) link opens in your system browser.
 
 On macOS, closing the window leaves the app running and the dock icon reopens it. The server is started again only if it has stopped.
 
@@ -40,14 +41,15 @@ Paths are relative to this folder.
 | --- | --- |
 | `web.path` | The Next.js app's folder. |
 | `web.port` | Private port for the desktop's Next server. |
-| `web.portEnv` | Env var that overrides `web.port` (for example `DESKTOP_WEB_PORT=3020 pnpm dev`). It must be an integer from 1 to 65535. |
+| `web.portEnv` | Env var that overrides `web.port`. It is read from the process env (`DESKTOP_WEB_PORT=3020 pnpm dev`) first, then from the project root's `.env`. It must be an integer from 1 to 65535. |
 | `web.websitePort` | Port of the website server started by "Open website in browser". |
 | `web.distDir` | Build folder for the desktop's Next server (`NEXT_DIST_DIR`). The web app's `next.config` must read it. |
 | `web.readyTimeoutMs` | How long to wait for the server to answer (default `120000`). |
 | `web.stopGraceMs` | How long after SIGTERM before SIGKILL (default `5000`). |
 | `web.corsTimeoutMs` | How long the CORS preflight waits for the API (default `5000`). |
-| `compose` | `{ "file", "services" }`, or `null` for no Docker. |
-| `api` | `{ "url", "corsOrigin" }` for the CORS preflight against your API, or `null`. |
+| `compose` | `{ "file", "services", "waitTimeoutMs" }`, or `null` for no Docker. `waitTimeoutMs` (default `120000`) bounds the health-check wait. |
+| `api` | `{ "url" }` for the CORS preflight against your API, or `null`. The origin checked is always `http://localhost:<effective web.port>`. |
+| `projectRoot` | Optional. Folder of the root `.env` (default: the folder of the compose file). |
 
 ## Open website in browser
 
@@ -82,7 +84,7 @@ pnpm test         # vitest run
 │   ├── main.ts              # window, menu, IPC and quit wiring
 │   ├── menu.ts              # application menu template
 │   ├── host/                # config, compose, ports, webServer, corsCheck, boot,
-│   │                        # session, website, servers, navigation (all unit-tested)
+│   │                        # session, website, servers, navigation, quit, ipcGuard, dotenv (all unit-tested)
 │   ├── pages/               # startup page (HTML, CSS, JS; CSP default-src 'self')
 │   ├── preload.cts          # Preload, built as CommonJS
 │   ├── electron-api.d.ts    # window.electronAPI type
@@ -94,8 +96,4 @@ pnpm test         # vitest run
 
 ## Distribution
 
-```bash
-pnpm dist         # current platform (also dist:mac, dist:win, dist:linux)
-```
-
-Output goes to `release/`. Auto-update is not included.
+Packaged builds are not supported in V1. The app runs from a terminal with `pnpm dev` and starts the sibling web app's dev server, so there is nothing to package yet.

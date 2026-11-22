@@ -9,15 +9,17 @@ import { boot } from './host/boot.js';
 import { composeUp, execRun } from './host/compose.js';
 import { loadHostConfig } from './host/config.js';
 import { checkCors } from './host/corsCheck.js';
-import { isPageUrl } from './host/navigation.js';
+import { guarded } from './host/ipcGuard.js';
+import { isPageUrl, navigationAction, windowOpenTarget } from './host/navigation.js';
 import { isPortFree } from './host/ports.js';
+import { createQuitHandler } from './host/quit.js';
 import { createServerRegistry } from './host/servers.js';
 import { createSession } from './host/session.js';
 import { createWebsiteLauncher } from './host/website.js';
 import { killProcessGroup, startWebServer, type WebServerDeps } from './host/webServer.js';
 import { CHANNELS } from './ipc/channels.js';
 import { registerSettingsHandlers } from './ipc/settingsHandlers.js';
-import { externalHttpUrl, isAllowedPathName, isStartupUrl } from './ipc/validate.js';
+import { isAllowedPathName, isStartupUrl } from './ipc/validate.js';
 import { buildMenuTemplate } from './menu.js';
 
 // This file is thin wiring; the logic lives in host/ and ipc/ where it has tests.
@@ -32,8 +34,10 @@ const appRoot = join(__dirname, '..');
 const pagesDir = join(appRoot, 'electron', 'pages');
 const startupFile = join(pagesDir, 'startup.html');
 
+// A second instance quits at once, before anything below can start Docker or Next
 if (!app.requestSingleInstanceLock()) {
   app.quit();
+  process.exit(0);
 }
 
 let mainWindow: BrowserWindow | null = null;
@@ -50,6 +54,8 @@ contextMenu({ showSaveImageAs: true, showCopyImage: true });
 
 const servers = createServerRegistry();
 const webDeps: WebServerDeps = { spawn, fetch: globalThis.fetch, killGroup: killProcessGroup };
+// The Next servers' output goes to the log for as long as they run, so runtime errors reach "Show logs"
+const nextLog = (name: string) => (line: string) => log.info(`[${name}] ${line}`);
 
 function start(): void {
   const cfg = loadHostConfig(join(appRoot, 'host.config.json'), process.env);
@@ -72,6 +78,7 @@ function start(): void {
                 readyTimeoutMs: web.readyTimeoutMs,
                 stopGraceMs: web.stopGraceMs,
                 onStarting: (handle) => servers.track(handle),
+                onLine: nextLog('web'),
               },
               webDeps,
             ),
@@ -89,27 +96,34 @@ function start(): void {
 
   const website = createWebsiteLauncher({
     web,
-    start: (opts) => startWebServer(opts, webDeps),
+    start: (opts) => startWebServer({ ...opts, onLine: nextLog('website') }, webDeps),
     isPortFree,
     open: (url) => void shell.openExternal(url),
     track: (handle) => servers.track(handle),
   });
 
   // IPC: app info and settings answer the hosted web app; retry answers only the startup page
-  ipcMain.handle(CHANNELS.appGetVersion, (event) => {
-    if (!isHosted(event.senderFrame?.url)) throw new Error('Untrusted sender');
-    return app.getVersion();
-  });
-  ipcMain.handle(CHANNELS.appGetPath, (event, name: unknown) => {
-    if (!isHosted(event.senderFrame?.url)) throw new Error('Untrusted sender');
-    if (!isAllowedPathName(name)) throw new Error(`Path not available: ${String(name)}`);
-    return app.getPath(name);
-  });
+  const isStartupPage = (url: string | undefined) => isStartupUrl(url, pagesDir);
+  ipcMain.handle(
+    CHANNELS.appGetVersion,
+    guarded(isHosted, () => app.getVersion()),
+  );
+  ipcMain.handle(
+    CHANNELS.appGetPath,
+    guarded(isHosted, (_event, name: unknown) => {
+      if (!isAllowedPathName(name)) throw new Error(`Path not available: ${String(name)}`);
+      return app.getPath(name);
+    }),
+  );
   registerSettingsHandlers(isHosted);
-  ipcMain.handle(CHANNELS.hostRetry, async (event) => {
-    if (!isStartupUrl(event.senderFrame?.url, pagesDir)) throw new Error('Untrusted sender');
-    await session.start();
-  });
+  ipcMain.handle(
+    CHANNELS.hostRetry,
+    guarded(isStartupPage, () => session.start()),
+  );
+  ipcMain.handle(
+    CHANNELS.hostContinue,
+    guarded(isStartupPage, () => session.continueAnyway()),
+  );
 
   function createMainWindow(): BrowserWindow {
     const state = windowStateKeeper({ defaultWidth: 1280, defaultHeight: 800 });
@@ -136,18 +150,21 @@ function start(): void {
 
     // Links that open a new window go to the system browser; nothing else opens
     window.webContents.setWindowOpenHandler(({ url }) => {
-      const external = externalHttpUrl(url);
+      const external = windowOpenTarget(url);
       if (external) void shell.openExternal(external);
       return { action: 'deny' };
     });
 
-    // The window stays on the startup page and the hosted app; other http(s) links open outside
-    window.webContents.on('will-navigate', (event, url) => {
-      if (isPageUrl(url, web.port) || isStartupUrl(url, pagesDir)) return;
+    // The window stays on the startup page and the hosted app; other http(s) links open outside.
+    // A server-side redirect emits will-redirect, not will-navigate, so both get the same rule.
+    const guardNavigation = (event: { preventDefault(): void }, url: string) => {
+      const action = navigationAction(url, web.port, pagesDir);
+      if (action === 'allow') return;
       event.preventDefault();
-      const external = externalHttpUrl(url);
-      if (external) void shell.openExternal(external);
-    });
+      if (action !== 'block') void shell.openExternal(action.external);
+    };
+    window.webContents.on('will-navigate', (event, url) => guardNavigation(event, url));
+    window.webContents.on('will-redirect', (event, url) => guardNavigation(event, url));
 
     // A page that loads after boot began (first load, reload, reopened window) catches up
     window.webContents.on('did-finish-load', () => {
@@ -206,16 +223,7 @@ app.on('window-all-closed', () => {
 });
 
 // Quit: stop both Next servers (never Docker), then exit
-let quitReady = false;
-app.on('before-quit', (event) => {
-  if (quitReady) return;
-  event.preventDefault();
-  if (servers.isClosed()) return;
-  void servers.stopAll().finally(() => {
-    quitReady = true;
-    app.exit();
-  });
-});
+app.on('before-quit', createQuitHandler({ servers, exit: () => app.exit() }));
 
 process.on('uncaughtException', (error) => {
   log.error('Uncaught exception:', error);

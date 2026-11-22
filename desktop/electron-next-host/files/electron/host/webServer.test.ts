@@ -168,4 +168,16 @@ describe('startWebServer handles', () => {
     child.exit(1);
     expect(server.isRunning()).toBe(false);
   });
+
+  it('passes every output line to onLine, also after the server is ready', async () => {
+    const { child, deps } = setup(() => Promise.resolve({ status: 200 }));
+    const lines: string[] = [];
+    const started = startWebServer({ ...opts, onLine: (l) => lines.push(l) }, deps);
+    child.stdout.write('starting\npart');
+    await vi.advanceTimersByTimeAsync(500);
+    await started;
+    child.stdout.write('ial\nruntime error: boom\n');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(lines).toEqual(['starting', 'partial', 'runtime error: boom']);
+  });
 });

@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 import Store from 'electron-store';
+import { guarded } from '../host/ipcGuard.js';
 import { CHANNELS } from './channels.js';
 import { isValidSettingsKey } from './validate.js';
 
@@ -15,17 +16,15 @@ const store = new Store({
 
 /** `isTrustedUrl` says which pages may call these handlers (the hosted web app, not the startup page). */
 export function registerSettingsHandlers(isTrustedUrl: (url: string | undefined) => boolean): void {
-  const checkSender = (url: string | undefined) => {
-    if (!isTrustedUrl(url)) throw new Error('Untrusted sender');
-  };
+  const handle = <Args extends unknown[], R>(channel: string, fn: (...args: Args) => R) =>
+    ipcMain.handle(channel, guarded(isTrustedUrl, (_event, ...args: Args) => fn(...args)));
   const checkKey = (key: unknown): string => {
     if (!isValidSettingsKey(key)) throw new Error(`Invalid settings key: ${String(key)}`);
     return key;
   };
 
   // Get one setting, or all of them when no key is given
-  ipcMain.handle(CHANNELS.settingsGet, (event, key?: unknown) => {
-    checkSender(event.senderFrame?.url);
+  handle(CHANNELS.settingsGet, (key?: unknown) => {
     if (key === undefined) {
       return store.store;
     }
@@ -33,22 +32,19 @@ export function registerSettingsHandlers(isTrustedUrl: (url: string | undefined)
   });
 
   // Set a setting
-  ipcMain.handle(CHANNELS.settingsSet, (event, key: unknown, value: unknown) => {
-    checkSender(event.senderFrame?.url);
+  handle(CHANNELS.settingsSet, (key: unknown, value: unknown) => {
     store.set(checkKey(key), value);
     return { ok: true };
   });
 
   // Reset all settings
-  ipcMain.handle(CHANNELS.settingsReset, (event) => {
-    checkSender(event.senderFrame?.url);
+  handle(CHANNELS.settingsReset, () => {
     store.clear();
     return { ok: true };
   });
 
   // Delete a setting
-  ipcMain.handle(CHANNELS.settingsDelete, (event, key: unknown) => {
-    checkSender(event.senderFrame?.url);
+  handle(CHANNELS.settingsDelete, (key: unknown) => {
     store.delete(checkKey(key) as never);
     return { ok: true };
   });

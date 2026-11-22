@@ -1,6 +1,12 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - electron-next-host: final-review fixes
+
+- **Fixed:** `ports.ts` `isPortFree` now probes the default (dual-stack) host, `0.0.0.0`, `127.0.0.1` and `::1`; on macOS a 127.0.0.1 bind succeeded beside a `next dev` on `::`, so a leftover server went unnoticed. The CORS warning stays on the startup page with **Continue anyway** / **Retry** (new channel `host:continue`; `boot` returns `{ server, corsWarning }` and sends no `ready`). `web.portEnv` is read from the process env, then the project root `.env` (`projectRoot`, else the compose file's folder; tiny parser in `host/dotenv.ts`). `api.corsOrigin` is no longer a config field: it follows the effective web port. Docker runs `up -d --wait --wait-timeout` (`compose.waitTimeoutMs`, default 120000) and names an unhealthy service. `will-redirect` is guarded like `will-navigate` through `navigationAction()`. The website server restarts when it has exited. A second instance now exits before anything starts. Next output is forwarded to the log (`onLine`). Timeouts must be at least 1. Startup page notes the "Open website in browser" rule. `web/nextjs-saas-dashboard` lints ignore `.next-desktop/**`.
+- **Removed:** `dist*` scripts, the electron-builder block and the packaging feature line; the README says packaged builds aren't supported in V1.
+- **Added:** `host/quit.ts`, `host/ipcGuard.ts` (every IPC handler goes through `guarded`), tests for each, a real-process group-kill test, and a startup page script test. 116 tests.
+
 ## [Unreleased] - 2026-11-22 - electron-next-host: window, startup sequence, website menu
 
 - **Added:** `desktop/electron-next-host` `electron/main.ts` (thin wiring) and tested modules: `host/boot.ts` (docker, port, web, cors, ready events; Docker, busy-port, web-exit and timeout messages; CORS is a warning), `host/navigation.ts` (`isPageUrl`), `host/session.ts` (one boot at a time, event replay, reopen only boots when the server stopped), `host/website.ts` ("Open website in browser" starts once, a busy port means already up), `host/servers.ts` (stops every server on quit, including one still starting), `menu.ts` (standard roles plus Open website in browser, Reload page, Show logs). Startup page in `electron/pages/` (CSP `default-src 'self'`, no inline script) with a step list, error text, a monospace output tail and a Sapphire Retry button. New channels `host:startup` and `host:retry`; `host:retry` answers only the startup page, app info and settings only the hosted origin.

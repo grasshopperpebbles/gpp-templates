@@ -17,7 +17,6 @@
       "electron-store for persistent settings",
       "electron-window-state for window persistence",
       "electron-log for structured logging",
-      "electron-builder for packaging",
       "IPC handlers structure",
       "Preload script with context isolation",
       "Security best practices (sandbox, context isolation, single instance, IPC validation)"
@@ -25,7 +24,8 @@
     "excluded": [
       "Monaco Editor (can be added separately)",
       "AI integrations (can be added separately)",
-      "Terminal integration (can be added separately)"
+      "Terminal integration (can be added separately)",
+      "Packaged builds (V1 runs from a terminal with pnpm dev; the app starts the sibling web app's dev server)"
     ]
   },
   "homepageType": "app",

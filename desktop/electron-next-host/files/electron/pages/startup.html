@@ -11,9 +11,14 @@
     <main class="panel">
       <h1 id="title">Starting…</h1>
       <ol id="steps" class="steps" aria-live="polite"></ol>
+      <p class="hint">
+        Links that point at the website's own port (usually 3000) need <strong>Open website in browser</strong> from the
+        app menu first.
+      </p>
       <section id="problem" class="problem" hidden>
         <p id="problem-text" class="problem-text"></p>
         <pre id="problem-tail" class="problem-tail" hidden></pre>
+        <button id="continue" type="button" class="retry" hidden>Continue anyway</button>
         <button id="retry" type="button" class="retry">Retry</button>
       </section>
     </main>

@@ -15,6 +15,7 @@
   const problemTextEl = document.getElementById('problem-text');
   const problemTailEl = document.getElementById('problem-tail');
   const retryEl = document.getElementById('retry');
+  const continueEl = document.getElementById('continue');
 
   const rows = new Map();
 
@@ -56,7 +57,8 @@
     }
   }
 
-  function showProblem(message, tail) {
+  function showProblem(message, tail, canContinue) {
+    continueEl.hidden = !canContinue;
     problemTextEl.textContent = message;
     const hasTail = Array.isArray(tail) && tail.length > 0;
     problemTailEl.hidden = !hasTail;
@@ -78,8 +80,11 @@
       return;
     }
     if (event.error && event.step === 'cors') {
-      // A warning only: the app still opens
-      setState('cors', 'warning', event.error);
+      // The app is running, but its API may refuse it: stay here until the user decides
+      finishRunning();
+      setState('cors', 'warning');
+      titleEl.textContent = 'Check the API settings';
+      showProblem(event.error, undefined, true);
       return;
     }
     if (event.error) {
@@ -92,6 +97,12 @@
     finishRunning();
     setState(event.step, 'running');
   }
+
+  continueEl.addEventListener('click', () => {
+    titleEl.textContent = 'Opening…';
+    problemEl.hidden = true;
+    window.electronAPI.host.continueAnyway();
+  });
 
   retryEl.addEventListener('click', () => {
     reset();

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { readDotEnvFile } from './dotenv.js';
 
 export interface HostConfig {
   web: {
@@ -12,10 +13,12 @@ export interface HostConfig {
     stopGraceMs: number;
     corsTimeoutMs: number;
   };
-  /** services [] = all */
-  compose: { file: string; services: string[] } | null;
-  /** url = API base for the CORS preflight */
+  /** services [] = all; waitTimeoutMs bounds `up --wait` (the health checks) */
+  compose: { file: string; services: string[]; waitTimeoutMs: number } | null;
+  /** url = API base for the CORS preflight; corsOrigin follows the effective web port */
   api: { url: string; corsOrigin: string } | null;
+  /** Folder of the root `.env` (the port override is read from it), or null */
+  projectRoot: string | null;
 }
 
 export class HostConfigError extends Error {
@@ -28,6 +31,7 @@ export class HostConfigError extends Error {
 const DEFAULT_READY_TIMEOUT_MS = 120_000;
 const DEFAULT_STOP_GRACE_MS = 5_000;
 const DEFAULT_CORS_TIMEOUT_MS = 5_000;
+const DEFAULT_COMPOSE_WAIT_TIMEOUT_MS = 120_000;
 
 type Json = Record<string, unknown>;
 
@@ -50,17 +54,22 @@ function port(value: unknown, where: string): number {
 
 function positiveInt(value: unknown, fallback: number, where: string): number {
   if (value === undefined) return fallback;
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
-    throw new HostConfigError(`${where} must be a non-negative integer`);
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+    throw new HostConfigError(`${where} must be a positive integer`);
   }
   return value;
 }
 
 /**
  * Reads host.config.json. Paths in the file are relative to the file's folder (the desktop
- * workspace) and come back absolute. `env[web.portEnv]`, when set, overrides `web.port`.
+ * workspace) and come back absolute. `web.portEnv` overrides `web.port`: the process env first,
+ * then the project root's `.env` (the folder of `projectRoot`, else of the compose file).
  */
-export function loadHostConfig(file: string, env: NodeJS.ProcessEnv): HostConfig {
+export function loadHostConfig(
+  file: string,
+  env: NodeJS.ProcessEnv,
+  readEnvFile: (file: string) => Record<string, string> = readDotEnvFile,
+): HostConfig {
   let raw: unknown;
   try {
     raw = JSON.parse(readFileSync(file, 'utf8'));
@@ -74,13 +83,6 @@ export function loadHostConfig(file: string, env: NodeJS.ProcessEnv): HostConfig
   if (!isObject(webRaw)) throw new HostConfigError('host.config.json needs a "web" block');
   const portEnv = str(webRaw, 'portEnv', 'web');
   let webPort = port(webRaw.port, 'web.port');
-  const override = env[portEnv];
-  if (override !== undefined && override !== '') {
-    if (!/^\d+$/.test(override)) throw new HostConfigError(`${portEnv} must be an integer port, got "${override}"`);
-    const n = Number(override);
-    if (n < 1 || n > 65535) throw new HostConfigError(`${portEnv} must be from 1 to 65535, got "${override}"`);
-    webPort = n;
-  }
 
   let compose: HostConfig['compose'] = null;
   if (raw.compose != null) {
@@ -89,13 +91,32 @@ export function loadHostConfig(file: string, env: NodeJS.ProcessEnv): HostConfig
     if (!Array.isArray(services) || !services.every((s) => typeof s === 'string')) {
       throw new HostConfigError('compose.services must be an array of strings');
     }
-    compose = { file: resolve(base, str(raw.compose, 'file', 'compose')), services: services as string[] };
+    compose = {
+      file: resolve(base, str(raw.compose, 'file', 'compose')),
+      services: services as string[],
+      waitTimeoutMs: positiveInt(raw.compose.waitTimeoutMs, DEFAULT_COMPOSE_WAIT_TIMEOUT_MS, 'compose.waitTimeoutMs'),
+    };
+  }
+
+  let projectRoot: string | null = null;
+  if (raw.projectRoot !== undefined) projectRoot = resolve(base, str(raw, 'projectRoot', 'host.config.json'));
+  else if (compose) projectRoot = dirname(compose.file);
+
+  let override = env[portEnv];
+  if ((override === undefined || override === '') && projectRoot) {
+    override = readEnvFile(join(projectRoot, '.env'))[portEnv];
+  }
+  if (override !== undefined && override !== '') {
+    if (!/^\d+$/.test(override)) throw new HostConfigError(`${portEnv} must be an integer port, got "${override}"`);
+    const n = Number(override);
+    if (n < 1 || n > 65535) throw new HostConfigError(`${portEnv} must be from 1 to 65535, got "${override}"`);
+    webPort = n;
   }
 
   let api: HostConfig['api'] = null;
   if (raw.api != null) {
     if (!isObject(raw.api)) throw new HostConfigError('api must be an object or null');
-    api = { url: str(raw.api, 'url', 'api'), corsOrigin: str(raw.api, 'corsOrigin', 'api') };
+    api = { url: str(raw.api, 'url', 'api'), corsOrigin: `http://localhost:${webPort}` };
   }
 
   return {
@@ -111,5 +132,6 @@ export function loadHostConfig(file: string, env: NodeJS.ProcessEnv): HostConfig
     },
     compose,
     api,
+    projectRoot,
   };
 }

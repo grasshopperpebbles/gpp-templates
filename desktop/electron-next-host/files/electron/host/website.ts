@@ -15,17 +15,19 @@ export interface WebsiteDeps {
 
 /**
  * Backs the menu item "Open website in browser": starts the website's Next server the first time
- * it is used (unless something already answers on that port), then opens the system browser.
+ * it is used, and again if that server has since exited (unless something already answers on that
+ * port), then opens the system browser.
  */
 export function createWebsiteLauncher(deps: WebsiteDeps) {
   const { web } = deps;
   const url = `http://localhost:${web.websitePort}`;
+  let server: WebServer | null = null;
   let starting: Promise<void> | null = null;
 
   async function ensureStarted(): Promise<void> {
     // Busy port: assume the website is already up
     if (!(await deps.isPortFree(web.websitePort))) return;
-    await deps.start({
+    server = await deps.start({
       cwd: web.path,
       port: web.websitePort,
       distDir: WEBSITE_DIST_DIR,
@@ -37,11 +39,12 @@ export function createWebsiteLauncher(deps: WebsiteDeps) {
 
   return {
     async openInBrowser(): Promise<void> {
-      starting ??= ensureStarted().catch((error: unknown) => {
-        starting = null; // let the next click try again
-        throw error;
-      });
-      await starting;
+      if (!server?.isRunning()) {
+        starting ??= ensureStarted().finally(() => {
+          starting = null; // a failure or a later exit lets the next click start again
+        });
+        await starting;
+      }
       deps.open(url);
     },
   };

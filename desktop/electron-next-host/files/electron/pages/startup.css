@@ -121,3 +121,13 @@ h1 {
 [hidden] {
   display: none !important;
 }
+
+.problem .retry + .retry {
+  margin-left: 8px;
+}
+
+.hint {
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}

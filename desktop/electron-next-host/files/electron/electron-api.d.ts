@@ -20,6 +20,7 @@ export interface ElectronAPI {
   host: {
     onStartup: (callback: (event: BootEventPayload) => void) => () => void;
     retry: () => Promise<void>;
+    continueAnyway: () => Promise<void>;
   };
 }
 

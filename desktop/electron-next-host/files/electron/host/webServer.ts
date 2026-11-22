@@ -18,6 +18,8 @@ export interface WebServerOptions {
    * Lets a caller stop a server that is still starting (for example when the app quits).
    */
   onStarting?: (handle: { stop(): Promise<void> }) => void;
+  /** Every complete line of the server's output, for as long as it runs (so runtime errors reach the log). */
+  onLine?: (line: string) => void;
 }
 
 export interface WebServer {
@@ -82,6 +84,7 @@ export function startWebServer(opts: WebServerOptions, deps: WebServerDeps): Pro
     const parts = `${partial.get(name) ?? ''}${chunk.toString()}`.split('\n');
     partial.set(name, parts.pop() ?? '');
     for (const line of parts) {
+      opts.onLine?.(line);
       tail.push(line);
       if (tail.length > TAIL_LINES) tail.shift();
     }

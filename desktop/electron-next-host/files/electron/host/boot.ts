@@ -8,12 +8,18 @@ export type BootStep = 'docker' | 'port' | 'web' | 'cors' | 'ready';
 /**
  * One progress report for the startup page. A step event means that step has begun (so the earlier
  * ones are done). With `error` the step failed and boot stopped, except for `cors`, where the error
- * is only a warning and boot goes on.
+ * is a warning: boot ends with the server running and the user chooses to continue or retry.
  */
 export interface BootEvent {
   step: BootStep;
   error?: string;
   tail?: string[];
+}
+
+/** A started server, plus the CORS problem the user has to decide on (null when there is none). */
+export interface BootResult {
+  server: WebServer;
+  corsWarning: string | null;
 }
 
 export interface BootDeps {
@@ -31,9 +37,10 @@ function message(error: unknown): string {
 /**
  * Starts Docker (if configured), checks the private port, starts the web server and runs the CORS
  * check, reporting each step. Returns the running server, or null when it stopped on an error (the
- * startup page then offers Retry). A CORS problem is a warning only.
+ * startup page then offers Retry). A CORS problem doesn't stop the server; it comes back as
+ * `corsWarning` and no `ready` event is sent, so the caller keeps the startup page up with it.
  */
-export async function boot(cfg: HostConfig, deps: BootDeps, onEvent: (e: BootEvent) => void): Promise<WebServer | null> {
+export async function boot(cfg: HostConfig, deps: BootDeps, onEvent: (e: BootEvent) => void): Promise<BootResult | null> {
   if (cfg.compose) {
     onEvent({ step: 'docker' });
     try {
@@ -74,9 +81,12 @@ export async function boot(cfg: HostConfig, deps: BootDeps, onEvent: (e: BootEve
   if (cors) {
     onEvent({ step: 'cors' });
     const result = await cors;
-    if (!result.ok) onEvent({ step: 'cors', error: result.message });
+    if (!result.ok) {
+      onEvent({ step: 'cors', error: result.message });
+      return { server, corsWarning: result.message };
+    }
   }
 
   onEvent({ step: 'ready' });
-  return server;
+  return { server, corsWarning: null };
 }

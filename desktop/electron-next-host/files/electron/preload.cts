@@ -18,7 +18,7 @@ const api: ElectronAPI = {
     delete: (key) => ipcRenderer.invoke('settings:delete', key),
   },
 
-  // Startup page: boot progress from the main process, and the Retry button
+  // Startup page: boot progress from the main process, and the Retry / Continue anyway buttons
   host: {
     onStartup: (callback) => {
       const listener = (_event: IpcRendererEvent, payload: BootEventPayload) => callback(payload);
@@ -28,6 +28,7 @@ const api: ElectronAPI = {
       };
     },
     retry: () => ipcRenderer.invoke('host:retry'),
+    continueAnyway: () => ipcRenderer.invoke('host:continue'),
   },
 };
 

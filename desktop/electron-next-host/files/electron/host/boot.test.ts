@@ -15,8 +15,9 @@ const cfg: HostConfig = {
     stopGraceMs: 5_000,
     corsTimeoutMs: 5_000,
   },
-  compose: { file: '/app/docker-compose.yml', services: [] },
+  compose: { file: '/app/docker-compose.yml', services: [], waitTimeoutMs: 120_000 },
   api: { url: 'http://localhost:8000', corsOrigin: 'http://localhost:3010' },
+  projectRoot: '/app',
 };
 
 const server: WebServer = { url: 'http://localhost:3010', stop: async () => undefined, isRunning: () => true };
@@ -42,7 +43,7 @@ describe('boot', () => {
     const { events, result } = await run(cfg, deps());
     expect(events.map((e) => e.step)).toEqual(['docker', 'port', 'web', 'cors', 'ready']);
     expect(events.some((e) => e.error)).toBe(false);
-    expect(result).toBe(server);
+    expect(result).toEqual({ server, corsWarning: null });
   });
 
   it('checks the port the config names', async () => {
@@ -56,7 +57,7 @@ describe('boot', () => {
     const { events, result } = await run({ ...cfg, compose: null }, d);
     expect(d.composeUp).not.toHaveBeenCalled();
     expect(events.map((e) => e.step)).toEqual(['port', 'web', 'cors', 'ready']);
-    expect(result).toBe(server);
+    expect(result).toEqual({ server, corsWarning: null });
   });
 
   it('skips the CORS check when there is no api', async () => {
@@ -114,11 +115,11 @@ describe('boot', () => {
     expect(events.at(-1)).toEqual({ step: 'web', error: 'spawn next ENOENT' });
   });
 
-  it('CORS not ok: emits a cors warning but still returns the server', async () => {
+  it('CORS not ok: returns the running server with the warning and sends no ready event', async () => {
     const d = deps({ checkCors: vi.fn().mockResolvedValue({ ok: false, message: 'API says no' }) });
     const { events, result } = await run(cfg, d);
-    expect(events).toContainEqual({ step: 'cors', error: 'API says no' });
-    expect(events.at(-1)).toEqual({ step: 'ready' });
-    expect(result).toBe(server);
+    expect(events.at(-1)).toEqual({ step: 'cors', error: 'API says no' });
+    expect(events.some((e) => e.step === 'ready')).toBe(false);
+    expect(result).toEqual({ server, corsWarning: 'API says no' });
   });
 });

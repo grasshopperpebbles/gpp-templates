@@ -70,6 +70,63 @@ describe('loadHostConfig', () => {
 
   it('rejects an invalid port in the file and an api block without a url', () => {
     expect(() => loadHostConfig(writeConfig({ web: { ...baseWeb, port: 'x' } }), {})).toThrow(HostConfigError);
-    expect(() => loadHostConfig(writeConfig({ web: baseWeb, api: { corsOrigin: 'a' } }), {})).toThrow(HostConfigError);
+    expect(() => loadHostConfig(writeConfig({ web: baseWeb, api: {} }), {})).toThrow(HostConfigError);
+  });
+
+  it('api.corsOrigin follows the effective web port', () => {
+    const file = writeConfig({ web: baseWeb, api: { url: 'http://localhost:8880' } });
+    expect(loadHostConfig(file, {}).api?.corsOrigin).toBe('http://localhost:3010');
+    expect(loadHostConfig(file, { X_PORT: '3020' }).api?.corsOrigin).toBe('http://localhost:3020');
+  });
+
+  it('reads the port override from the project root .env when the process env has none', () => {
+    const file = writeConfig({ web: baseWeb, compose: { file: '../docker-compose.yml' }, api: null });
+    const root = join(file, '..', '..');
+    const seen: string[] = [];
+    const read = (f: string) => {
+      seen.push(f);
+      return { X_PORT: '3030' };
+    };
+    expect(loadHostConfig(file, {}, read).web.port).toBe(3030);
+    expect(seen).toEqual([join(root, '.env')]);
+  });
+
+  it('the process env wins over the .env file', () => {
+    const file = writeConfig({ web: baseWeb, compose: { file: '../docker-compose.yml' } });
+    expect(loadHostConfig(file, { X_PORT: '3020' }, () => ({ X_PORT: '3030' })).web.port).toBe(3020);
+  });
+
+  it('uses projectRoot for the .env when given, and reads a real .env file', () => {
+    const file = writeConfig({ web: baseWeb, projectRoot: '../root' });
+    const root = join(file, '..', '..', 'root');
+    mkdirSync(root);
+    writeFileSync(join(root, '.env'), 'X_PORT=3040\n');
+    expect(loadHostConfig(file, {}).web.port).toBe(3040);
+  });
+
+  it('rejects a bad port in the .env file', () => {
+    const file = writeConfig({ web: baseWeb, compose: { file: '../c.yml' } });
+    expect(() => loadHostConfig(file, {}, () => ({ X_PORT: 'zzz' }))).toThrow(/X_PORT/);
+  });
+
+  it('reads no .env when there is neither projectRoot nor compose', () => {
+    const file = writeConfig({ web: baseWeb });
+    expect(loadHostConfig(file, {}, () => { throw new Error('should not read'); }).web.port).toBe(3010);
+  });
+
+  it('compose.waitTimeoutMs defaults to 120000 and must be positive', () => {
+    const ok = writeConfig({ web: baseWeb, compose: { file: '../c.yml' } });
+    expect(loadHostConfig(ok, {}, () => ({})).compose?.waitTimeoutMs).toBe(120000);
+    const set = writeConfig({ web: baseWeb, compose: { file: '../c.yml', waitTimeoutMs: 9000 } });
+    expect(loadHostConfig(set, {}, () => ({})).compose?.waitTimeoutMs).toBe(9000);
+    const bad = writeConfig({ web: baseWeb, compose: { file: '../c.yml', waitTimeoutMs: 0 } });
+    expect(() => loadHostConfig(bad, {}, () => ({}))).toThrow(/waitTimeoutMs/);
+  });
+
+  it('rejects zero timeouts (an instant timeout or SIGKILL is never intended)', () => {
+    for (const key of ['readyTimeoutMs', 'stopGraceMs', 'corsTimeoutMs']) {
+      const file = writeConfig({ web: { ...baseWeb, [key]: 0 } });
+      expect(() => loadHostConfig(file, {}, () => ({}))).toThrow(new RegExp(key));
+    }
   });
 });

@@ -11,4 +11,6 @@ export const CHANNELS = {
   hostStartup: 'host:startup',
   /** startup page → main: run the boot sequence again */
   hostRetry: 'host:retry',
+  /** startup page → main: open the app although the CORS check warned */
+  hostContinue: 'host:continue',
 } as const;
