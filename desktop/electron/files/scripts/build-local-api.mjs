@@ -19,27 +19,42 @@ export function localApiPath(desktopDir, envText) {
   return path.resolve(desktopDir, rel.trim());
 }
 
-function main() {
-  const desktopDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+/**
+ * Install and build the local API. Returns 0 when there is nothing to build or both commands
+ * succeed. A non-zero or missing pnpm status is returned so the installer stops.
+ */
+export function buildLocalApi({ desktopDir, readFile, spawn }) {
   let envText = '';
   try {
-    envText = fs.readFileSync(path.join(desktopDir, '.env'), 'utf8');
+    envText = readFile(path.join(desktopDir, '.env'));
   } catch {
-    return;
+    return 0;
   }
   const apiDir = localApiPath(desktopDir, envText);
-  if (!apiDir) return;
+  if (!apiDir) return 0;
   for (const args of [
     ['install'],
     ['build'],
   ]) {
-    const result = spawnSync('pnpm', args, {
-      cwd: apiDir,
-      stdio: 'inherit',
-      shell: process.platform === 'win32',
-    });
-    if (result.status !== 0) process.exit(result.status ?? 1);
+    const result = spawn(args, apiDir);
+    if (result.status !== 0) return result.status ?? 1;
   }
+  return 0;
+}
+
+function main() {
+  const desktopDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const code = buildLocalApi({
+    desktopDir,
+    readFile: (file) => fs.readFileSync(file, 'utf8'),
+    spawn: (args, cwd) =>
+      spawnSync('pnpm', args, {
+        cwd,
+        stdio: 'inherit',
+        shell: process.platform === 'win32',
+      }),
+  });
+  if (code !== 0) process.exit(code);
 }
 
 const entry = process.argv[1] ? path.resolve(process.argv[1]) : '';

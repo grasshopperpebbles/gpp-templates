@@ -106,7 +106,45 @@ export function readOrCreateJwtSecret(userData: string): string {
   return secret;
 }
 
-/** True when the API process failed. The window may already be open; the failure is still shown. */
-export function onLocalApiExit(code: number | null, _hasWindow: boolean): boolean {
+/**
+ * True when the API process failed and the app should say so. The window may already be open.
+ * A quit is not a failure: Windows `kill()` ends the child with code 1, because there is no
+ * SIGTERM for the API's shutdown handler to turn into exit 0.
+ */
+export function onLocalApiExit(code: number | null, _hasWindow: boolean, quitting = false): boolean {
+  if (quitting) return false;
   return code !== null && code !== 0;
+}
+
+/** A shell is only how an unpackaged Windows app finds `pnpm`. The packaged launch is Electron itself. */
+export function localApiUsesShell(platform: string, packaged: boolean): boolean {
+  return platform === 'win32' && !packaged;
+}
+
+/**
+ * Windows dev starts `pnpm` through `cmd.exe`. `kill()` stops only that shell, so the API keeps
+ * the port. `taskkill /T /F` stops the shell and everything it started. Other launches return
+ * null and the caller uses `child.kill()`.
+ */
+export function localApiTreeKill(
+  platform: string,
+  packaged: boolean,
+  pid: number | undefined,
+): { command: string; args: string[] } | null {
+  if (!localApiUsesShell(platform, packaged) || pid === undefined) return null;
+  return { command: 'taskkill', args: ['/PID', String(pid), '/T', '/F'] };
+}
+
+/** The last non-empty lines of the API's output, for the failure dialog. */
+export function rememberApiOutput(previous: string[], chunk: string, limit = 20): string[] {
+  const lines = chunk.split(/\r?\n/).map((line) => line.trimEnd()).filter((line) => line.length > 0);
+  return previous.concat(lines).slice(-limit);
+}
+
+/** The dialog text. The last lines say why, when the API wrote any. */
+export function localApiFailureText(_code: number | null, lines: string[]): string {
+  const head = 'The local API exited. This window has no API.';
+  const tail = lines.slice(-8);
+  if (tail.length === 0) return head;
+  return `${head}\n\n${tail.join('\n')}`;
 }

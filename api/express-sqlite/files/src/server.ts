@@ -11,6 +11,7 @@ import prisma from './lib/prisma.js';
 import { closeRedis } from './lib/redis.js';
 import { createApp } from './app.js';
 import { assertJwtSecretConfigured } from './middleware/auth.middleware.js';
+import { bindHost } from './startupPolicy.js';
 
 // Refuse to start in production with a missing/placeholder/short JWT_SECRET.
 try {
@@ -23,7 +24,7 @@ try {
 const app = createApp();
 const PORT = process.env.API_PORT || 3001;
 // Unset in development (listen on every interface). The packaged app sets 127.0.0.1.
-const HOST = process.env.HOST;
+const HOST = bindHost(process.env.HOST);
 
 // ============================================================================
 // SERVER STARTUP

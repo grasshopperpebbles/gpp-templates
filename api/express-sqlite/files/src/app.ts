@@ -9,6 +9,7 @@ import { requestLogger } from './middleware/request-logger.middleware.js';
 // Route imports
 import healthRoutes from './routes/health.routes.js';
 import v1Routes from './routes/v1/index.js';
+import { corsOrigin } from './startupPolicy.js';
 
 /**
  * Build the Express app without listening, so tests can drive it with supertest.
@@ -33,15 +34,9 @@ export function createApp(): Express {
   // 3. Request logger (performance monitoring)
   app.use(requestLogger);
 
-  // 4. CORS configuration
-  const corsOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
-    : '*';
-
+  // 4. CORS configuration. Production uses the configured list. A missing list allows nothing.
   app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-      ? corsOrigins
-      : '*', // Development - allow all origins
+    origin: corsOrigin(process.env.NODE_ENV, process.env.CORS_ORIGINS),
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
     exposedHeaders: ['X-Request-ID'],

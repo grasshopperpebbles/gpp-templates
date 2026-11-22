@@ -10,7 +10,16 @@ import electronUpdater from 'electron-updater';
 import contextMenu from 'electron-context-menu';
 import { registerSettingsHandlers } from './ipc/settingsHandlers.js';
 import { CHANNELS } from './ipc/channels.js';
-import { onLocalApiExit, planLocalApi, readEnvValue, readOrCreateJwtSecret } from './local-api.js';
+import {
+  localApiFailureText,
+  localApiTreeKill,
+  localApiUsesShell,
+  onLocalApiExit,
+  planLocalApi,
+  readEnvValue,
+  readOrCreateJwtSecret,
+  rememberApiOutput,
+} from './local-api.js';
 import {
   APP_ORIGIN,
   APP_SCHEME,
@@ -58,6 +67,8 @@ function registerAppProtocol(): void {
 
 let mainWindow: BrowserWindow | null = null;
 let localApiChild: ChildProcess | undefined;
+/** Set before the quit kill, so that child's exit is not reported as an API failure. */
+let quitting = false;
 
 /** API_PORT, else the port in VITE_API_BASE_URL, else 3001. */
 function desktopApiPort(envText: string): string {
@@ -94,23 +105,31 @@ function startLocalApi(): void {
   });
   if (!plan) return;
 
+  const usesShell = localApiUsesShell(process.platform, app.isPackaged);
+  // A packaged app has no terminal. Keep the API's output for the failure dialog.
+  const capture = app.isPackaged;
+  let apiOutput: string[] = [];
   const child = spawn(plan.command, plan.args, {
     cwd: plan.cwd,
     env: { ...process.env, ...plan.env },
-    stdio: 'inherit',
-    // A shell is only how Windows finds pnpm. The packaged launch is Electron itself, and a
-    // shell would split an install path that contains a space.
-    shell: process.platform === 'win32' && !app.isPackaged,
+    stdio: capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+    shell: usesShell,
   });
   localApiChild = child;
+  const takeOutput = (chunk: Buffer): void => {
+    apiOutput = rememberApiOutput(apiOutput, chunk.toString());
+    log.error(chunk.toString().trimEnd());
+  };
+  child.stdout?.on('data', takeOutput);
+  child.stderr?.on('data', takeOutput);
   child.on('error', (error) => {
     log.error('Local API failed to start:', error);
-    dialog.showErrorBox('API failed to start', 'The local API exited. This window has no API.');
+    dialog.showErrorBox('API failed to start', localApiFailureText(null, apiOutput));
   });
   child.on('exit', (code) => {
-    if (!onLocalApiExit(code, mainWindow !== null)) return;
+    if (!onLocalApiExit(code, mainWindow !== null, quitting)) return;
     log.error(`Local API exited with code ${String(code)}`);
-    dialog.showErrorBox('API failed to start', 'The local API exited. This window has no API.');
+    dialog.showErrorBox('API failed to start', localApiFailureText(code, apiOutput));
   });
 }
 
@@ -227,7 +246,18 @@ app.whenReady().then(() => {
 });
 
 app.on('before-quit', () => {
-  localApiChild?.kill();
+  // Windows kill() is TerminateProcess and the child exits 1. Mark the quit first so that
+  // exit is not shown as "The local API exited." A non-zero exit while the app is in use still is.
+  quitting = true;
+  const child = localApiChild;
+  if (!child) return;
+  const tree = localApiTreeKill(process.platform, app.isPackaged, child.pid);
+  if (tree) {
+    // Dev on Windows: the child is cmd.exe. Kill pnpm and the API with it, or the port stays taken.
+    spawn(tree.command, tree.args, { stdio: 'ignore', windowsHide: true });
+    return;
+  }
+  child.kill();
 });
 
 app.on('window-all-closed', () => {
