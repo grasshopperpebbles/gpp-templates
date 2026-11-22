@@ -1,0 +1,25 @@
+kind: recipe
+id: electron-express-mysql
+version: 1.0.0
+name: Electron + Express + MySQL
+description: Desktop app (Electron + React) with a Node.js Express API, Prisma and MySQL, no website
+
+workspaces:
+  - id: api
+    path: apps/api
+    pack: api/express-mysql
+    deployTarget: railway
+
+  - id: desktop
+    path: apps/desktop
+    pack: desktop/electron
+
+adapters:
+  - id: electron_to_express
+    args:
+      desktopId: desktop
+      apiId: api
+
+installers:
+  - action: envSeed
+    args: { profile: dev }
