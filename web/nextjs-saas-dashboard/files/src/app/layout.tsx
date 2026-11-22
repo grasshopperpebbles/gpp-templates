@@ -6,7 +6,7 @@ import { Toaster } from "@/components/feedback/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { authOptions } from "@/lib/auth-config";
 
-const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? "SaaS Dashboard";
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? "{{PROJECT_SLUG}}";
 const siteDescription = process.env.NEXT_PUBLIC_SITE_DESCRIPTION ?? "Customer-facing SaaS application dashboard";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://yoursite.dev";
 

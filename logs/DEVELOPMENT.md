@@ -1,6 +1,10 @@
 
 ---
 
+## Session: app display name (2026-11-22)
+
+Branch `fix/app-display-name`. In the nteljince desktop app the window title read "SaaS Dashboard" (web recipe fallback for `NEXT_PUBLIC_SITE_NAME`) and the macOS menu bar read "Electron" (the dev Electron.app's CFBundleName; app.name does not change it). `web/nextjs-saas-dashboard`: the fallback and env.example.txt now use `{{PROJECT_SLUG}}`. `desktop/electron-next-host`: `productName: "{{PROJECT_SLUG}}"`; `pnpm dev` / `start` run `dist-electron/dev-app-name.js` before `electron .`, which writes productName into the project's own dev Electron.app with plutil (macOS only, idempotent, never blocks launch). New `electron/host/devAppName.test.ts` (7 tests). Verified in nteljince's workspace: vitest 125, lint and type-check clean; live launch from the original "Electron" plist renamed it and the menu bar and title read nteljince. Note: productName moves Electron's userData folder (`<slug>-desktop` → `<slug>`), so an existing install signs in once more.
+
 ## Session: electron-next-host api port at runtime (2026-11-22)
 
 Branch `feature/electron-next-host`. `api` block is `{ port, portEnv? }`, resolved in `loadHostConfig` (process env, then root `.env`, then default). Scratch scaffold `host-demo`: 18 files / 118 tests pass, type-check, lint and `build:electron` clean; `template validate` valid.

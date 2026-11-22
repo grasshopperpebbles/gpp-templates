@@ -1,14 +1,15 @@
 {
   "name": "{{PROJECT_SLUG}}-desktop",
+  "productName": "{{PROJECT_SLUG}}",
   "private": true,
   "version": "0.1.0",
   "description": "Electron desktop host for a Next.js app",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
-    "dev": "pnpm build:electron && electron .",
+    "dev": "pnpm build:electron && node dist-electron/dev-app-name.js && electron .",
     "build:electron": "tsc -p tsconfig.electron.json",
-    "start": "pnpm build:electron && electron .",
+    "start": "pnpm build:electron && node dist-electron/dev-app-name.js && electron .",
     "type-check": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",

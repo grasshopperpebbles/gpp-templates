@@ -1,6 +1,11 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - App display name (web title + desktop menu bar)
+
+- **Fixed:** `web/nextjs-saas-dashboard` site name falls back to `{{PROJECT_SLUG}}` instead of "SaaS Dashboard" (layout.tsx, env.example.txt).
+- **Fixed:** `desktop/electron-next-host` sets `productName` to the slug and names the dev Electron.app after it before launch, so the macOS menu bar shows the app's name instead of "Electron". Existing installs sign in once more (userData folder follows productName).
+
 ## [Unreleased] - 2026-11-22 - electron-next-host: api port resolved at runtime
 
 - **Changed:** `host.config.json` `api` is now `{ "port", "portEnv"? }` instead of `{ "url" }`. `loadHostConfig` builds `http://localhost:<port>`, with `portEnv` overriding `port` from the process env, then the project root `.env`, same order as `web.portEnv`. An adapter no longer needs to bake a machine's `.env` override into a committed file. Tests added in `config.test.ts`; README updated.

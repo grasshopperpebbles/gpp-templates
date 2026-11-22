@@ -22,6 +22,8 @@ When the API doesn't allow the desktop origin (`http://localhost:<web.port>`), t
 
 On macOS, closing the window leaves the app running and the dock icon reopens it. The server is started again only if it has stopped.
 
+The app's name is `productName` in `package.json` (the project slug). On macOS the menu bar takes its name from the running bundle, so `pnpm dev` / `pnpm start` first write `productName` into the project's own dev `Electron.app` (`CFBundleName`, `CFBundleDisplayName`; `electron/dev-app-name.ts`). A reinstall resets it and the next launch sets it again. The window title is the web page's title.
+
 Quitting the app stops both Next servers (a server that is still starting too). If the private port is busy the app refuses and names the port and the env var that changes it. It never picks another port.
 
 ## Quick Start
