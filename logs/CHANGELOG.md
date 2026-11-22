@@ -1,6 +1,10 @@
 
 ---
 
+## 2026-11-22 — Gift offer funnel merged to main
+
+- `feature/gift-offer-funnel` fast-forwarded to `main` and pushed (deploy order: gpp-templates → gpp-cli → grasshopperpebbles-com → quantacular → broadkast); branch deleted.
+
 ## [Unreleased] - 2026-11-22 - Thank-you page final-review fixes
 
 - **Changed:** `broadkast-gifts.ts` maps the API's new 409 `SURVEY_QUESTIONS_CHANGED` (questions edited after the page loaded) to `SURVEY_CHANGED`, so the survey no longer says "Your answers are saved" when nothing was saved. 1 new test.
