@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - electron-next-host: CORS check
+
+- **Added:** `desktop/electron-next-host` `electron/host/corsCheck.ts` (`checkCors`): an OPTIONS preflight with `Origin` and `Access-Control-Request-Method: GET`, ok when `access-control-allow-origin` is the origin or `*`; otherwise a message naming `CORS_ORIGINS`, or "isn't answering" when unreachable (5 s abort). 4 tests.
+
 ## [Unreleased] - 2026-11-22 - electron-next-host: docker, port and web server
 
 - **Added:** `desktop/electron-next-host` `electron/host/ports.ts` (`isPortFree`), `compose.ts` (`composeUp`, `DockerNotRunningError`, `Run`) and `webServer.ts` (`startWebServer`, `webServerEnv`, `killProcessGroup`, `WebServerExitedError` with the last 20 output lines, `WebServerTimeoutError`). The server runs `next dev` in its own process group; `stop()` sends SIGTERM then SIGKILL after `stopGraceMs`. Spawn, fetch and kill are injected. 11 new tests.

@@ -1,6 +1,10 @@
 
 ---
 
+## Session: electron-next-host CORS check (2026-11-22)
+
+Branch `feature/electron-next-host`. Scratch scaffold: `pnpm vitest run` 35 pass (5 new), type-check and lint clean, `template validate` valid.
+
 ## Session: electron-next-host docker, port and web server (2026-11-22)
 
 Branch `feature/electron-next-host`. Scratch scaffold `host-demo`: `pnpm vitest run` 30 pass (11 new), `pnpm type-check` and `pnpm lint` clean; `template validate desktop/electron-next-host` valid (22 files). `killGroup` receives the positive pid and the production `killProcessGroup` negates it. `stop()` resolves after the SIGKILL so quitting never hangs. A lint-found `prefer-const` and a missing `.js` extension on a type import (NodeNext) were fixed.
