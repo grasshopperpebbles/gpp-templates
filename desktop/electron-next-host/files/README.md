@@ -51,6 +51,8 @@ Paths are relative to this folder.
 | `api` | `{ "url" }` for the CORS preflight against your API, or `null`. The origin checked is always `http://localhost:<effective web.port>`. |
 | `projectRoot` | Optional. Folder of the root `.env` (default: the folder of the compose file). |
 
+`compose` runs `docker compose up -d --wait`. On some Compose versions `--wait` fails when a one-shot service (for example a migration job) exits. If that happens, list only the long-running services in `compose.services`.
+
 ## Open website in browser
 
 **File > Open website in browser** starts the website's Next server on `web.websitePort` the first time (with the default `.next` build folder), then opens it in your system browser. If something already answers on that port it is assumed to be the website and is just opened. The server stays up until you quit.

@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - electron-next-host: re-review note
+
+- **Changed:** README notes that `up --wait` can fail on a one-shot compose service and to narrow `compose.services`.
+
 ## [Unreleased] - 2026-11-22 - electron-next-host: final-review fixes
 
 - **Fixed:** `ports.ts` `isPortFree` now probes the default (dual-stack) host, `0.0.0.0`, `127.0.0.1` and `::1`; on macOS a 127.0.0.1 bind succeeded beside a `next dev` on `::`, so a leftover server went unnoticed. The CORS warning stays on the startup page with **Continue anyway** / **Retry** (new channel `host:continue`; `boot` returns `{ server, corsWarning }` and sends no `ready`). `web.portEnv` is read from the process env, then the project root `.env` (`projectRoot`, else the compose file's folder; tiny parser in `host/dotenv.ts`). `api.corsOrigin` is no longer a config field: it follows the effective web port. Docker runs `up -d --wait --wait-timeout` (`compose.waitTimeoutMs`, default 120000) and names an unhealthy service. `will-redirect` is guarded like `will-navigate` through `navigationAction()`. The website server restarts when it has exited. A second instance now exits before anything starts. Next output is forwarded to the log (`onLine`). Timeouts must be at least 1. Startup page notes the "Open website in browser" rule. `web/nextjs-saas-dashboard` lints ignore `.next-desktop/**`.
