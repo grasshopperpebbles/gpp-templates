@@ -1,6 +1,10 @@
 
 ---
 
+## Session: SaaS dashboard second dev server (2026-11-22)
+
+Branch `feature/electron-next-host`. `node ~/projects/gpp-cli/dist/cli.js template validate web/nextjs-saas-dashboard`: valid (76 files).
+
 ## Session: Thank-you page final-review fixes (2026-11-22)
 
 Broadkast's final review (M6): the survey API answered 200 `{saved: 0}` when every answer was for a question no longer asked, and the page showed "saved". The API now answers 409 `SURVEY_QUESTIONS_CHANGED`; `postAction` maps it to `SURVEY_CHANGED` ("Reload the page to see them"), which the survey proxy route and `SurveyForm` already show as an error. `node --test --experimental-strip-types src/lib/broadkast-gifts.test.ts`: 32 pass.

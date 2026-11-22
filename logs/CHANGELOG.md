@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - SaaS dashboard: a second dev server
+
+- **Changed:** `web/nextjs-saas-dashboard` `next.config.ts` reads `distDir` from `NEXT_DIST_DIR` (default `.next`), so a desktop app can run its own dev server beside the website. `/.next-desktop/` is in `_gitignore` and its type folders are in `tsconfig.json` `include`.
+
 ## 2026-11-22 — Gift offer funnel merged to main
 
 - `feature/gift-offer-funnel` fast-forwarded to `main` and pushed (deploy order: gpp-templates → gpp-cli → grasshopperpebbles-com → quantacular → broadkast); branch deleted.
