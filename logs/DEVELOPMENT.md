@@ -1,6 +1,10 @@
 
 ---
 
+## Session: electron-next-host vitest scope (2026-11-22)
+
+Branch `feature/electron-next-host`. Scratch scaffold with `logs/log_archive.test.mjs` present: without the config 1 file failed ("No test suite found"); with it 18 files / 116 tests pass, type-check and lint clean, `template validate` valid.
+
 ## Session: electron-next-host final-review fixes (2026-11-22)
 
 Branch `feature/electron-next-host`. Scratch scaffold `host-demo`: `pnpm vitest run` 116 pass in 18 files, `pnpm type-check`, `pnpm lint` and `pnpm build:electron` clean; `template validate` valid for both packs. Port probes on macOS: a listener on the default host, `::`, `0.0.0.0` and `::1` all make `isPortFree` false now (tests skip an address the machine doesn't have). Decisions in `main.ts` moved into tested modules (`navigationAction`, `createQuitHandler`, `guarded`).

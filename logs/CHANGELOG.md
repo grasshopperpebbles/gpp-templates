@@ -1,6 +1,10 @@
 
 ---
 
+## [Unreleased] - 2026-11-22 - electron-next-host: vitest scope
+
+- **Fixed:** `desktop/electron-next-host` gains `vitest.config.ts` with `include: ['electron/**/*.test.ts']`. gpp scaffolds `logs/log_archive.test.mjs` (a node:test file) into every project, and vitest picked it up and failed with "No test suite found".
+
 ## [Unreleased] - 2026-11-22 - electron-next-host: re-review note
 
 - **Changed:** README notes that `up --wait` can fail on a one-shot compose service and to narrow `compose.services`.

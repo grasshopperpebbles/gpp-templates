@@ -1,6 +1,10 @@
 
 ---
 
+## Packs scope their own test runner (2026-11-22)
+
+- gpp scaffolds files into every project (e.g. `logs/log_archive.test.mjs`) that a pack's default test glob can pick up. A pack that runs vitest pins `include` to its own source.
+
 ## gpp-cli bundles a pinned copy of this repo (2026-11-20)
 
 - The packs gpp-cli ships are edited here only; gpp-cli copies them from a pinned commit and rejects hand edits, so the two repos can't drift. Adding a template here never needs a gpp-cli change.
