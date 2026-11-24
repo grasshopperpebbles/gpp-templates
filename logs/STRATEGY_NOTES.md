@@ -1,6 +1,10 @@
 
 ---
 
+## Pack scripts must run on a fresh copy (2026-11-24)
+
+- A pack's `lint`, `build` and `test` scripts are part of what it ships. The Express packs shipped a `lint` with no config and a sqlite build that failed, and nobody noticed: CI swallows lint, and nothing built a fresh copy. Check a changed pack by installing its `files/` in a scratch folder and running every script.
+
 ## Packs scope their own test runner (2026-11-22)
 
 - gpp scaffolds files into every project (e.g. `logs/log_archive.test.mjs`) that a pack's default test glob can pick up. A pack that runs vitest pins `include` to its own source.

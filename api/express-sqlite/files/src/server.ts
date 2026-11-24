@@ -22,7 +22,8 @@ try {
 }
 
 const app = createApp();
-const PORT = process.env.API_PORT || 3001;
+// listen(port, host, cb) needs a number. API_PORT=0 still means "any free port".
+const PORT = process.env.API_PORT ? Number(process.env.API_PORT) : 3001;
 // Unset in development (listen on every interface). The packaged app sets 127.0.0.1.
 const HOST = bindHost(process.env.HOST);
 

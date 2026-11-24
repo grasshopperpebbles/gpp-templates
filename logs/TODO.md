@@ -17,6 +17,12 @@
 
 ## gpp-templates repository
 
+### Express packs lint and build on a fresh copy (2026-11-24)
+
+- [x] `.eslintrc.cjs` in express, express-mysql, express-sqlite; `npm run lint` passes (0 errors). express-sqlite build fixed (numeric `API_PORT`).
+- [ ] The 15 `no-explicit-any` warnings per pack (error handler, validation middleware, auth): type them, then make the rule an error.
+- [ ] Nothing builds a fresh copy of each pack in CI; that is how both problems shipped.
+
 ### This repo is the source of truth for the packs gpp-cli bundles (2026-11-20)
 
 - [x] gpp-cli bundles 35 packs, `recipes/` and the `gp-*` plugin files from a pinned commit of this repo (`npm run templates:sync` there; gpp-cli v0.9.131). `cms/headless-site-options.php` moved here. `gpp/` and `templates/baas/` removed (gpp-cli internals; gpp-cli owns them). CLAUDE.md and README say so.

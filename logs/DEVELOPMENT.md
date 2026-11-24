@@ -1,6 +1,12 @@
 
 ---
 
+## Session: Express packs ESLint config and sqlite port (2026-11-24)
+
+Found in imajin (express-sqlite). All three Express packs had a `lint` script and ESLint 8 + @typescript-eslint 7 but no config. gpp-cli's generated CI runs `pnpm -r lint || true`, which hid it. `eslint:recommended` + `@typescript-eslint/recommended` gave 19 errors per pack: 15 `no-explicit-any` (now warn), 2 `no-namespace` on `declare global` (allowDeclarations), `_next` on the error handler (argsIgnorePattern `^_`), and one real `no-case-declarations` (braced). The sqlite pack is the only one that passes a host to `listen`, so only it hit the string-port overload error.
+
+Checked by copying each pack's `files/` to a scratch folder: `npm install`, then `npm run lint` (exit 0), `npm run build` (exit 0) and `npm test` (5 files, 90 tests) in all three. `gpp template validate` VALID for each.
+
 ## Session: saas-dashboard GraphQL README (2026-11-22)
 
 Found while bringing nteljince's older GraphQL client up to the recipe: the README example still set a browser token. Removed those lines. `nextjs-marketing` keeps its own client with `setAuthToken`, so its README is right.

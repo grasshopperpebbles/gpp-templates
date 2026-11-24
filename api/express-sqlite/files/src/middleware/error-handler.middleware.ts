@@ -40,7 +40,7 @@ export function requestIdMiddleware(req: Request, res: Response, next: NextFunct
 function handlePrismaError(error: any): { statusCode: number; message: string; details?: any } {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
-      case 'P2002':
+      case 'P2002': {
         // Unique constraint violation
         const field = error.meta?.target ? (error.meta.target as string[])[0] : 'field';
         return {
@@ -48,6 +48,7 @@ function handlePrismaError(error: any): { statusCode: number; message: string; d
           message: `A record with this ${field} already exists`,
           details: { field, code: error.code }
         };
+      }
 
       case 'P2025':
         // Record not found

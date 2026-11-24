@@ -1,6 +1,12 @@
 
 ---
 
+## [Unreleased] - 2026-11-24 - Express packs: ESLint config, sqlite listen port
+
+- **Fixed:** `express`, `express-mysql`, `express-sqlite` ship `.eslintrc.cjs`. `npm run lint` used to stop with "ESLint couldn't find a configuration file". It now passes with 0 errors (15 `no-explicit-any` warnings).
+- **Fixed:** braces around the `P2002` case in `error-handler.middleware.ts` (`no-case-declarations`), all three packs.
+- **Fixed:** `express-sqlite` `npm run build` failed (TS2769): `listen(PORT, HOST, cb)` got `API_PORT` as a string. It is now a number; `API_PORT=0` still means any free port.
+
 ## [Unreleased] - 2026-11-22 - nextjs-saas-dashboard: GraphQL README
 
 - **Fixed:** the README's GraphQL example no longer calls `graphqlClient.setAuthToken(...)`; the client has had no such method since 0deadb5 (the `/api/graphql` route adds the token on the server).
